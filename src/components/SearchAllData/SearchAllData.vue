@@ -7,16 +7,27 @@
   >
     <bf-dialog-header
       slot="title"
-      :title="title"
+      title="Search Dataset"
     />
 
     <dialog-body>
-      <p>Create unique queries to search across the study.</p>
+      <p>Create unique queries to search across the dataset.</p>
+      <select-model
+        v-model="search.model"
+        class="mb-32"
+        :is-invalid="search.isModelInvalid"
+        :models-list="modelsList"
+        :loading="isLoadingAllModels"
+        @input="onModelChange"
+      />
       <search-all-data-filters
         ref="filters"
-        v-model="searchModalSearch.filters"
+        v-model="search.filters"
         class="mb-16"
-        :models="modelsList"
+        :datasets="selectedDatasets"
+        :models="relatedModelsList"
+        :is-loading-targets="isLoadingTargets"
+        :disabled="search.model === ''"
         @delete-filter="deleteFilter"
         @enter="executeSearch"
       />
@@ -24,6 +35,7 @@
       <div class="mb-24">
         <button
           class="linked"
+          :disabled="search.model === ''"
           @click="addFilter"
         >
           <svg-icon
@@ -56,7 +68,8 @@
         <search-results
           ref="searchResults"
           class="mb-48"
-          :search-criteria="searchModalSearch"
+          :dataset-list="selectedDatasets"
+          :search-criteria="search"
           :show-search-results="showSearchResults"
           :table-search-params="tableSearchParams"
           @reset-search-params="resetSearchParams"
@@ -74,34 +87,48 @@ import {
 } from 'vuex'
 import {
   clone,
-  compose, 
-  includes, 
-  props, 
-  propEq,
-  mergeRight
+  pathOr,
 } from 'ramda'
+import { v1 } from 'uuid'
 
 import BfDialogHeader from '@/components/shared/bf-dialog-header/BfDialogHeader.vue'
 import DialogBody from '@/components/shared/dialog-body/DialogBody.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import SearchAllDataFilters from './SearchAllDataFilters/SearchAllDataFilters.vue'
+import SelectModel from './SelectModel/SelectModel.vue'
 import SearchResults from './SearchResults/SearchResults.vue'
-import { v1 } from 'uuid'
+import ValidateFiltersMixin from './validate-filters-mixin'
 
-const MODELS_LIST = [
-  {
-    label: 'patient',
-    value: 'patient'
-  },
-  {
-    label: 'visits',
-    value: 'visits'
-  },
-  {
-    label: 'samples',
-    value: 'samples'
+import Request from '@/mixins/request'
+
+/**
+ * Stub for the original filter
+ */
+const filter = () => {
+  return {
+    id: v1(),
+    type: '',
+    target: '',
+    targetLabel: '',
+    property: '',
+    propertyLabel: '',
+    propertyType: '',
+    operation: '',
+    operationLabel: '',
+    operators: [],
+    value: '',
+    isInvalid: false
   }
-]
+}
+
+/**
+ * Stub for the original search
+ */
+const search = {
+  model: '',
+  isModelInvalid: false,
+  filters: [ filter() ]
+}
 
 export default {
   name: 'SearchAllData',
@@ -111,38 +138,167 @@ export default {
     BfDialogHeader,
     DialogBody,
     SearchAllDataFilters,
+    SelectModel,
     SearchResults
   },
+
+  mixins: [
+    Request,
+    ValidateFiltersMixin
+  ],
 
   props: {
     visible: {
       type: Boolean,
       default: false
-    },
+    }
   },
 
   data: function() {
     return {
+      search: clone(search),
       showSearchResults: false,
       allModels: [],
+      relatedModels: [],
+      isLoadingAllModels: false,
+      isLoadingRelatedModels: false,
+      selectedDatasets: ['N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'],
+      mapAllDatasets: new Map(),
+      isLoadingAllDatasets: false,
       tableSearchParams: {
         limit: 25,
         offset: 0
       },
-      modelsList: MODELS_LIST
+      filteredDatasets:[]
     }
   },
 
   computed: {
     ...mapState([
+      'config',
+      'activeOrganization',
+      'primaryNavOpen',
+      'primaryNavCondensed',
+      'secondaryNavOpen',
       'searchModalVisible',
       'searchModalSearch',
     ]),
-    ...mapGetters(['userToken', 'selectedStudyName']),
+    ...mapGetters(['userToken']),
 
-    title: function() {
-      return `Search study: ${this.selectedStudyName}`
+    /**
+     * Compute URL to get all models endpoint
+     * @returns {String}
+     */
+    getAllModelsUrl: function() {
+      //return `https://api.pennsieve.io/models/v2/organizations/655/autocomplete/models`
+      return `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts?api_key=${this.userToken}`
     },
+
+    /**
+     * Compute URL to get all models endpoint
+     * @returns {String}
+     */
+    getRelatedModelsUrl: function() {
+      return this.search.model
+        ? `https://api.pennsieve.io/models/v2/organizations/655/autocomplete/models?relatedTo=${this.search.model}`
+        : ''
+    },
+
+    /**
+     * Compute URL to get all datasets endpoint
+     * @returns {String}
+     */
+    getAllDatasetsUrl: function() {
+      // MODIFIED TO ONLY GET DATASET: N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc
+      return `https://api.pennsieve.io/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
+    },
+
+    /**
+     * Compute URL to get the datasets filtered by model endpoint
+     * @returns {String}
+     */
+    getFilteredDatasetsUrl: function() {
+      return `https://api.pennsieve.io/models/v2/organizations/655/autocomplete/models/filter`
+    },
+
+    /**
+     * Compute active organization intId
+     * @returns {String}
+     */
+    activeOrganizationIntId: function() {
+      return pathOr('', ['organization', 'intId'], this.activeOrganization)
+    },
+
+    /**
+     * Compute models list for `SelectModel`
+     * @returns {Array}
+     */
+    modelsList: function() {
+      return this.allModels.map(model => {
+        return {
+          label: model.displayName,
+          value: model.name
+        }
+      })
+    },
+
+    /**
+     * Compute realted models list that are related to the selected model
+     * @returns {Array}
+     */
+    relatedModelsList: function() {
+      return this.relatedModels.map(model => {
+        return {
+          label: model.displayName,
+          value: model.name
+        }
+      })
+    },
+
+    /**
+     * Compute if the targets are being loaded
+     * This is computed by datasets and related models
+     * @returns {Boolean}
+     */
+    isLoadingTargets: function() {
+      return this.isLoadingRelatedModels || this.isLoadingAllDatasets
+    }
+  },
+
+  watch: {
+    activeOrganizationIntId: {
+      handler: function() {
+        // Reset search data
+        this.clearAll()
+        this.selectedDatasets = []
+        this.mapDatasets = new Map()
+        this.allModels = []
+      },
+      immediate: true
+    },
+
+    /**
+     * When a user opens the dialog, make a request
+     * for all models they have access to. This is done
+     * on open so the request only happens when the user
+     * makes a related action
+     * @param {Boolean} val
+     */
+    searchModalVisible: function(val) {
+      if (val) {
+        this.getData()
+      }
+    },
+
+    /**
+     * Watch selected model and make a request
+     * @param {String} val
+     */
+    getRelatedModelsUrl: function(val) {
+      if (val) {
+        this.getRelatedModels()
+      }
+    }
   },
 
   methods: {
@@ -166,9 +322,131 @@ export default {
     },
 
     /**
+     * Get all data required for the modal
+     */
+    getData: function() {
+      if (this.allModels.length === 0) {
+        this.getAllModels()
+      }
+
+      /*if (this.selectedDatasets.length === 0) {
+        this.getAllDatasets()
+      }*/
+
+      /**
+       * Set a default search term
+       * This will allow for other parts of the app to set
+       * a search, such as from a model's page
+       */
+      if (Object.keys(this.searchModalSearch).length) {
+        this.search = Object.assign({}, this.search, this.searchModalSearch)
+        this.updateSearchModalSearch({})
+      }
+    },
+
+    /**
+     * Get all models
+     */
+    getAllModels: function() {
+      // Set loading state
+      this.isLoadingAllModels = true
+
+      this.sendXhr(this.getAllModelsUrl, {
+        header: {
+          'Authorization': `Bearer ${this.userToken}`
+        }
+      })
+        .then(response => {
+          this.allModels = response
+        })
+        .catch(this.handleXhrError.bind(this))
+        .finally(() => {
+          // Set loading state
+          this.isLoadingAllModels = false
+        })
+    },
+
+    /**
+     * Get related models to the model selected
+     */
+    getRelatedModels: function() {
+      // Set loading state
+      this.isLoadingRelatedModels = true
+
+      this.sendXhr(this.getRelatedModelsUrl, {
+        header: {
+          'Authorization': `Bearer ${this.userToken}`
+        }
+      })
+        .then(({models}) => {
+          this.relatedModels = models
+        })
+        .catch(this.handleXhrError.bind(this))
+        .finally(() => {
+          // Set loading state
+          this.isLoadingRelatedModels = false
+        })
+    },
+
+    /**
+     * Get all datasets
+     */
+    getAllDatasets: function() {
+      // Set loading state
+      this.isLoadingAllDatasets = true
+
+      this.sendXhr(this.getAllDatasetsUrl, {
+        header: {
+          'Authorization': `Bearer ${this.userToken}`
+        }
+      })
+        .then(response => {
+          //all datasets are loaded since no filter are applied
+          this.selectedDatasets = [response]
+          //build the map dataset name -> dataset to search for a particular dataset
+          for (let i = 0; i < this.selectedDatasets.length; i++) {
+            this.mapDatasets.set(this.selectedDatasets[i].content.id, this.selectedDatasets[i])
+          }
+        })
+        .catch(this.handleXhrError.bind(this))
+        .finally(() => {
+          // Set loading state
+          this.isLoadingAllDatasets = false
+        })
+    },
+
+    /**
+    * Get dataset filtered by models
+    */
+    getFilteredDatasets: function() {
+
+      this.sendXhr(this.getFilteredDatasetsUrl+"/"+this.search.model, {
+        header: {
+          'Authorization': `Bearer ${this.userToken}`
+        }
+       })
+         .then(response => {
+            this.selectedDatasets = []
+            for (let j = 0; j < response.datasets.length; j++){
+              if(this.mapDatasets.has(response.datasets[j].nodeId)){
+                this.selectedDatasets.push(this.mapDatasets.get(response.datasets[j].nodeId))
+              }
+              else{
+                console.error("The dataset ["+response.datasets[j].nodeId+"] contains the model selected but it is not included in all datasets available.")
+              }
+            }
+         })
+         .catch(this.handleXhrError.bind(this))
+         .finally(() => {
+         })
+
+
+    },
+
+    /**
      * Execute search based on search criteria
      */
-    executeSearch: function() {
+    executeSearch: function(shouldAddSavedSearch = true) {
       const isSearchInvalid = this.validateSearch()
 
       if (isSearchInvalid) {
@@ -183,57 +461,11 @@ export default {
           this.$refs.searchResults.fetchFiles()
           this.$refs.searchResults.fetchRecords()
         })
-    },
 
-    /**
-     * Validate search and ensure that all
-     * filters are complete
-     * @returns {Boolean}
-     */
-    validateSearch: function() {
-      this.searchModalSearch.filters = this.validateFilters()
-
-      return this.searchModalSearch.isModelInvalid
-    },
-
-    /**
-     * Validate filters for search
-     * @returns {Boolean}
-     */
-    validateFilters: function() {
-      // Validate filters
-      return this.searchModalSearch.filters.map(filter => {
-        const requiredFields = this.getRequiredFilters(this.searchModalSearch, filter)
-
-        const isFilterInvalid = compose(
-          includes(''),
-          props(requiredFields)
-        )(filter)
-
-        return {
-          ...filter,
-          isInvalid: isFilterInvalid
+        if (shouldAddSavedSearch) {
+          this.addSavedSearch(this.search)
         }
-      })
     },
-
-    /**
-   * Get required filters
-   * @param {Object} search
-   * @param {Object} filter
-   * @returns {Array}
-   */
-  getRequiredFilters (search, filter) {
-    const emptyTarget = propEq('target', '', filter)
-
-    if (search.filters.length === 1 && emptyTarget) {
-      return []
-    }
-
-    return filter.type === 'model'
-      ? ['target', 'property', 'operation', 'value']
-      : ['target']
-  },
 
     /**
      * Closes the Search Across All Datasets dialog
@@ -243,29 +475,28 @@ export default {
     },
 
     /**
+     * On model change, reset filters
+     * and focus on the filter
+     */
+    onModelChange: function() {
+      this.search.filters = [filter()]
+
+      //this.getFilteredDatasets()
+
+      this.search.isModelInvalid = false
+
+      this.filteredDatasets = "somesubset of this.allDatasets"
+    },
+
+    /**
      * Add filter
      */
     addFilter: function() {
-      const newFilter = {
-        id: v1(),
-        type: 'model',
-        target: this.searchModalSearch.model,
-        targetLabel: this.searchModalSearch.model,
-        property: '',
-        propertyLabel: '',
-        propertyType: '',
-        operation: '',
-        operationLabel: '',
-        operators: [],
-        value: '',
-        isInvalid: false,
-        lockTarget: true
-      }
-      this.searchModalSearch.filters.push(newFilter)      
-      this.updateSearchModalSearch(clone(this.searchModalSearch))
+      const newFilter = filter()
+      this.search.filters.push(newFilter)
 
       this.$nextTick(() => {
-        this.$refs.filters.focusFilter(this.searchModalSearch.filters.length - 1)
+        this.$refs.filters.focusFilter(this.search.filters.length - 1)
       })
     },
 
@@ -274,10 +505,9 @@ export default {
      * @params {Number} idx
      */
     deleteFilter: function(idx) {
-      this.searchModalSearch.filters.splice(idx, 1)
-      this.updateSearchModalSearch(clone(this.searchModalSearch))
+      this.search.filters.splice(idx, 1)
 
-      if (this.searchModalSearch.filters.length === 0) {
+      if (this.search.filters.length === 0) {
         this.addFilter()
       }
     },
@@ -286,25 +516,7 @@ export default {
      * Clear all inputs
      */
     clearAll: function() {
-      const newFilters = [{
-        id: v1(),
-        type: 'model',
-        target: this.searchModalSearch.model,
-        targetLabel: this.searchModalSearch.model,
-        property: '',
-        propertyLabel: '',
-        propertyType: '',
-        operation: '',
-        operationLabel: '',
-        operators: [],
-        value: '',
-        isInvalid: false,
-        lockTarget: true
-      }]
-      const newSearch = mergeRight(this.searchModalSearch, { filters: newFilters })
-
-      this.updateSearchModalSearch(newSearch)
-
+      this.search = clone(search)
       // we can just hide the table since the result arrays are reset when making
       // a new call to get results
       this.showSearchResults = false

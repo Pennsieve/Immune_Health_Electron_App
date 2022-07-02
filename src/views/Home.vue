@@ -34,7 +34,7 @@
           </router-link>
         </span>
         <span>
-          <router-link to="/file-upload" exact>   
+          <router-link to="/file-upload" exact>
               <img
                 src="@/assets/images/upload-files.png"
                 class="logo"

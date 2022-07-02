@@ -5,11 +5,8 @@ import router from '@/router'
 import store from '@/store'
 import ElementUI from 'element-ui'
 import vOutsideEvents from 'vue-outside-events'
-import striptags from 'striptags';
 import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/index'
-
-Vue.prototype.$sanitize = (html, allowedTags=['br']) => striptags(html, allowedTags)
 
 Vue.config.productionTip = false
 

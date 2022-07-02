@@ -32,22 +32,10 @@
           </bf-button>
         </template>
       </ih-subheader>
-      <div v-if="Object.keys(selectedStudy).length != 0">
-        <div>
-          <bf-button v-on:click="filterSearch('patient')">
-            Filter Search Patients
-          </bf-button>
-        </div>
-        <div>
-          <bf-button v-on:click="filterSearch('visits')">
-            Filter Search Visits
-          </bf-button>
-        </div>
-        <div>
-          <bf-button v-on:click="filterSearch('samples')">
-            Filter Search Samples
-          </bf-button>
-        </div>
+      <div>
+        <bf-button v-on:click="updateSearchModalVisible(true)">
+          Search Studies
+        </bf-button>
       </div>
     </span>
   </div>
@@ -57,9 +45,7 @@
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
-import { mapActions, mapGetters, mapState } from 'vuex'
-import { clone, mergeRight } from 'ramda'
-import { v1 } from 'uuid'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'StudiesBrowser',
@@ -69,35 +55,10 @@ export default {
     BfNavigationSecondary
   },
   computed: {
-    ...mapState(['searchModalSearch']),
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch']),
-    filterSearch(model) {
-      const newFilters = clone(this.searchModalSearch.filters)
-      newFilters.push({
-        id: v1(),
-        type: 'model',
-        target: model,
-        targetLabel: model,
-        property: '',
-        propertyLabel: '',
-        propertyType: '',
-        operation: '',
-        operationLabel: '',
-        operators: [],
-        value: '',
-        isInvalid: false,
-        lockTarget: true
-      })
-      const search = mergeRight(this.searchModalSearch, {
-        filters: newFilters,
-        model: model
-      })
-      this.updateSearchModalSearch(search)
-      this.updateSearchModalVisible(true)
-    }
+    ...mapActions(['updateSearchModalVisible'])
   }
 }
 </script>

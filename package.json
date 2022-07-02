@@ -24,7 +24,6 @@
     "moment-range": "^4.0.2",
     "path": "^0.12.7",
     "ramda": "^0.28.0",
-    "striptags": "^3.2.0",
     "tsvert": "^0.0.4",
     "uuid": "^8.3.2",
     "valid-url": "^1.0.9",
