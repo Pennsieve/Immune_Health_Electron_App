@@ -173,7 +173,8 @@ import {
 } from 'ramda'
 import {
   mapGetters,
-  mapState
+  mapState,
+  mapActions
 } from 'vuex'
 import EventBus from '@/utils/event-bus'
 
