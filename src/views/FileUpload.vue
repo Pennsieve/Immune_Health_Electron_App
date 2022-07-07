@@ -137,13 +137,20 @@ export default {
     if (!this.files.length){
       this.fetchFiles()
     }
-    /*
+
     this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
     EventBus.$on('add-uploaded-file', this.onAddUploadedFile.bind(this))
       EventBus.$on('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
       EventBus.$on('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
       EventBus.$on('update-external-file', this.onFileRenamed)
-      */
+
+    },
+    destroyed: function () {
+      this.$el.removeEventListener('dragenter', this.onDragEnter.bind(this))
+      EventBus.$off('add-uploaded-file', this.onAddUploadedFile.bind(this))
+      EventBus.$off('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
+      EventBus.$off('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
+      EventBus.$off('update-external-file', this.onFileRenamed)
     },
   methods: {
     //...mapActions(['setPlaceholderUploadDest']),

@@ -8,6 +8,8 @@ Vue.use(Vuex);
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
 const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzVhNWU3OTY1LTQ1YjMtNGFmZS05ZTMyLWRhZTlhYTI4N2VmNCIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjE0NzNiYzQwLWM3NDQtNDhiZi04YmNjLTY5NDc3NGRhZjQ3NCIsImV2ZW50X2lkIjoiZmYxM2RhNzgtYTVkNy00ZjE2LWE0ZDktYzVmN2NlNjFiZTA4IiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1NzA0ODA4NSwiZXhwIjoxNjU3MDUxNjg1LCJpYXQiOjE2NTcwNDgwODUsImp0aSI6ImQzODE4NTcyLTJmM2EtNGM3Ny1hY2ZmLTlmODIxNzhjODJjMiIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.RnffeN-DYT-5i5Mj-73TjakgLmakPvD_ce_K1AkOiZa6_0v28y_ijKaodIaF3ZcBPZ1FN5LWu5MmZJNyTQACycqLPXWLRccy5mQMtasosKcwefQG6X-NCiwP1kxx2Ph1LuzVrSomlhgVLOxsahhOigSsfk09zQyrcu920MSxoWKJLjcoJWGCTR8mdCNmTck0b97pWw5eOp4siLY5v38uMHZj29fzcJgkP9OCYIhh69UQ2ibhFz7Sz3kKEVlqdWTiOeV_vN2K7Dlgkau30AwFAyghrv-Rxf0ewoxDE2_CKqan2l3bz4EVbXhgTu-Fq3mtllWHIuanTBaztUfTLUwqRw'
 
+const uploadDestination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:fda8d13c-658f-475a-b90a-cd7a79ef7b87'
+
 const store = new Vuex.Store({
   state: {
     profile: null,
@@ -17,6 +19,7 @@ const store = new Vuex.Store({
     searchModalVisible: false,
     searchModalSearch: {},
     scientificUnits: [],
+
   },
   getters: {
     username (state) {
@@ -52,6 +55,24 @@ const store = new Vuex.Store({
     }
   },
   mutations: {
+    UPLOAD_COUNT_ADD (state, count) {
+      //find another way
+      //const totalCount = propOr(0, 'uploadCount', state) + count;
+      state.uploadCount = totalCount
+    },
+    UPDATE_TOTAL_UPLOAD_SIZE (state, data) {
+      //cant get below from prop
+      //const updatedSize = propOr(0, 'totalUploadSize', state) + data
+      state.totalUploadSize = updatedSize
+    },
+    UPDATE_UPLOAD_REMAINING_ADD (state, size) {
+      //change this
+      //const totalRemaining = propOr(0, 'uploadRemaining', state) + size;
+      state.uploadRemaining = totalRemaining
+    },
+    UPDATE_UPLOAD_STATUS (state, uploading) {
+      state.uploading = uploading
+    },
     SET_ALL_STUDIES(state, data) {
       state.allStudies = data
     },
@@ -72,6 +93,10 @@ const store = new Vuex.Store({
     },
   },
   actions: {
+    uploadCountAdd: ({ commit }, evt) => commit('UPLOAD_COUNT_ADD', evt),
+    updateTotalUploadSize: ({commit}, evt) => commit('UPDATE_TOTAL_UPLOAD_SIZE', evt),
+    updateUploadStatus: ({ commit }, evt) => commit('UPDATE_UPLOAD_STATUS', evt),
+    updateUploadRemainingAdd: ({ commit }, evt) => commit('UPDATE_UPLOAD_REMAINING_ADD', evt),
     async login({ dispatch, state }) {
       // Set a dummy profile for now
       this.state.profile = {

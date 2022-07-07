@@ -834,7 +834,7 @@
         this.uploadList.push(...packageList)
 
         this.uploader.setCustomHeaders({
-          Authorization: `bearer ${this.userToken}`
+          Authorization: `bearer ${this.API_KEY}`
         })
 
         // Get credentials to upload for queued files
@@ -941,7 +941,7 @@
             method: 'POST',
             body: 'AddedFile',
             header: {
-              Authorization: `bearer ${this.userToken}`
+              Authorization: `bearer ${this.API_KEY}`
             }
           })
             .then(response => {
