@@ -1,3 +1,17 @@
+/* eslint-disable */
+/* Complete files table:
+<files-table
+  v-if="hasFiles"
+  :data="files"
+  :multiple-selected="multipleSelected"
+  @move="showMove"
+  @delete="showDelete"
+  @process="processFile"
+  @copy-url="getPresignedUrl"
+  @selection-change="setSelectedFiles"
+  @click-file-label="onClickLabel">
+</files-table>
+*/
 <template>
   <div class="container">
     <span class="sidebar-container">
@@ -36,10 +50,7 @@
             v-if="hasFiles"
             :data="files"
             :multiple-selected="multipleSelected"
-            //@move="showMove"
             @delete="showDelete"
-            //@process="processFile"
-            //@copy-url="getPresignedUrl"
             @selection-change="setSelectedFiles"
             @click-file-label="onClickLabel">
           </files-table>
@@ -62,11 +73,13 @@
             :file="file"
           />
           -->
+          <!--
           <bf-delete-dialog
             ref="deleteDialog"
             :selected-files="selectedFiles"
             @file-delete="onDelete"
           />
+          -->
         </span>
       </div>
     </span>
@@ -82,10 +95,13 @@ import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
 //import BfUpload from '../components/BfUpload/BfUpload.vue'
 //MAY NEED ONE LESS UP DIR
-import Sorter from '../../mixins/sorter/index.js'
-import Request from '../../mixins/request/index.js'
-import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
-import { mapGetters, mapActions } from 'vuex'
+import Sorter from '../mixins/sorter/index.js'
+import Request from '../mixins/request/index.js'
+//import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
+import { mapGetters,
+         //mapActions
+       }
+from 'vuex'
 
 export default {
   name: 'FileUpload',
@@ -95,7 +111,7 @@ export default {
     BfButton,
     //BfUpload
     FilesTable,
-    BfDeleteDialog
+    //BfDeleteDialog
   },
   mixins: [
     Sorter,
@@ -103,7 +119,7 @@ export default {
     //GetFileProperty
   ],
   computed: {
-    ...mapGetters(['allStudies', 'selectedStudyName','API_KEY']),
+    ...mapGetters(['allStudies', 'selectedStudyName','userToken']),
 
     //returns true if more than 1 select file
     multipleSelected: function () {
@@ -199,7 +215,8 @@ export default {
 
       let defaultType = ''
       //NOTE: must get this by other means
-      const packageType = pathOr('', ['content', 'packageType'], file)
+      //const packageType = pathOr('', ['content', 'packageType'], file)
+      var packageType = 'file';
       switch (packageType) {
         case 'Collection':
           defaultType = 'Folder'
@@ -222,10 +239,12 @@ export default {
     /**
      * Handler for delete XHR
      */
+     /*
     onDelete: function (response) {
       //const successItems = propOr([], 'success', response)
       //this.removeItems(successItems)
     },
+    */
 
     /**
      * Set selected files
@@ -237,8 +256,9 @@ export default {
 
     //gets all files in the dataset within the staged directory on mount
     fetchFiles: function () {
-      api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.API_KEY}&includeAncestors=true`;
-      this.sendXhr(this.api_url)
+      console.log(this.userToken);
+      var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
+      this.sendXhr(api_url)
         .then(response => {
           this.file = response
           this.files = response.children.map(file => {

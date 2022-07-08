@@ -814,9 +814,14 @@
        */
       startUpload: function() {
         //setting up an instance of the uploads client class
-        p = new Pennsieve()
+        //do this whenapp starts
+        //p = new Pennsieve()... or when the menu opens.
         //NEED ARGS
-        p.subscribe({})
+        //p.subscribe({})
+        //
+        uploadManifest(manifest_id, callback)
+
+
         // Add files to fine uploader... for each of these, must create manifest
         this.uploader.addFiles(pluck('file', this.fileList))
 

@@ -43,7 +43,7 @@
   import BfButton from '../../../shared/bf-button/BfButton.vue'
   import BfDialogHeader from '../../../shared/bf-dialog-header/BfDialogHeader.vue'
   import DialogBody from '../../../shared/dialog-body/DialogBody.vue'
-  import BfFileLabel from '../bf-file/BfFileLabel.vue'
+  //import BfFileLabel from '../bf-file/BfFileLabel.vue'
   import Request from '../../../../mixins/request/index'
 
   import { mapGetters } from 'vuex'
@@ -55,7 +55,7 @@
       BfDialogHeader,
       DialogBody,
       BfButton,
-      BfFileLabel
+      //BfFileLabel
     },
 
     mixins: [
@@ -84,11 +84,13 @@
        * Computes form URL based on type of action user is taking (rename vs creating)
        * @returns {String}
        */
+       /*
       deleteUrl: function() {
         if (this.userToken) {
           return `https://api.pennsieve.io/data/delete?api_key=${this.userToken}`
         }
       },
+      */
 
       /**
        * Compute total files
