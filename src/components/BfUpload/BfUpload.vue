@@ -277,9 +277,9 @@
 <script>
   import Vue from 'vue'
   //WHERE IS THIS??
-  import qq from 'fine-uploader/lib/core'
+  //import qq from 'fine-uploader/lib/core'
   import { mapActions, mapGetters, mapState } from 'vuex';
-  import BfButton from '../shared/BfbButton/BfButton.vue'
+  import BfButton from '../shared/BfButton.vue'
   import BfDialog from '../shared/bf-dialog/bf-dialog.vue'
   import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
   import CheckOverflow from '../../mixins/check-overflow/index'
@@ -287,8 +287,9 @@
   import Request from '../../mixins/request';
   //import FileIcon from '../../mixins/file-icon'
   import debounce from 'lodash/debounce'
-  import uuidv1 from 'uuid/v1'
-  import {Pennsieve} from '../../pennsieve-agent-javascript-inapp/pennsieve/pennsieve.js'
+  //import uuidv1 from 'uuid/v1'
+  import uuidv1 from 'uuid'
+  //import {Pennsieve} from '../../pennsieve-agent-javascript-inapp/pennsieve/pennsieve.js'
   import {
     compose,
     defaultTo,
@@ -323,7 +324,9 @@
       BfUploadPackage
     },
 
-    mixins: [Sorter, CheckOverflow, Request, FileIcon],
+    mixins: [Sorter, CheckOverflow, Request,
+    //FileIcon
+    ],
 
     data: function() {
       return {
@@ -399,13 +402,14 @@
           return item.warnings.length === 0
         })
       },
-
+      /*
       onboardingEventsUrl() {
         const apiUrl = propOr('', 'apiUrl', this.config)
         if (apiUrl && this.userToken) {
           return `${apiUrl}/onboarding/events?api_key=${this.userToken}`
         }
       }
+      */
     },
 
     watch: {
@@ -565,6 +569,7 @@
        * @returns {Promise}
        */
       traverseFileTree: function(entry) {
+        // eslint-disable-next-line no-undef
         const parseEntryPromise = new qq.Promise()
         if (entry.isFile) {
           entry.file(
@@ -573,14 +578,17 @@
               this.droppedFiles.push(file)
               parseEntryPromise.success()
             },
+            /*
             fileError => {
               parseEntryPromise.failure()
             }
+            */
           )
         } else if (entry.isDirectory) {
           this.getFilesInDirectory(entry).then(
             entries => {
               let entriesLeft = entries.length
+              // eslint-disable-next-line no-undef
               qq.each(entries, (idx, entry) => {
                 this.traverseFileTree(entry).done(() => {
                   entriesLeft -= 1
@@ -593,9 +601,11 @@
                 parseEntryPromise.success()
               }
             },
+            /*
             fileError => {
               parseEntryPromise.failure()
             }
+            */
           )
         }
         return parseEntryPromise
@@ -615,6 +625,7 @@
         accumEntries,
         existingPromise
       ) {
+        // eslint-disable-next-line no-undef
         const promise = existingPromise || new qq.Promise()
         const dirReader = reader || entry.createReader()
         dirReader.readEntries(entries => {
@@ -637,11 +648,13 @@
        */
       handleDataTransfer: function(dataTransfer) {
         const pendingFolderPromises = []
+        // eslint-disable-next-line no-undef
         const handleDataTransferPromise = new qq.Promise()
 
         this.droppedFiles = []
-
+        // eslint-disable-next-line no-undef
         if (qq.isFolderDropSupported(dataTransfer)) {
+          // eslint-disable-next-line no-undef
           qq.each(dataTransfer.items, (idx, item) => {
             const entry = item.webkitGetAsEntry()
             if (entry) {
@@ -772,7 +785,9 @@
         let packages = response.packages
 
         // Loop through response and set each file's processing prop to false
+        // eslint-disable-next-line no-unused-vars
         packages.forEach((item, itemIndex) => {
+        // eslint-disable-next-line no-unused-vars
           item.files.forEach((file, index) => {
             const fileListItem = find(
               propEq('uploadId', file.uploadId),
@@ -819,7 +834,7 @@
         //NEED ARGS
         //p.subscribe({})
         //
-        uploadManifest(manifest_id, callback)
+        //uploadManifest(manifest_id, callback)
 
 
         // Add files to fine uploader... for each of these, must create manifest
@@ -940,6 +955,7 @@
       /**
        * Sends onboarding event
        */
+       /*
       sendOnboardingEventsRequest: function() {
         if (this.onboardingEventsUrl) {
           this.sendXhr(this.onboardingEventsUrl, {
@@ -956,6 +972,7 @@
             .catch(this.handleXhrError.bind(this))
         }
       },
+      */
 
       /**
        * Update files list when a file has completed uploading
@@ -994,7 +1011,7 @@
           Authentication: `bearer ${this.userToken}`
         }
       }
-
+      // eslint-disable-next-line no-undef
       this.uploader = new qq.FineUploaderBasic({
         element: this.$refs.bfUpload,
         button: this.$refs.btnUpload,
@@ -1037,7 +1054,7 @@
             const file = this.uploader.getFile(id)
             const name = file.name
             const importId = file.importId
-
+            // eslint-disable-next-line no-undef
             return qq.format(
               '{}/{}',
               `${this.$store.state.profile.email}/${importId}`,
@@ -1069,11 +1086,11 @@
 
             Vue.set(uploadListFile, 'uploading', true)
           },
-
+          /*
           onAllComplete: (succeeded, failed) => {
             this.$store.dispatch('updateUploadStatus', false)
           },
-
+          */
           /**
            * Callback when a file has completed uploading
            * @param {number} id
@@ -1228,13 +1245,15 @@
                       name: 'File Uploaded'
                     })
                   })
+                  /*
                   .catch((err) => {
                     this._onPackageCompleteError(packageIndex)
                   })
+                  */
               }
             }
           },
-
+          // eslint-disable-next-line no-unused-vars
           onProgress: (id, name, uploadedBytes, totalBytes) => {
             const uploadListFile = this.getUploadListFile(id)
 
@@ -1244,6 +1263,7 @@
           /**
            * Callback when item has been canceled
            */
+           // eslint-disable-next-line no-unused-vars
           onCancel: (id, name) => {
             if (this.isAddingFiles) {
               // Remove from fileList
@@ -1271,7 +1291,7 @@
               }
             }
           },
-
+          // eslint-disable-next-line no-unused-vars
           onSubmit: (id, name) => {
             const file = this.uploader.getFile(id)
             const upload = this.uploader.getUploads({ id })

@@ -1,7 +1,7 @@
 <template>
   <div class="files-table">
     <div
-      v-if="selection.length > 0"
+      v-if="selection.length > 0"   
       class="selection-menu-wrap mb-16"
     >
       <el-checkbox
@@ -149,7 +149,7 @@
         <template slot-scope="scope">
           <div class="file-actions-wrap">
             <table-menu
-              v-if="getPermission('editor') || searchAllDataMenu"
+              v-if="searchAllDataMenu"
               :file="scope.row"
               :multiple-selected="multipleSelected"
               :search-all-data-menu="searchAllDataMenu"
@@ -182,7 +182,7 @@ import BfFileLabel from '../datasets/files/bf-file/BfFileLabel.vue'
 import TableMenu from '@/components/TableMenu/TableMenu.vue'
 
 import BfStorageMetrics from '@/mixins/bf-storage-metrics'
-import FileIcon from '@/mixins/file-icon/index'
+import FileIcon from '../../mixins/file-icon/index.js'
 import FormatDate from '@/mixins/format-date'
 import TableFunctions from '@/mixins/table-functions'
 import Sorter from '@/mixins/sorter'
@@ -236,10 +236,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
-      'getPermission',
-      'datasetLocked',
-    ]),
+    ...mapGetters([]),
 
     ...mapState([
       'dataset',

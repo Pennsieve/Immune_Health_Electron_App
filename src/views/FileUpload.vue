@@ -51,6 +51,8 @@
             :data="files"
             :multiple-selected="multipleSelected"
             @delete="showDelete"
+            @process="processFile"
+            @copy-url="getPresignedUrl"
             @selection-change="setSelectedFiles"
             @click-file-label="onClickLabel">
           </files-table>
@@ -61,7 +63,7 @@
             :file="file"
           />
           -->
-          <!--
+
           <bf-upload
           :open="isOpen"
           :isAddingFiles = "isAddingFiles"
@@ -72,7 +74,7 @@
             :show-drop-info.sync="showDropInfo"
             :file="file"
           />
-          -->
+
           <!--
           <bf-delete-dialog
             ref="deleteDialog"
@@ -93,11 +95,12 @@ import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecond
 //import BfUploadMenu from '@/components/BfUploadMenu/BfUploadMenu.vue'
 import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
-//import BfUpload from '../components/BfUpload/BfUpload.vue'
+import BfUpload from '../components/BfUpload/BfUpload.vue'
 //MAY NEED ONE LESS UP DIR
 import Sorter from '../mixins/sorter/index.js'
 import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
+import {findIndex,pathEq,} from 'ramda'
 import { mapGetters,
          //mapActions
        }
@@ -109,8 +112,8 @@ export default {
     BfNavigationSecondary,
     IhSubheader,
     BfButton,
-    //BfUpload
-    FilesTable,
+    BfUpload,
+    FilesTable
     //BfDeleteDialog
   },
   mixins: [
@@ -119,7 +122,7 @@ export default {
     //GetFileProperty
   ],
   computed: {
-    ...mapGetters(['allStudies', 'selectedStudyName','userToken']),
+    ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId']),
 
     //returns true if more than 1 select file
     multipleSelected: function () {
@@ -197,9 +200,221 @@ export default {
       console.log('setting target');
       //send API request for specific visit record, and set that record to the store
     },
+    checkBelongsToExists: function() {
+      const belongsTo = this.getRelationshipTypeByName('belongs_to')
+      if (Object.keys(belongsTo).length === 0) {
+        // if not, create a default, then create the file relationship
+        return this.createDefaultRelationship()
+      }
+      return Promise.resolve([])
+    },
+
+    /**
+     * Creates relationships with file(s)
+     */
+    createFileRelationshipRequests: function() {
+      //change datasetId
+      this.isCreating = true
+      const datasetId = this.datasetId;
+      //pathOr('', ['params', 'datasetId'], this.$route)
+      //CHANGE THIS URL
+      const url = `https://api.pennsieve.io/datasets/${datasetId}/proxy/package/instances`
+      //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
+      const queues = Array.from(this.selectedFiles).map(itemId => {
+        const recordId = itemId
+        const packageId = this.uploadDestination //the record we are linking to
+        //pathOr('', ['params', 'instanceId'], this.$route)
+        const linkTarget = {
+          'ConceptInstance': {
+            id: recordId //again, the file we are currently on
+          }
+        }
+
+        return this.sendXhr(url, {
+          method: 'POST',
+          header: {
+            'Authorization': `bearer ${this.userToken}`
+          },
+          body: {
+            externalId: packageId, //the record
+            targets: [{
+              direction: 'FromTarget',
+              linkTarget, //the file
+              relationshipType: 'belongs_to',
+              relationshipData: []
+            }]
+          }
+        })
+      })
+      // this maps over all the queued responses to guarantee that all responses are returned regardless of error status
+      return Promise.all(queues.map(q => {
+        return q.catch(err => ({status: err.status}))
+      }))
+    },
+
+    /**
+     * Callback for create relationship success
+     * Refresh table and close drawer
+     */
+
+    // eslint-disable-next-line no-unused-vars
+    createRelationshipsSuccess: function(resp) {
+      //const conceptName = propOr('', 'name', this.concept)
+      //const displayName = propOr('', 'displayName', this.concept)
+      //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
+      var destination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:26ccb088-419b-4e48-bbe6-5bd54847656d';
+      this.moveItems(destination, this.selectedFiles);
+      const numRequests = this.selectedFiles.size
+      const plural = numRequests === 1 ? '' : 's'
+      /*
+      EventBus.$emit('refresh-table-data', {
+        name: conceptName,
+        count: numRequests,
+        displayName,
+        type: 'Add'
+      })
+      */
+      EventBus.$emit('toast', {
+        detail: {
+          msg: `Record${plural} Linked!`,
+          type: 'success'
+        }
+      })
+      // check for onboarding event state for creating a relationship
+      //if (this.onboardingEvents.indexOf('CreatedRelationshipType') === -1){
+        // make post request
+      //  this.sendOnboardingEventsRequest()
+      //}
+      //this.closeSideDrawer()
+      this.isCreating = false
+    },
+
+    /**
+     * Create relationship
+     */
+    createRecordRelationships: function() {
+      // execute batch request
+      let body = []
+      let to, from = ''
+      this.selectedItemIds.forEach(item => {
+        if (this.inverseDirection) {
+          to = this.$route.params.instanceId
+          from = item
+        } else {
+          to = item
+          from = this.$route.params.instanceId
+        }
+        body.push({
+          from,
+          to,
+          values: []
+        })
+      })
+      return this.sendXhr(this.createRelationshipUrl, {
+        method: 'POST',
+        header: {
+          'Authorization': `bearer ${this.userToken}`
+        },
+        body
+      })
+        .then(() => {
+          // track adding a relationship between records
+          EventBus.$emit('track-event', {
+            name: 'Add a Relationship Between Records'
+          })
+
+          this.createRelationshipsSuccess()
+        })
+        .catch(this.handleXhrError.bind(this))
+    },
+
+    /**
+     * Remove items from files list
+     * @param {Object} items
+     */
+    removeItems: function (items) {
+      // Remove all successfully deleted files RETURN TO THIS...need to splice out files from display
+      for (let i = 0; i < items.length; i++) {
+        const fileIndex = findIndex(pathEq(['content', 'id'], items[i]), this.files)
+        this.files.splice(fileIndex, 1)
+      }
+      // Resort files
+      this.sortColumn(this.sortBy, this.sortDirection)
+      this.resetSelectedFiles()
+    },
+
+    /**
+     * Send XHR to move items
+     * @param {String} destination}
+     * @param {Array} items
+     */
+    moveItems: function (destination, items) {
+      if (this.moveUrl) {
+        const things = items.map(item => item.content.id)
+        this.sendXhr(this.moveUrl, {
+          method: 'POST',
+          body: {
+            destination,
+            things
+          }
+        })
+          .then(response => {
+            this.onMoveItems(response)
+          })
+          .catch(response => {
+            this.handleXhrError(response)
+          })
+      }
+    },
+
+    /**
+     * Handler for move items endpoint request
+     * @param {Object} response
+     */
+     // eslint-disable-next-line no-unused-vars
+    onMoveItems: function (response) {
+      // Remove successful items from the files list
+      //
+      //const successItems = propOr([], 'success', response)
+      // eslint-disable-next-line no-undef
+      removeItems(this.selectedFiles);
+      //dont bother with this for now
+      /*
+      // Handle conflict items
+      const failures = propOr([], 'failures', response)
+      const failureIds = pluck('id', failures)
+      const failureItems = failureIds.map(id => {
+        return find(pathEq(['content', 'id'], id), this.files)
+      })
+
+      // Show failure dialog
+      if (failureItems.length > 0) {
+        this.moveConflict = {
+          display: failureItems,
+          files: failures,
+          destination: propOr(null, 'destination', response)
+        }
+
+        // Show user notice of conflicts
+        this.$refs.moveDialog.visible = true
+      } */
+    },
+
+    createRelationships: function() {
+      this.isLoading = true
+    //  if (this.isFile) {
+
+        //this.checkBelongsToExists()
+        .then(() => this.createFileRelationshipRequests())
+        .then(() => this.createRelationshipsSuccess())
+        .finally(() => this.isLoading === false)
+      //} else {
+      //  this.createRecordRelationships().finally(() => this.isLoading = false)
+    //  }
+    },
     linkToTarget: function() {
       console.log('linking to target');
-      //this.createRelationships();
+      this.createRelationships();
       //Then move selected files from staging to linked (don't launch modal)
       //OR do it on success...
     },
@@ -257,6 +472,7 @@ export default {
     //gets all files in the dataset within the staged directory on mount
     fetchFiles: function () {
       console.log(this.userToken);
+      console.log('test');
       var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
       this.sendXhr(api_url)
         .then(response => {
@@ -267,7 +483,7 @@ export default {
               file.storage = 0
             }
             */
-            //file.icon = file.icon || this.getFilePropertyVal(file.properties, 'icon')
+            //file.icon = file.icon //|| this.getFilePropertyVal(file.properties, 'icon')
             //UNCOMMENT WHEN YOU KNOW WHAT IT DOES
             //file.subtype = this.getSubType(file)
             return file

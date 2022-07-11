@@ -6,10 +6,11 @@ import { pathOr, propOr, isEmpty } from 'ramda'
 Vue.use(Vuex);
 
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
-const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzJiN2U1MmRiLWI0NzgtNDZlMy1hOWExLTQ4Y2UxODRjOTBjZCIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjdiMGVjZGUxLWY2NjItNGZiZS04NTMwLWM2NzJiZDA0NDE1OSIsImV2ZW50X2lkIjoiNDEzNDI1ODMtYTc4NC00MDY1LWJmNDEtYjg4YWQ4ZGJmNmZjIiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1NzMwOTA3NywiZXhwIjoxNjU3MzEyNjc3LCJpYXQiOjE2NTczMDkwNzcsImp0aSI6ImZkOWZkYzA0LTEzOWQtNGUyYy05N2U5LTYzNWE1YmZiZjk4MyIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.hgvIqk2i5Qh2K-FjIw7IbBrI1wK3J0yQ7L4iz5txtfUBJH8650-9xfs0cMvvhwfhI21UeNH94Kws7iZ4Jnu-QlBRl3a8rcSMSBuqzpPFlVtjbV6yY0JsAUgOdxmpiY5IiJRpqLV3dendpbg2C0GOYILMQjsfPGTSeYVAT_705yfjWKZgO5xc9pvkwfkHDC6c0L4bG0G7sGBPrU_Ajrj-VlmMqSy4916zOeFNfJYfCSwbH5tZWbpDYlOhqxGZ6rxvM6-KXFhQX24l31rf4uwMTQRJkOEZN1-TIrwpON-PtBaegdT1Qva81tbFa0uTJWJA5qNcny0f8_SZocU5dBZcIA'
+const API_KEY = 'eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.NITUylMdmqEmk3qc2wVVGjGIXlK6t8uQIEbNZmMNGxYZ0y81uxyQ9RKDznGTCBZB38Rf9v8DkAkutKA7pvg_MXnSxG74gxFkmKkuIJn1pEs0YKWzeUmIp7uhvCygZEzM3ZoH_wQNruvZ0iKyS2PflXi27QJmmsHy79i5dF9tpoZ7x2E3w8rldsT2yN7yBc1VvGWv6HhEYmNE8AZx7MvywBOas1n8Mc85XOpcNyvmL0x0ltJRfHe1Sf5PXgO8SIP2qw7UgGA8ruDD5A6L4OiqbrKDWsA_QP9g69gNDGu-vcrlMmvOVyXb-2oez3mhmbj23q1OMGCF6so2XgnjWaTZcA.k0C69aZIepVRfM0G.C-BWYf8_HhTcA_qNlAEfUmSvGYNhXDfhlKsIaWUpwTdbZAoa3UgVCUfehFcnngOK6oL_r4hAVI-4CDwlNUAlbn9mOjZx5q1MYvkz7ENs5pF1zW6LzspK4EnuDDhAihwPiio2KmMQGhhBW3Cl5K_4sI_Q2EeTE0-J3bGWMenHBw5qG9U7Sj40r9tCqog2Wqmssu99l_1QfcxlUiZr8qywbgNwmWLp9YuY-U__fA1R8pBwpeZJKIOixNVCdjALa1mlC9gQnidnBBsdvxjlz6bowcJX9nWmjrTAZxPRKlDWXHwDDfzfvWhh7asTIzZIvFRdGnYDKqx_JKng6Tv91P1rebhfOUi2BpcVm1muxoDmg_jqUBHijGYwTjoR55S3UmPgbomZP7ToOzwTrhMSlQFL7MvVK56AqFEOnzzj4QhWXEg2NnGZk8INX0w6ofl4Gde2-byPDoq3i9qTm81-CxWHQfMUcWVLmaah-rY0bvccKOxNrPfiAPRVNLE51QNR0qaLR-QuD7lzr_o1YNe-iZGm8WE2msyU4s8b1jY-daYrjTfzwjZeuzWUoQHD5s1c92W4F3f5RUP5c5HrDidjBi0TBSLucOlzELLXWv9Veh7NvkhySlaaSKmwm8NqSOSuG4JTE0alM9bG4ZBuBp_1aodtUgjVdaMtSnjTZMvUW5GEgxfRUqjjRFVHOsAPxSPAauqCRLDQ1YVD7uvM1bgzvMhD3ODDMHiDM7l6wHnJc9z1DyCQrPIh1jY0vFqCwCvFTk028ncNHhU4Vb_m1PVXs5na7yjztZfSBRg2qBkr5xMUlr0Y6U2Eq0sWexsE_tI0dxHjxMQcbV5kqouR5S8KNO-v9TSyutct7qDzpIv8k4SZ8Uawsg0BPxzYNyQl588StoDqrG3V1iCIbIiLJuuOMVngYqCAfqFA2Ki5F99FFnKoDU5QjHb0nptCPkHgFbWZBsGF4g7P1j1cPxKgyDzHc1_ycsbGecsm0ayMnzp2l1Lm5P0uAfBD9UwD7P4_P3pd7qTHtffgwUl66swRB-Kc9trwz56hkgEgpH0XFUkGVOxLqWk9sqjp85y-fhrgm1NbX0uJtwlg7n9zCZwyRTuko5VHUhXw1roau4bfRjXJxLenaHcxFuBJWGCdp_jA4EfdZIhwmPjtZi5ttbdB4L3OTwoGgi0sriMCbAFydM_dH4kmWo-7OTqj7rDEaL9HRJCSzHFR4SdyPWTGnd8YE-zBZLPkPEB70H8YkXh9i2C-T4YpIHEi_g_5Yj9f1L0BRRbNRC7iGGouJKRBsfA1yJgI542H7KKtLJwu15tz6KWUkh1P5uUe-DwEIrUuEurzz7sRQBftN4GEqd0tT8m5_6qbWKhYX5Evxwgei7CWQi0Z1vD0kwKQdZHwpXjD1esltEC9XQ8V6eVykP7GJGYFNZTS4SUtvgyA_qhs2eiQ4qm7IAyR.SoPPOpQPgOO3Ie2ISjBqpg'
+
+const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
 
 //const uploadDestination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:fda8d13c-658f-475a-b90a-cd7a79ef7b87'
-
 const store = new Vuex.Store({
   state: {
     profile: null,
@@ -19,6 +20,9 @@ const store = new Vuex.Store({
     searchModalVisible: false,
     searchModalSearch: {},
     scientificUnits: [],
+    //hardcoded value for testing...random record to link files to'
+    datasetId: DATASET_ID,
+    uploadDestination: 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
 
   },
   getters: {
@@ -52,6 +56,12 @@ const store = new Vuex.Store({
     },
     searchModalVisible (state) {
       return state.searchModalVisible
+    },
+    uploadDestination (state) {
+      return state.uploadDestination
+    },
+    datasetId (state) {
+      return state.datasetId
     }
   },
   mutations: {
@@ -99,6 +109,7 @@ const store = new Vuex.Store({
     },
   },
   actions: {
+    //add one for setting record linking (upload) destination
     uploadCountAdd: ({ commit }, evt) => commit('UPLOAD_COUNT_ADD', evt),
     updateTotalUploadSize: ({commit}, evt) => commit('UPDATE_TOTAL_UPLOAD_SIZE', evt),
     updateUploadStatus: ({ commit }, evt) => commit('UPDATE_UPLOAD_STATUS', evt),

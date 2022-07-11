@@ -26,6 +26,7 @@
     "ramda": "^0.28.0",
     "tsvert": "^0.0.4",
     "uuid": "^8.3.2",
+    "uuidv1": "^1.6.14",
     "valid-url": "^1.0.9",
     "vue": "^2.6.14",
     "vue-outside-events": "^1.1.3",
