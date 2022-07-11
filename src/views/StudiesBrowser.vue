@@ -68,12 +68,15 @@ export default {
     BfButton,
     BfNavigationSecondary
   },
+  mounted() {
+    this.setSearchPage('StudiesBrowser')
+  },
   computed: {
     ...mapState(['searchModalSearch']),
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage']),
     filterSearch(model) {
       const newFilters = clone(this.searchModalSearch.filters)
       newFilters.push({

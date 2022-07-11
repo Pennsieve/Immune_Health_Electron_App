@@ -50,9 +50,8 @@
         </bf-button>
       </div>
 
-      <template v-if="showSearchResults">
+      <template v-if="searchPage === 'FileUpload' && showSearchResults">
         <h2>Search Results</h2>
-
         <search-results
           ref="searchResults"
           class="mb-48"
@@ -137,6 +136,7 @@ export default {
     ...mapState([
       'searchModalVisible',
       'searchModalSearch',
+      'searchPage'
     ]),
     ...mapGetters(['userToken', 'selectedStudyName']),
 
@@ -146,7 +146,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'applyFiltersToMetadata']),
 
     /**
      * Resets table search params for pagination
@@ -171,9 +171,9 @@ export default {
     executeSearch: function() {
       const isSearchInvalid = this.validateSearch()
 
-      if (isSearchInvalid) {
-        return
-      }
+      if (isSearchInvalid) { return }
+
+      if (this.searchPage === 'FileUpload') {
         this.showSearchResults = true
         this.tableSearchParams = {
           limit: 25,
@@ -183,6 +183,9 @@ export default {
           this.$refs.searchResults.fetchFiles()
           this.$refs.searchResults.fetchRecords()
         })
+      } else {
+        this.applyFiltersToMetadata()
+      }    
     },
 
     /**

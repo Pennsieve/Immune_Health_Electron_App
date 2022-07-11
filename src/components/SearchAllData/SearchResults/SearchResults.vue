@@ -292,9 +292,10 @@ export default {
      * @returns {String}
      */
     getRecordsUrl: function() {
+      const toQueryParams = (params) => Object.keys(params).map(key => key + '=' + params[key]).join('&');
       const params = compose(
         toQueryParams
-      )(this.tableSearchParams)
+      )({limit: 9999, offset: 0})
 
       return `https://api.pennsieve.io/models/v2/organizations/655/search/records?${params}`
     },
