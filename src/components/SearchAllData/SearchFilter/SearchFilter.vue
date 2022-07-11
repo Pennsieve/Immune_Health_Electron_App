@@ -520,6 +520,8 @@ export default {
         headers: { Authorization: `Bearer ${this.userToken}`}
       }
       axios.get(url, header).then(({data}) => {
+        // remove the study property since we are only searching through the selected study
+        data = data.filter(property => property.name !== 'study')
         const properties = transformProperties(data)
 
         this.properties = [
