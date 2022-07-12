@@ -145,6 +145,14 @@ export default {
     },
   },
 
+  watch: {
+    searchModalVisible(visible) {
+      if (!visible) {
+        this.executeSearch()
+      }
+    }
+  },
+
   methods: {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'applyFiltersToMetadata']),
 
