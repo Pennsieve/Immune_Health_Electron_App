@@ -10,22 +10,6 @@
     class="data-model-graph"
     element-loading-background="#fff"
   >
-
-    <!-- 
-      Notes: (1) show toolbar on default
-             (2) just bottom 2 are functional
-    -->
-    <data-model-graph-toolbar
-      v-if="showToolbar"
-      @zoom-in="zoomBy(1.2)"
-      @zoom-out="zoomBy(0.8)"
-      @center="center"
-      @fullscreen="fullscreen"
-      @exit-fullscreen="exitFullscreen"
-      @increaseNodes="packingBy(1)"
-      @decreaseNodes="packingBy(-1)"
-    />
-
     <div ref="canvas_wrapper" class="chart-wrapper">
       <canvas ref="mainCanvas" class="mainCanvas"/>
       <canvas ref="hiddenCanvas" class="hiddenCanvas"/>
@@ -56,7 +40,6 @@ import { pathOr, propOr } from 'ramda'
 import debounce from 'lodash/debounce'
 import { mapState, mapActions, mapGetters } from 'vuex'
 
-import DataModelGraphToolbar from './DataModelGraphToolbar/DataModelGraphToolbar.vue'
 //import ModelTooltip from './ModelTooltip/ModelTooltip.vue'
 
 import Request from '@/mixins/request'
@@ -72,8 +55,6 @@ export default {
   name: 'DataGridGraph',
 
   components: {
-    DataModelGraphToolbar,
-    //ModelTooltip
   },
 
   mixins: [
