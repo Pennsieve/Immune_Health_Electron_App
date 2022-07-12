@@ -437,6 +437,7 @@
       },
 
       isOpen: function() {
+        //should create a pennsieve object here
         // Look at the conceptId & instanceId query params and update locate state
         //NOTE: must edit here
         const modelId = pathOr('', ['params', 'conceptId'])(this.$route)
@@ -528,7 +529,7 @@
         // Reset file input
         this.$refs.inputFile.value = ''
       },
-
+      //ON first instance of this, we want to call createManifest(), which will return the newly created manifest ID (for this upload)
       onDrop: function(e) {
         if (this.isAddingFiles) {
           this.handleDataTransfer(e.dataTransfer || e.target).then(() => {
@@ -828,11 +829,7 @@
        * Start uploading stored files
        */
       startUpload: function() {
-        //setting up an instance of the uploads client class
-        //do this whenapp starts
-        //p = new Pennsieve()... or when the menu opens.
-        //NEED ARGS
-        //p.subscribe({})
+        //Here, we subscribe to the channel (NEED ARGS) by calling p.subscribe({}). Check function return, this should provide us with the upload progress for each file.
         //
         //uploadManifest(manifest_id, callback)
 
@@ -884,6 +881,8 @@
 
         // Clear recordId state
         this.recordId = ''
+
+        //WHEN done, we want to unsubscribe w/ p.unsubscribe()
       },
 
 
