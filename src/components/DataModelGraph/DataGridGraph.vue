@@ -129,11 +129,12 @@ export default {
       recordPool: {},   // pool of records ready to be mapped
       recordStack: [],
       canvasSize: {
-        width: 750,
-        height: 400
+        width: 1000,
+        height: 1000
       },
       custom: null,
       numberOfRows: 10,
+      binRegistrySize: 5000,
       binRegistry: [],
       drawTimer:null,
       nrElemPerCol: 10,
@@ -144,15 +145,21 @@ export default {
       groupSpacing: 8,
       modelHeaderHeight: 14,
       nextCol: 1,  // used to generate unique colors for hidden canvas
-      colorToNode: {},  //used to map colors to nodes
+      colorToNode: {},
+      startIndex: 0,  //used to map colors to nodes
       selectedNode: null,
       datasetId: 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc',
-      interestedModels: ['study', 'samples', 'visits', 'patient'],
-      selectedStudyRecords: {
-        'patients': [],
-        'visits': [],
-        'samples': []
-      }
+      interestedModels: [/*'study',*/ 'patient', 'visits', 'samples'],
+      selectedRecordCount: {
+        'patient': 0,
+        'visits': 0,
+        'samples': 0,
+        'files': 0
+      },
+      selectedPatientRecords: [],
+      selectedVisitRecords: [],
+      selectedSampleRecords: [],
+      selectedFileRecords: []
     }
   },
 
@@ -205,6 +212,9 @@ export default {
     },
     recordSpacing: function() {
       return Math.floor((this.cellSize - (2 * this.cellOffset) - this.nrElemPerCol * this.recordSize) / (this.nrElemPerCol - 1))
+    },
+    loadingSelectedStudy: function() {
+      return this.loadingStudyRecords || this.loadingPatientRecords || this.loadingVisitsRecords || this.loadingSamplesRecords
     }
 
 
@@ -231,11 +241,22 @@ export default {
     //}
 
     selectedStudy: function() {
+      console.log(`selectedStudy: ${this.selectedStudy.values[0].value}`)
+      this.updateStudyData()
+    },
+    selectedPatientRecords: function() {
+      this.updateView()
+    },
+    selectedVisitRecords: function() {
+      this.updateView()
+    },
+    selectedSampleRecords: function() {
       this.updateView()
     }
   },
 
   mounted() {
+    console.log(`mounted()`)
     let vm = this
 
 
@@ -243,10 +264,10 @@ export default {
     //   vm.data.push({ value: el });
     // })
 
-    this.canvasSize = {
-      width: 1000,
-      height: 1000
-    }
+    //this.canvasSize = {
+    //  width: 1000,
+    //  height: 1000
+    //}
 
     var mainCanvas = d3.select('.mainCanvas')
       .attr('width', this.canvasSize.width)
@@ -279,6 +300,7 @@ export default {
       var nodeData = vm.colorToNode[colKey];
 
       if (nodeData){
+        console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
         vm.onHoverElement(nodeData, d.clientX, d.clientY)
 
       } else {
@@ -289,7 +311,9 @@ export default {
 
 
 
-    this.getModelData()
+    // this.getModelData()
+    this.loadModelData()
+    this.bindModelData()
     window.addEventListener('resize', this.handleResize.bind(this))
   },
 
@@ -303,7 +327,65 @@ export default {
     ...mapGetters(['userToken']),
     //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
     
-    updateView: function() {
+    loadModelData: function() {
+      console.log(`loadModelData()`)
+      if (!this.userToken()) {
+        return
+      }
+
+      let vm = this
+      this.sendXhr(this.graphUrl, {
+        header: {
+          'Authorization': `Bearer ${this.userToken()}`
+        }
+      })
+        .then(response => {
+          vm.hasData = true
+          vm.isLoading = false
+          vm.modelData = response.filter(x => x.type === 'concept').filter(x => vm.interestedModels.includes(x.displayName))
+        })
+        .catch(this.handleXhrError.bind(this))
+    },
+
+    bindModelData: function() {
+      console.log(`bindModelData()`)
+      var join = this.custom.selectAll('custom.model')
+        .data(this.modelData);
+
+      let vm = this
+      var enterSel = join.enter()
+        .append('custom')
+        .attr('class', 'model')
+        .attr('modelName', function(d) {return d.displayName})
+
+      join
+        .merge(enterSel)
+        .transition()
+        .attr("x", function(d) {
+          let col = Math.floor(d.bins[0] / vm.numberOfRows)
+          return ( vm.cellSize + vm.groupSpacing) * col + vm.xOffset
+        })
+        .attr("y", function(d, i) { // eslint-disable-line no-unused-vars
+          let row = d.bins[0] % vm.numberOfRows
+          return (vm.modelHeaderHeight + vm.cellSize + vm.groupSpacing) * row + vm.yOffset
+        })
+        .attr('width', function(d) {
+          return d.numCols *  vm.cellSize + (d.numCols - 1) * vm.groupSpacing
+        })
+        .attr('height', function(d) {
+          return d.numRows *  vm.cellSize + (d.numRows - 1) * (vm.groupSpacing + vm.modelHeaderHeight)
+        })
+        .attr('strokeStyle', '#34259F')
+        .attr('fillStyle', 'white') //'#34259F')
+        .attr('fillStyleHidden', function(d) {
+          d.hiddenCol = vm.genColor();
+          vm.colorToNode[d.hiddenCol] = d;
+          return d.hiddenCol;
+        })
+
+    },
+
+    updateStudyData: function() {
       var modelList = ['patient','visits','samples'/*,'files'*/];
       // TODO: figure out pagenum
       var pagenum = 0;
@@ -357,27 +439,92 @@ export default {
         }).catch(function (error) {
           console.error(error);
         });
-      })
+      })     
     },
 
     updatePatients: function(data) {
       console.log('updatePatients() data:')
       console.log(data)
-      this.selectedStudyRecords['patients'] = data
+      this.selectedPatientRecords = data
+      this.selectedRecordCount['patient'] = data.length
     },
 
     updateVisits: function(data) {
       console.log('updateVisits() data:')
       console.log(data)
-      this.selectedStudyRecords['visits'] = data
+      this.selectedVisitRecords = data
+      this.selectedRecordCount['visits'] = data.length
     },
 
     updateSamples: function(data) {
       console.log('updateSamples() data:')
       console.log(data)
-      this.selectedStudyRecords['samples'] = data
+      this.selectedSampleRecords  = data
+      this.selectedSampleRecords['samples'] = data.length
     },
 
+    updateView: function() {
+      console.log(`updateView()`)
+
+      this.nextCol = 1 //reset hidden Canvas color scheme
+      this.colorToNode = {}
+      this.startIndex = 0
+      this.recordData = {}
+      this.recordPool = {}
+
+      var vm = this
+      vm.modelData.map(x => {
+        console.log(`updateView() x: ${x.name}`)
+        //some fixed width that we will decide on
+        // TODO: clean up recordCount and x.count (use just one)
+        let recordCount = vm.selectedRecordCount[x.name]
+        console.log(`number of (1) '${x.name}' records: ${recordCount}`)
+        x.count = recordCount
+        console.log(`number of (2) '${x.name}' records: ${x.count}`)
+        let numElem = recordCount < 100 ? recordCount : 100
+        let recs = d3.range(vm.startIndex, vm.startIndex + numElem ).map(function(el) {
+            return {
+              id: el,
+              recordIndex: el-vm.startIndex,
+              parent: x,
+              recordId: null,
+              details: null,
+            }
+          })
+
+          vm.startIndex += numElem
+
+          // Record data is mapped to objects on the canvas
+          vm.recordData[x.id] = {
+            showRecords: false,
+            nodes: recs,
+          }
+
+          // RecordPool is caching all records returned from API.
+          vm.recordPool[x.id] = {
+            isPending: false,
+            nextPage: 0,
+            unMapped: [],
+            records: [],
+          }
+        }
+      )
+
+      vm.binRegistry = Array(vm.binRegistrySize).fill(0)
+      vm.modelData.forEach( x => {
+        [x.bins, x.numRows, x.numCols] = this.findBins(x.id, x.count)
+      })
+
+      this.bindModelData()
+      this.recordbind()
+      var mainCanvas = d3.select('.mainCanvas')
+      var hiddenCanvas = d3.select('.hiddenCanvas')
+      vm.draw(hiddenCanvas, true)
+      this.drawTimer.restart(function(elapsed) {
+        vm.draw(mainCanvas, false);
+        if (elapsed > 600) vm.drawTimer.stop();
+      }) 
+    },
 
     onHoverElement: function(nodeData, x, y) {
       // TODO: remove return
@@ -569,6 +716,7 @@ export default {
 
     },
 
+/*
     modelbind: function() {
       var join = this.custom.selectAll('custom.model')
         .data(this.modelData);
@@ -607,8 +755,9 @@ export default {
 
 
     },
-
+*/
     draw: function(canvas, hidden) {
+      //console.log(`draw() hidden: ${hidden}`)
 
       // MODEL-AREAS)
       var ctx = canvas.node().getContext('2d');
@@ -654,6 +803,7 @@ export default {
 
     },
 
+/*
     getModelData: function() {
       if (!this.userToken()) {
         return
@@ -702,7 +852,7 @@ export default {
             }
           )
 
-          vm.binRegistry = Array(5000).fill(0)
+          vm.binRegistry = Array(vm.binRegistrySize).fill(0)
           vm.modelData.forEach( x => {
             [x.bins, x.numRows, x.numCols] = this.findBins(x.id, x.count)
           })
@@ -720,6 +870,7 @@ export default {
         })
         .catch(this.handleXhrError.bind(this))
     },
+*/
 
     /**
      * Make the chart inactive when the user blurs
@@ -773,7 +924,8 @@ export default {
     },
     packingBy: function(by) {
       this.nrElemPerCol += by
-      this.getModelData()
+      //this.getModelData()
+      this.updateView()
     },
 
     /**
