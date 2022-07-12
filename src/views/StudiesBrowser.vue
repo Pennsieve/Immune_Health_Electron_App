@@ -60,27 +60,18 @@
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
-<<<<<<< HEAD
 import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
-import { mapGetters } from 'vuex'
-=======
 import { mapActions, mapGetters, mapState } from 'vuex'
 import { clone, mergeRight } from 'ramda'
 import { v1 } from 'uuid'
->>>>>>> 4715e9a14103e9f954bcc8cdbc7548a486d714c3
 
 export default {
   name: 'StudiesBrowser',
   components: {
     IhSubheader,
-<<<<<<< HEAD
-    IhButton,
-    BfNavigationSecondary,
-    GraphBrowser
-=======
+    GraphBrowser,
     BfButton,
     BfNavigationSecondary
->>>>>>> 4715e9a14103e9f954bcc8cdbc7548a486d714c3
   },
   mounted() {
     this.setSearchPage('StudiesBrowser')
