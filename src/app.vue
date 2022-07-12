@@ -23,11 +23,14 @@ export default {
     ...mapGetters(['selectedStudy', 'searchModalVisible'])
   },
   methods: {
-    ...mapActions(['fetchSelectedStudyPatientsMetadata']),
+    ...mapActions(['fetchAllPatientsMetadata', 'fetchAllVisitsMetadata', 'fetchAllSamplesMetadata', 'applyFiltersToMetadata']),
   },
   watch: {
-    selectedStudy() {
-      this.fetchSelectedStudyPatientsMetadata()
+    async selectedStudy() {
+      await this.fetchAllPatientsMetadata()
+      await this.fetchAllVisitsMetadata()
+      await this.fetchAllSamplesMetadata()
+      this.applyFiltersToMetadata()
     }
   }
 }
