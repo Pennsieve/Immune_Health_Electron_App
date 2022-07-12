@@ -8,7 +8,7 @@
     </div>
     <span class="title heading1">Penn Immune Health Application</span>
     <span>
-      <ih-button v-on:click="login">
+      <bf-button @click="login">
         <svg-icon
           class="login-icon"
           icon="icon-person"
@@ -22,19 +22,19 @@
         <span v-else>
           {{username}}
         </span>
-      </ih-button>
+      </bf-button>
     </span>
   </div>
 </template>
 
 <script>
-import IhButton from '@/components/shared/IhButton.vue'
+import BfButton from '@/components/shared/BfButton.vue'
 import { mapActions, mapGetters } from 'vuex'
 
 export default {
   name: 'IhHeader',
   components: {
-    IhButton
+    BfButton
   },
   data() {
     return {

@@ -1,7 +1,4 @@
-//import Cookies from 'js-cookie'
 import EventBus from '@/utils/event-bus'
-import Logger from '@/mixins/logger'
-//import LogoutHandler from '../../mixins/logout-handler'
 import { compose, defaultTo, prop, propOr, tryCatch } from 'ramda'
 
 const _isString = (x) => Object.prototype.toString.call(x) === '[object String]'
@@ -15,10 +12,6 @@ const _trimValues = (obj) => {
 }
 
 export default {
-  mixins: [
-    //LogoutHandler,
-    Logger,
-  ],
   data() {
     return {
       method: 'GET',
@@ -85,8 +78,7 @@ export default {
       const status = prop('status', err)
 
       if (status === 400 && err.body) {
-        // eslint-disable-next-line no-unused-vars
-        err.body.getReader().read().then(({ done, value }) => {
+        err.body.getReader().read().then(({ value }) => {
           const strData = value instanceof Uint8Array ? String.fromCharCode.apply(null, value) : value
           const errorMsg = compose(defaultTo(strData), tryCatch(compose(prop('message'), JSON.parse), (_, v) => v))(strData)
           EventBus.$emit('ajaxError', {
@@ -98,7 +90,7 @@ export default {
         })
       } // logout
       else if (status === 401) {
-        //return this.handleLogout()
+        return this.handleLogout()
       } // unauthorized
       // else if (status === 403) {
       //   return this.$router.replace({name: 'datasets-list'})

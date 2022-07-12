@@ -25,14 +25,30 @@
           </div>
         </template>
         <template slot="buttons">
-          <ih-button>
+          <bf-button>
             <router-link to="/file-upload" exact>
               Upload Files
             </router-link>
-          </ih-button>
+          </bf-button>
         </template>
       </ih-subheader>
-      <p>graph browser here</p>
+      <div v-if="Object.keys(selectedStudy).length != 0">
+        <div>
+          <bf-button v-on:click="filterSearch('patient')">
+            Filter Search Patients
+          </bf-button>
+        </div>
+        <div>
+          <bf-button v-on:click="filterSearch('visits')">
+            Filter Search Visits
+          </bf-button>
+        </div>
+        <div>
+          <bf-button v-on:click="filterSearch('samples')">
+            Filter Search Samples
+          </bf-button>
+        </div>
+      </div>
       <div class="graph-browser-container">
         <graph-browser/>
       </div>
@@ -42,22 +58,64 @@
 
 <script>
 import IhSubheader from '@/components/shared/IhSubheader.vue'
-import IhButton from '@/components/shared/IhButton.vue'
+import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
+<<<<<<< HEAD
 import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
 import { mapGetters } from 'vuex'
+=======
+import { mapActions, mapGetters, mapState } from 'vuex'
+import { clone, mergeRight } from 'ramda'
+import { v1 } from 'uuid'
+>>>>>>> 4715e9a14103e9f954bcc8cdbc7548a486d714c3
 
 export default {
   name: 'StudiesBrowser',
   components: {
     IhSubheader,
+<<<<<<< HEAD
     IhButton,
     BfNavigationSecondary,
     GraphBrowser
+=======
+    BfButton,
+    BfNavigationSecondary
+>>>>>>> 4715e9a14103e9f954bcc8cdbc7548a486d714c3
+  },
+  mounted() {
+    this.setSearchPage('StudiesBrowser')
   },
   computed: {
+    ...mapState(['searchModalSearch']),
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
   },
+  methods: {
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage']),
+    filterSearch(model) {
+      const newFilters = clone(this.searchModalSearch.filters)
+      newFilters.push({
+        id: v1(),
+        type: 'model',
+        target: model,
+        targetLabel: model,
+        property: '',
+        propertyLabel: '',
+        propertyType: '',
+        operation: '',
+        operationLabel: '',
+        operators: [],
+        value: '',
+        isInvalid: false,
+        lockTarget: true
+      })
+      const search = mergeRight(this.searchModalSearch, {
+        filters: newFilters,
+        model: model
+      })
+      this.updateSearchModalSearch(search)
+      this.updateSearchModalVisible(true)
+    }
+  }
 }
 </script>
 <style scoped lang="scss">

@@ -5,16 +5,16 @@
         Penn Immune Health Application
       </span>
       <template slot="buttons">
-        <ih-button>
+        <bf-button>
           <a href="http://docs.pennsieve.io" target="_blank">
             Documentation
           </a>
-        </ih-button>
-        <ih-button>
+        </bf-button>
+        <bf-button>
           <a href="http://app.pennsieve.io" target="_blank">
             Visit Pennsieve
           </a>
-        </ih-button>
+        </bf-button>
       </template>
     </ih-subheader>
     <div class="page-content">
@@ -54,13 +54,13 @@
 
 <script>
 import IhSubheader from '@/components/shared/IhSubheader.vue'
-import IhButton from '@/components/shared/IhButton.vue'
+import BfButton from '@/components/shared/BfButton.vue'
 
 export default {
   name: 'IhHome',
   components: {
     IhSubheader,
-    IhButton
+    BfButton
   }
 }
 </script>

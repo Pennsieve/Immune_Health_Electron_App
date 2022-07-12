@@ -1,4 +1,5 @@
-@import './variables';
+@import './element-variables.scss';
+@import './_svg-icon';
 
 html {
   min-width: fit-content;
