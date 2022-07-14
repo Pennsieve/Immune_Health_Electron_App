@@ -1,14 +1,90 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from 'axios'
+import moment from 'moment'
 import { pathOr, propOr, isEmpty } from 'ramda'
-
+import toQueryParams from '@/utils/toQueryParams.js'
 Vue.use(Vuex);
 
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
 const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzAzNjk2YTg5LWRlZWItNDZhOC1hNjA4LWQzNWY4MmJiNjdjMiIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjViMWNkYTk2LWVlZjctNGQ5OC1iZGFlLTRhMzcxZTY1OThiZiIsImV2ZW50X2lkIjoiN2I1ZmNmYTQtOTY0NS00ODUxLWExODYtYzBiYTM2ZjBlODU4IiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1NzY0MTY3MSwiZXhwIjoxNjU3NjQ1MjcxLCJpYXQiOjE2NTc2NDE2NzEsImp0aSI6IjM3MWNlMTE3LWMwMWMtNGU1OS05MmI5LTNiYzZlODNjYTM1YSIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.GHHcaG9qoQYZFjhcpNogWheIpSRkfnaCL7hY4RBzX1euPFcedc8OZFZesTbjEgr2NS_hL50GzgRM38hYoE904G04-JhZ6OqFARZ-3Wm2sO1Fsub2TfNPmNfEuQ2-8pa_xtnzmFbX8NzP4l-ePM4iwd8BJ2-L8Z556Lew7kKFF5mNJnLuZ-nfcwlz65D7vHwJAyXyUXBK5VNAROvwQfr_dDPmFwlkxybF-X5wDLrkLzQ7RTToHfYXCsYFEm80TYOkSh5raKA_0VHYERB-yzO-_f2KrkKede-O9qMx-MtEmD7b6AJ_BWq6OJbwLdjP0EbVyY0SzzRvZy5b6ifuQYPRMw'
 
 const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
+
+const DATASET_ACTIVITY_ALL_CATEGORIES = {
+  value: null,
+  label: 'All Categories',
+}
+
+export const DATASET_ACTIVITY_ALL_CONTRIBUTORS = {
+  value: null,
+  label: 'All Contributors',
+}
+
+const DATASET_ACTIVITY_DATE_RANGE_30 = {
+  value: 30,
+  label: 'Last 30 Days',
+}
+
+/**
+ * Converts the days to a date range
+ * @param {Object} days
+ * @returns {Object}
+ */
+const getActivityDateRange = (days) => {
+  return days
+    ? {
+        startDate: moment().subtract(days, 'days').format('YYYY-MM-DD'),
+        endDate: moment().format('YYYY-MM-DD')
+      }
+    : {}
+}
+
+
+/**
+ * Convert the dataset activity state to query
+ * params for the endpoint request
+ * @param {Object} params
+ * @param {String} apiKey
+ * @returns {String}
+ */
+const getQueryParams = (params, apiKey) => {
+  const dateRange = getActivityDateRange(params.dateRange.value)
+
+  return toQueryParams({
+    api_key: apiKey,
+    orderDirection: params.orderDirection,
+    ...params.category.value && { category: params.category.value}, // Do not add this key if null
+    ...params.userId.value && { userId: params.userId.value}, // Do not add this key if null
+    ...params.cursor && { cursor: params.cursor }, // Do not add this key if null
+    ...dateRange
+  })
+}
+
+
+const initialState = () => ({
+  datasetSearchParams: {
+    limit: 25,
+    offset: 0,
+    query: '',
+    orderBy: 'Name',
+    orderDirection: 'Asc',
+    onlyMyDatasets: false,
+    status: '',
+    withRole: '',
+    collectionId: ''
+  },
+  datasetTotalCount: 0,
+  datasetActivityParams: {
+    cursor: '',
+    orderDirection: 'Asc',
+    category: DATASET_ACTIVITY_ALL_CATEGORIES,
+    dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
+    userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS
+  },
+  isLoadingDatasetActivity: false,
+  datasetActivity: []
+})
 
 //const uploadDestination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:fda8d13c-658f-475a-b90a-cd7a79ef7b87'
 const store = new Vuex.Store({
@@ -22,10 +98,26 @@ const store = new Vuex.Store({
     scientificUnits: [],
     //hardcoded value for testing...random record to link files to'
     datasetId: DATASET_ID,
-    uploadDestination: 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
-
+    dataset: {},
+    uploadDestination: 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4',
+    datasetActivity: [],
+    isLoadingDatasetActivity: false,
+    orgMembers: [],
+    datasetActivityParams: {
+      cursor: '',
+      orderDirection: 'Asc',
+      //If we want to use this feature, make these empty by deafult.
+      category: DATASET_ACTIVITY_ALL_CATEGORIES,
+      dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
+      userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
+    }
   },
   getters: {
+    orgMembers: state => state.orgMembers,
+    getOrgMembers: state => () => state.orgMembers,
+    getOrgMembersById: state => (list) => {
+      return state.orgMembers.filter(member => list.includes(member.id))
+    },
     username (state) {
       const firstName = pathOr('', ['firstName'], state.profile)
       const lastName = pathOr('', ['lastName'], state.profile)
@@ -107,8 +199,119 @@ const store = new Vuex.Store({
     SET_SCIENTIFIC_UNITS (state, data) {
       state.scientificUnits = data
     },
+    UPDATE_DATASET_ACTIVITY_CURSOR(state, cursor) {
+    state.datasetActivityParams.cursor = cursor
+  },
+  UPDATE_DATASET_ACTIVITY_CATEGORY(state, category) {
+    state.datasetActivityParams.category = { ...category }
+  },
+UPDATE_DATASET_ACTIVITY_USER_ID(state, userId) {
+  state.datasetActivityParams.userId = { ...userId }
+},
+UPDATE_DATASET_ACTIVITY_DATE_RANGE(state, dateRange) {
+state.datasetActivityParams.dateRange = { ...dateRange }
+},
+UPDATE_DATASET_ACTIVITY_ORDER_DIRECTION(state, orderDirection) {
+  state.datasetActivityParams.orderDirection = orderDirection
+},
+CLEAR_DATASET_ACTIVITY_STATE(state) {
+const _initialState = initialState()
+
+const clearedState = {
+
+  isLoadingDatasetActivity: _initialState.isLoadingDatasetActivity,
+  //isLoadingDatasetActivity: false,
+  datasetActivity: _initialState.datasetActivity,
+  //datasetActivity: [],
+  datasetActivityParams: _initialState.datasetActivityParams
+  /*
+  datasetActivityParams: {
+    cursor: '',
+    orderDirection: 'Asc',
+    //If we want to use this feature, make these empty by deafult.
+    category: DATASET_ACTIVITY_ALL_CATEGORIES,
+    dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
+    userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
+  }
+  */
+}
+
+Object.keys(clearedState).forEach(key => state[key] = clearedState[key])
+},
+UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
+    state.isLoadingDatasetActivity = isLoading
+  },
+  UPDATE_DATASET_ACTIVITY(state, activity) {
+      state.datasetActivity = activity
+    },
+    UPDATE_ORG_MEMBERS(state, members){
+      state.orgMembers = members
+    },
+    SET_DATASET (state, dataset) {
+        state.dataset = dataset
+        //const profileId = pathOr('', ['profile', 'id'], state)
+        //const datasetId = prop('owner', dataset)
+        //const isDatasetOwner = profileId === datasetId
+        //state.isDatasetOwner = isDatasetOwner
+      },
   },
   actions: {
+    setDataset: ({commit}, evt) => commit('SET_DATASET', evt),
+    updateOrgMembers: ({ commit }, evt) => commit('UPDATE_ORG_MEMBERS', evt),
+    clearDatasetActivityState: ({commit}) => {
+      commit('CLEAR_DATASET_ACTIVITY_STATE')
+    },
+    updateDatasetActivityOrderDirection: ({commit, dispatch}, orderDirection) => {
+      commit('UPDATE_DATASET_ACTIVITY_CURSOR', '')
+      commit('UPDATE_DATASET_ACTIVITY_ORDER_DIRECTION', orderDirection)
+      dispatch('fetchDatasetActivity')
+    },
+    updateDatasetActivityDateRange: ({ commit, dispatch }, dateRange) => {
+      commit('UPDATE_DATASET_ACTIVITY_CURSOR', '')
+      commit('UPDATE_DATASET_ACTIVITY_DATE_RANGE', dateRange)
+      dispatch('fetchDatasetActivity')
+    },
+    updateDatasetActivityUserId: ({ commit, dispatch }, userId) => {
+      commit('UPDATE_DATASET_ACTIVITY_CURSOR', '')
+      commit('UPDATE_DATASET_ACTIVITY_USER_ID', userId)
+      dispatch('fetchDatasetActivity')
+    },
+    fetchDatasetActivity: async ({state, commit}) => {
+    commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', true)
+
+    const datasetId = datasetId
+    //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
+    const endpoint = `https://api.pennsieve.io/datasets/${datasetId}/changelog/timeline`
+    const apiKey = this.userToken
+    //import below from datasetModule.js in utils and uncomment
+    const queryParams = getQueryParams(state.datasetActivityParams, apiKey)
+
+    const url = `${endpoint}?${queryParams}`
+
+    try {
+      const resp = await fetch(url)
+      if (resp.ok) {
+        const { eventGroups, cursor } = await resp.json()
+        const datasetActivity = state.datasetActivityParams.cursor ? [ ...state.datasetActivity, ...eventGroups ] : eventGroups
+        commit('UPDATE_DATASET_ACTIVITY', datasetActivity)
+
+        commit('UPDATE_DATASET_ACTIVITY_CURSOR', cursor)
+      } else {
+        commit('UPDATE_DATASET_ACTIVITY', [])
+        throw new Error(resp.statusText)
+      }
+      commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', false)
+    } catch (err) {
+      //EventBus.$emit('ajaxError', err)
+      commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', false)
+      commit('UPDATE_DATASET_ACTIVITY', [])
+    }
+  },
+    updateDatasetActivityCategory: ({ commit, dispatch }, category) => {
+      commit('UPDATE_DATASET_ACTIVITY_CURSOR', '')
+      commit('UPDATE_DATASET_ACTIVITY_CATEGORY', category)
+      dispatch('fetchDatasetActivity')
+    },
     //add one for setting record linking (upload) destination
     uploadCountAdd: ({ commit }, evt) => commit('UPLOAD_COUNT_ADD', evt),
     updateTotalUploadSize: ({commit}, evt) => commit('UPDATE_TOTAL_UPLOAD_SIZE', evt),

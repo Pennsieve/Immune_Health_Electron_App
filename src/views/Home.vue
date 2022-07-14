@@ -48,6 +48,19 @@
           </router-link>
         </span>
       </div>
+
+    </div>
+    <div>
+    <hr>
+    <br>
+    <h1 class="orgtext">Immune Health Organization Activity</h1>
+        <div v-if="userToken" class="orgtext">
+          <h3>Org activity would be showin'</h3>
+          <!--<org-activity/>-->
+        </div>
+        <div v-else class="orgtext">
+          <h3>Please sign in to view organization activity</h3>
+        </div>
     </div>
   </div>
 </template>
@@ -55,13 +68,22 @@
 <script>
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
+//import OrgActivity from '@/components/OrgActivity/OrgActivity.vue'
+import { mapGetters,
+         //mapActions
+       }
+from 'vuex'
 
 export default {
   name: 'IhHome',
   components: {
     IhSubheader,
-    BfButton
-  }
+    BfButton,
+    //OrgActivity
+  },
+  computed: {
+    ...mapGetters(['userToken','datasetId'])
+  },
 }
 </script>
 <style scoped lang="scss">
@@ -88,5 +110,9 @@ export default {
 }
 .subheader {
   padding: 1rem 4rem !important;
+}
+.orgtext {
+  padding: 0 2rem;
+  color: #2f26ad;
 }
 </style>
