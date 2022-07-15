@@ -226,7 +226,7 @@ export default {
 
   mounted () {
     this.clearDatasetActivityState()
-    this.fetchDatasetActivity(),
+    this.fetchDatasetActivity()
      /*
      used in BfPage
      function() {
@@ -248,6 +248,7 @@ export default {
     this.$el.removeEventListener('scroll', this.onScroll)
   },
   */
+  },
 
   methods: {
     //can likely omit datset module
@@ -280,7 +281,7 @@ export default {
       this.sendXhr(this.getDatasetUsersUrl)
         .then(datasetUsers => {
           this.datasetUsers = datasetUsers
-        }
+        })
         .catch(() => {
           this.datasetUsers = []
         })
