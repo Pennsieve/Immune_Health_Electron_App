@@ -8,7 +8,7 @@
   >
     <bf-dialog
       :title="dialogTitle"
-      :open="isOpen"
+      :open="open"
       @close="onClose"
       @overlay-click="onOverlayClick"
     >
@@ -328,9 +328,15 @@
     //FileIcon
     ],
 
+    props: {
+      open: {
+        type: Boolean,
+        default: false
+      }
+    },
+
     data: function() {
       return {
-        isOpen: false,
         isDragging: false,
         showInfo: false,
         droppedFiles: [],
@@ -491,12 +497,12 @@
        * Close dialog callback
        */
       onClose: function() {
-        this.isOpen = false
         this.errorPreflight = ''
         this.showInfo = false
         this.modelId = ''
         this.recordId = ''
         this.clearUploadedFiles()
+        this.$emit('close-upload-dialog')
       },
 
       onOverlayClick: function() {

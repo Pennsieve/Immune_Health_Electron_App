@@ -1,17 +1,3 @@
-/* eslint-disable */
-/* Complete files table:
-<files-table
-  v-if="hasFiles"
-  :data="files"
-  :multiple-selected="multipleSelected"
-  @move="showMove"
-  @delete="showDelete"
-  @process="processFile"
-  @copy-url="getPresignedUrl"
-  @selection-change="setSelectedFiles"
-  @click-file-label="onClickLabel">
-</files-table>
-*/
 <template>
   <div class="container">
     <span class="sidebar-container">
@@ -65,8 +51,9 @@
           -->
 
           <bf-upload
-          :open="isOpen"
+          :open.sync="uploadDialogOpen"
           :isAddingFiles = "isAddingFiles"
+          @close-upload-dialog = "closeUploadDialog"
           />
 
           <bf-drop-info
@@ -146,9 +133,9 @@ export default {
       sortDirection: 'asc',
       singleFile: {},
       isLoading: false,
-      isOpen: false,
       isAddingFiles: false,
-      hasFiles: true
+      hasFiles: true,
+      uploadDialogOpen: false
     }
   },
   mounted: function () {
@@ -180,7 +167,7 @@ export default {
     // command is arg
     onUploadMenuClick: function(){
       console.log('launching upload menu')
-      this.isOpen = true;
+      this.uploadDialogOpen = true;
       //this.$emit('upload-menu-click', file)
       EventBus.$emit('open-uploader', true);
       /*
@@ -194,6 +181,22 @@ export default {
         handler()
       }
       */
+    },
+
+    closeUploadDialog: function() {
+      this.uploadDialogOpen = false;
+    },
+
+    processFile: function() {
+      console.log("processFile()")
+    },
+
+    getPresignedUrl: function() {
+      console.log("getPresignedUrl()")
+    },
+
+    onClickLabel: function() {
+      console.log("onClickLabel()")
     },
 
     setPlaceholder: function(){

@@ -6,9 +6,9 @@
     <div class="bf-dialog-wrap">
       <div class="bf-dialog-header">
         <h2>{{ title }}</h2>
-        <iron-icon
+        <svg-icon
           class="icon-close"
-          icon="blackfynn:close"
+          icon="icon-remove"
           @click="close"
         />
       </div>
