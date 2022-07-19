@@ -57,6 +57,9 @@
           class="mb-48"
           :search-criteria="searchModalSearch"
           :show-search-results="showSearchResults"
+          :show-download-results=false
+          :show-dataset-column=false
+          :show-menu-column=false
           :table-search-params="tableSearchParams"
           @reset-search-params="resetSearchParams"
         />
@@ -146,10 +149,9 @@ export default {
   },
 
   watch: {
-    searchModalVisible(visible) {
-      if (!visible) {
-        this.executeSearch()
-      }
+    searchModalVisible() {
+      // execute the search whenever the modal is closed or opened
+      this.executeSearch()
     }
   },
 
@@ -159,26 +161,21 @@ export default {
     /**
      * Resets table search params for pagination
      */
-    resetSearchParams: function(buttonVal) {
+    resetSearchParams: function() {
       this.tableSearchParams = {
         limit: 25,
         offset: 0
       }
       this.$nextTick(() => {
-        if (buttonVal === 'Files') {
-          this.$refs.searchResults.fetchFiles()
-        } else {
-          this.$refs.searchResults.fetchRecords()
-        }
+        this.$refs.searchResults.fetchRecords()
       })
     },
 
     /**
      * Execute search based on search criteria
      */
-    executeSearch: function() {
+    executeSearch: async function() {
       const isSearchInvalid = this.validateSearch()
-
       if (isSearchInvalid) { return }
 
       if (this.searchPage === 'FileUpload') {
@@ -187,12 +184,12 @@ export default {
           limit: 25,
           offset: 0
         },
+        await this.applyFiltersToMetadata()
         this.$nextTick(() => {
-          this.$refs.searchResults.fetchFiles()
           this.$refs.searchResults.fetchRecords()
         })
       } else {
-        this.applyFiltersToMetadata()
+        await this.applyFiltersToMetadata()
       }    
     },
 
@@ -287,10 +284,10 @@ export default {
     deleteFilter: function(idx) {
       this.searchModalSearch.filters.splice(idx, 1)
       this.updateSearchModalSearch(clone(this.searchModalSearch))
-
       if (this.searchModalSearch.filters.length === 0) {
         this.addFilter()
       }
+      this.executeSearch()
     },
 
     /**
@@ -319,6 +316,8 @@ export default {
       // we can just hide the table since the result arrays are reset when making
       // a new call to get results
       this.showSearchResults = false
+
+      this.executeSearch()
     },
   }
 }

@@ -16,6 +16,11 @@
           </bf-button>
         </template>
       </ih-subheader>
+      <div>
+        <bf-button v-on:click="updateSearchModalVisible(true)">
+          Select Upload Target
+        </bf-button>
+      </div>
     </span>
   </div>
 </template>
@@ -37,7 +42,7 @@ export default {
     this.setSearchPage('FileUpload')
   },
   methods: {
-    ...mapActions(['setSearchPage'])
+    ...mapActions(['setSearchPage', 'updateSearchModalVisible'])
   },
   computed: {
     ...mapGetters(['allStudies', 'selectedStudyName'])
