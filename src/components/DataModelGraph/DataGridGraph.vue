@@ -96,6 +96,7 @@ export default {
       type: Boolean,
       default: false
     }
+    /*NOTE: add props for the filteredx... that will be returned by the search in the parent component*/
   },
 
   data() {
@@ -140,12 +141,16 @@ export default {
       selectedPatientRecords: [],
       selectedVisitRecords: [],
       selectedSampleRecords: [],
-      selectedFileRecords: []
+      selectedFileRecords: [],
+      participantsPage: 0,
+      visitsPage: 0,
+      samplesPage: 0,
+      filesPage: 0
     }
   },
 
   computed: {
-    //will get whenever updated or changed
+    //will get whenever updated or changed. NOTE, we are just storing the model data in the component now
     ...mapState([
       'relationshipTypes',
       'config',
@@ -233,7 +238,22 @@ export default {
     },
     selectedSampleRecords: function() {
       this.updateView()
-    }
+    },
+    //will be in component data
+    filteredPatientsMetadata: function(){
+      renderAfterFilter('patients', filteredPatientsMetadata)
+    },
+    filteredVisitsMetadata: function(){
+      renderAfterFilter('visits', filteredVisitsMetadata)
+    },
+    filteredSamplesMetadata: function(){
+      renderAfterFilter('samples', filteredSamplesMetadata)
+    },
+    /*
+    filteredFilesMetadata: function(){
+      ...
+    },
+    */
   },
 
   mounted() {
@@ -288,7 +308,33 @@ export default {
         vm.hideModelTooltip()
       }
 
-    }); // canvas listener/handler
+    }
+    //when an element is clicked, get its data and if it is a prev/ next, call appropriate function
+    d3.select('.mainCanvas').on('click', function(d) {
+      //draw the hidden canvas, and get the properties of the thing you clicked on (set elsewhere)
+      vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
+      // Get mouse positions from the main canvas.
+      const cCoord = this.getBoundingClientRect();
+      const mouseY = d.clientY - cCoord.top;
+      const mouseX = d.clientX - cCoord.left;
+
+      var hiddenCtx = hiddenCanvas.node().getContext('2d');
+      var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
+      var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+      var nodeData = vm.colorToNode[colKey];
+      //if has data
+      if (nodeData){
+      if (d.prev){
+        console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        //if currently clicking prev model attr
+        advancePage(d.displayName, prev);
+    } else {
+      console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+      advancePage(d.displayName, next);
+    }
+      }
+    }
+  ); // canvas listener/handler
 
 
 
@@ -304,10 +350,136 @@ export default {
   },
 
   methods: {
+    //will not use these map actions since all data will be within component
     ...mapActions(['setAllParticipants','setAllVisits','setAllSamples']), //include set all files potentially
     ...mapGetters(['userToken']),
-    //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
-    
+
+    setAllRelatedFilter: function(modelname, startrecord, targetmodel, pagenumber){
+        //need to reset the pages for all models
+        this.participantsPage = pagenumber;
+        this.visitsPage = pagenumber;
+        this.samplesPage = pagenumber;
+        this.filesPage =  pagenumber;
+        var pagenum = pagenumber;
+        var offset = 0;
+        var orderBy = '';
+          switch (targetmodel) {
+            case 'patient':
+                orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
+                break;
+            case 'visits':
+                orderBy = 'event date and time'
+                break;
+            case 'samples':
+                orderBy = 'study sample ID';
+                break;
+            case 'files':
+                console.log('nothing for files yet');
+          }
+          const options = {
+              method: 'GET',
+              url: `https://api.pennsieve.io/models/v1/datasets/%2FN%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${modelname}/instances/${startrecord}/relations/${targetmodel}`,
+              params: {
+                  limit: '100',
+                  offset: `${offset}`,
+                  recordOrderBy: `${orderBy}`,'externalparticipantid'
+                  ascending: 'true',
+                  includeIncomingLinkedProperties: 'false'
+                },
+                headers: {
+                  Accept: 'application/json',
+                  Authorization: `${this.userToken}`
+                }
+              };
+          axios.request(options).then(function (response) {
+              console.log(response.data);
+              }).catch(function (error) {
+              console.error(error);
+              });
+          //return should be an array of record objects
+          return Object.values(response.data);
+
+      },
+
+    renderAfterFilter: function(model,filter_results){
+      //sets the model that was filtered
+      switch(model){
+        case 'patient':
+          this.selectedPatientRecords = filter_results
+          this.selectedRecordCount['patient'] = filter_results.length
+        break;
+        case 'visits':
+          this.selectedVisitRecords = filter_results
+          this.selectedRecordCount['visit'] = filter_results.length
+        break;
+        case 'samples':
+          this.selectedSampleRecords = filter_results
+          this.selectedRecordCount['samples'] = filter_results.length
+        break;
+        case 'files':
+          /*
+          this.selectedFileRecords = filter_results
+          this.selectedRecordCount['files'] = filter_results.length
+          */
+      }
+      //array of records that will be set in the store after iteration
+      var temp_p_arr = [];
+      var temp_v_arr = [];
+      var temp_s_arr = [];
+      var temp_f_arr = [];
+      //need to look at objects returned in list (id'd by either name or displayname)...
+      //we are assuming that the model name is heterogeneous here
+      var ex_list = ['patient','visits','samples','files'];
+      let ex_list2 = ex_list.filter(function(value) {
+        return value != model; });
+        //for each element of the filtered result list, get the related records of each other model type
+        for (var y = 0; y <filter_results.length; y++){
+          ex_list2.forEach((x, i) =>
+          switch(x){
+            case 'patient':
+              temp_p_arr.push(setAllRelatedFilter(model,filter_results[y],'patient',0);)
+            break;
+            case 'vist':
+              temp_v_arr.push(setAllRelatedFilter(model,filter_results[y],'visits',0);)
+            break;
+            case 'sample':
+              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'samples',0);)
+            break;
+            case 'file':
+              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'files',0);)
+          }
+          );
+        }
+      }
+      }
+      //eliminating duplicates in each array and setting variables
+      // and (optionally) filter duplicates.
+      //here we don't want to overwrite the model that we're filtering by. Check this
+      if(model != 'patient'){
+        let filtered_p_arr = temp_p_arr.filter((c, index) => {return temp_p_arr.indexOf(c) === index;});
+        //NOTE:beforte doing this, check what type of date this setter expects
+        this.selectedPatientRecords = filtered_p_arr
+        this.selectedRecordCount['patient'] = filtered_p_arr.length
+      }
+      if (model != 'visit'){
+        let filtered_v_arr = temp_v_arr.filter((c, index) => {return temp_v_arr.indexOf(c) === index;});
+        this.selectedVisitRecords = filtered_v_arr
+        this.selectedRecordCount['visits'] = filtered_v_arr.length
+      }
+      if (model != 'sample'){
+        let filtered_s_arr = temp_s_arr.filter((c, index) => {return temp_s_arr.indexOf(c) === index;});
+        this.selectedSampleRecords = filtered_s_arr
+        this.selectedRecordCount['samples'] = filtered_s_arr.length
+      }
+      if (model != 'file'){
+        let filtered_f_arr = temp_f_arr.filter((c, index) => {return temp_f_arr.indexOf(c) === index;});
+        /*
+        this.selectedFileRecords = filtered_f_arr
+        this.selectedRecordCount['files'] = filtered_f_arr.length
+        */
+      }
+    },
+
     loadModelData: function() {
       console.log(`loadModelData()`)
       if (!this.userToken()) {
@@ -329,6 +501,7 @@ export default {
     },
 
     bindModelData: function() {
+      //NOTE: add in a section which binds creates 2 rectangles per model next to text, and gives first one prev attr, second one next attr
       console.log(`bindModelData()`)
       var join = this.custom.selectAll('custom.model')
         .data(this.modelData);
@@ -366,7 +539,18 @@ export default {
 
     },
 
+    //clears record data for each model each time a new study is chosen (hopefully gets rid of residual record issue)
+    clearRecordData: function() {
+      this.selectedPatientRecords = []
+      this.selectedRecordCount['patient'] = 0
+      this.selectedVisitRecords = []
+      this.selectedRecordCount['visits'] = 0
+      this.selectedSampleRecords  = []
+      this.selectedSampleRecords['samples'] = 0
+    },
+
     updateStudyData: function() {
+      clearRecordData()
       var modelList = ['patient','visits','samples'/*,'files'*/];
       // TODO: figure out pagenum
       var pagenum = 0;
@@ -420,7 +604,7 @@ export default {
         }).catch(function (error) {
           console.error(error);
         });
-      })     
+      })
     },
 
     updatePatients: function(data) {
@@ -504,8 +688,121 @@ export default {
       this.drawTimer.restart(function(elapsed) {
         vm.draw(mainCanvas, false);
         if (elapsed > 600) vm.drawTimer.stop();
-      }) 
+      })
     },
+  //updates model view according to current page. NOTE: add in logic for orderBy next
+  updatePage: function(modelName, modelPage, orderBy, direction){
+    //can't go back before the first page
+    if (modelPage >= 0) {
+      var vm = this;
+      if (direction == 'next') {
+        this.modelPage++;
+        var pagenum = modelPage;
+        var offset = 100*pagenum;
+        const options = {
+          method: 'GET',
+          url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
+          params: {
+              limit: '100',
+              offset: `${offset}`
+            },
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${vm.userToken()}`
+            }
+          };
+          axios.request(options).then(function (response) {
+          switch (modelName){
+              case 'patient':
+                  //verify data is in a list, if not, put it in one before sending off
+                  vm.updatePatients(response.data);
+                  break;
+              case 'visits':
+                  vm.updateVisits(response.data);
+                  break;
+              case 'samples':
+                  vm.updateSamples(response.data);
+                  break;
+              case 'files':
+                  console.log('nothing for files yet');
+            }
+        }).catch(function (error) {
+          console.error(error);
+        });
+      }
+      //direction is prev
+      else {
+        this.modelPage--;
+        var pagenum = modelPage;
+        var offset = 100*pagenum;
+        method: 'GET',
+        url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
+        params: {
+            limit: '100',
+            offset: `${offset}`
+          },
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${vm.userToken()}`
+          }
+        };
+        axios.request(options).then(function (response) {
+          switch (modelName){
+              case 'patient':
+                  //verify data is in a list, if not, put it in one before sending off
+                  vm.updatePatients(response.data);
+                  break;
+              case 'visits':
+                  vm.updateVisits(response.data);
+                  break;
+              case 'samples':
+                  vm.updateSamples(response.data);
+                  break;
+              case 'files':
+                  console.log('nothing for files yet');
+            }
+        }).catch(function (error) {
+          console.error(error);
+        });
+      }
+    }
+  },
+
+  //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
+  //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
+  //NOTE: NEED TO ACCOUNT FOR THE CASE WHERE THIS IS FILTERED. MUST MAKE A MODIFIED CALL TO renderAfterFilter()
+  advancePage: function(modelName, direction) {
+    var orderBy = ''
+    var modelPage = ''
+    switch (modelName) {
+      case 'patient':
+          orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
+          modelPage = 'participantsPage';
+          //clearing model data before updating
+          this.selectedPatientRecords = [];
+          this.selectedRecordCount['patient'] = 0;
+          updatePage('patient', modelPage, orderBy, direction);
+          break;
+      case 'visits':
+          orderBy = 'event date and time';
+          modelPage = 'visitsPage';
+          this.selectedVisitRecords = [];
+          this.selectedRecordCount['visits'] = 0;
+          updatePage('visits', modelPage, orderBy, direction);
+          break;
+      case 'samples':
+          orderBy = 'study sample ID';
+          modelPage = 'samplesPage';
+          this.selectedSampleRecords  = [];
+          this.selectedSampleRecords['samples'] = 0;
+          updatePage('samples', modelPage, orderBy, direction);
+          break;
+      case 'files':
+          modelPage = 'filesPage';
+          console.log('nothing for files yet');
+          updatePage('files', modelPage, orderBy, direction);
+    }
+  },
 
     onHoverElement: function(nodeData, x, y) {
       // TODO: remove return
@@ -641,11 +938,11 @@ export default {
         })
     },
 
-    
+
     getRecordData: function() {
       let nodes = []
       // eslint-disable-next-line no-unused-vars
-      for (const [key, value] of Object.entries(this.recordData)) { 
+      for (const [key, value] of Object.entries(this.recordData)) {
         // if (value.showRecords) {
           nodes = nodes.concat(value.nodes)
         // }
@@ -765,10 +1062,21 @@ export default {
           let xCoord = parseInt(node.attr('x')) + 2
           let yCoord = parseInt(node.attr('y')) - 5
           let displayName = node.attr('modelName')
+          displayName = displayName.substring()
           if (displayName.length > 10) {
             displayName = displayName.substring(0, 10) + "..."
           }
           ctx.fillText(displayName, xCoord, yCoord);
+          //creating text for pagination
+          ctx.font = '12px "Helvetica Neue"';
+          let xCoordPrev = parseInt(node.attr('x')) + 50
+          let yCoordPrev = parseInt(node.attr('y')) - 5
+          let pageTxtPrev = "< Previous"
+          let xCoordNext = xCoordPrev + 70
+          let yCoordNext = parseInt(node.attr('y')) - 5
+          let pageTxtNext = "Next >"
+          ctx.fillText(pageTxtPrev, xCoordPrev, yCoordPrev);
+          ctx.fillText(pageTxtNext, xCoordNext, yCoordNext);
         }
       })
 

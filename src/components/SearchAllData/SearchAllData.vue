@@ -73,9 +73,9 @@ import {
 } from 'vuex'
 import {
   clone,
-  compose, 
-  includes, 
-  props, 
+  compose,
+  includes,
+  props,
   propEq,
   mergeRight
 } from 'ramda'
@@ -193,7 +193,7 @@ export default {
         })
       } else {
         this.applyFiltersToMetadata()
-      }    
+      }
     },
 
     /**
@@ -272,7 +272,7 @@ export default {
         isInvalid: false,
         lockTarget: true
       }
-      this.searchModalSearch.filters.push(newFilter)      
+      this.searchModalSearch.filters.push(newFilter)
       this.updateSearchModalSearch(clone(this.searchModalSearch))
 
       this.$nextTick(() => {

@@ -52,6 +52,9 @@
       <div class="graph-browser-container">
         <graph-browser/>
       </div>
+      <bf-button @click="ClearAllSelections()">
+          Clear selection
+        </bf-button>
     </span>
   </div>
 </template>
@@ -82,6 +85,9 @@ export default {
   },
   methods: {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage']),
+    ClearAllSelections: function(){
+      //clear all the clicked records for all models
+    },
     filterSearch(model) {
       const newFilters = clone(this.searchModalSearch.filters)
       newFilters.push({

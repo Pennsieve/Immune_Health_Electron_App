@@ -6,7 +6,7 @@ import { compose, pathOr, propOr, isEmpty } from 'ramda'
 Vue.use(Vuex);
 
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
-const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI4NDQ3NWU5NS1kNGYyLTQxNDItOTJlYS03OWQzN2NiODliMTQiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xX2I2MmJjNmZlLTFhZDMtNDU2Yi05YTk0LTZmMGYwZjgwNGZkMSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6ImMxOGUyMzU4LTc3NzAtNGRiNC1hNjY5LTM5OGI3ODM2YjlkNCIsImV2ZW50X2lkIjoiZDAyMjc5YmItOTgzOC00MjU0LTlkZWQtNDQ1NjJlOGI0OWMzIiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1NzY0ODk2NiwiZXhwIjoxNjU3NjUyNTY2LCJpYXQiOjE2NTc2NDg5NjYsImp0aSI6IjIzNmM5MGMyLWJjNDctNDJmZS1iMmZiLWMxNjQ5NzU0MzAzYiIsInVzZXJuYW1lIjoiODQ0NzVlOTUtZDRmMi00MTQyLTkyZWEtNzlkMzdjYjg5YjE0In0.IoBcjFiQBvkltsx7PFFHm7f48_z7UHxmfuPaAxlt_nrDf5HAy81pIxxHisBUhebic1-a_TcfRlZQ_kFJF8ZewYKPXYkNz8yqw0zYOEiYieiagQGgBcsZlAkfaR-wFhN-YkXm3Jjjh_uv_d6n0O3DdAnkmdcyrMaFIziZIt22rOVEs86X9J8i4JrRHzmWRWWrlaaaswqo_82-cUdq3yfS9dEhdrsNMyf7m14aZzLpRhlkp8U76Qm84wcmhmHXXEWi_MR7B4M37JTPzN-tNgwa-aHr9azk0UeTd5wKgQ8QE5y6cNsShk0rnFT2ylXMCkmamzDYpyqCL51c2G7rV1OHNA'
+const API_KEY = ''
 
 const header = {
   headers: { Authorization: `Bearer ${API_KEY}`}
@@ -31,7 +31,7 @@ const getQuery = async (model, searchCriteria) => {
   const relevantModels = await axios.get(relevantModelsUrl, header).then(({data}) => {
     return data.models.map((model) => { return model['name'] })
   })
-  
+
   filters.forEach(filter => {
     /**
      * Only add filter if the target exists
@@ -63,7 +63,7 @@ const store = new Vuex.Store({
     selectedStudy: {},
     searchModalVisible: false,
     searchModalSearch: {
-      isModelInvalid: false, 
+      isModelInvalid: false,
       filters: [],
       model: ''
     },
@@ -210,14 +210,14 @@ const store = new Vuex.Store({
       const samplesStudyMetadataUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances/${selectedStudyId}/relations/samples?includeIncomingLinkedProperties=true`
       await axios.get(samplesStudyMetadataUrl, header).then(response => {
         commit('SET_ALL_SAMPLES_METADATA', response.data)
-      }) 
+      })
     },
     async applyFiltersToMetadata({ commit, state }) {
       const toQueryParams = (params) => Object.keys(params).map(key => key + '=' + params[key]).join('&');
       const params = compose(
         toQueryParams
       )({limit: 25, offset: 0})
-      
+
       const filteredRecordsUrl = `https://api.pennsieve.io/models/v2/organizations/655/search/records?${params}`
 
       // if there are no valid filters then return all metadata
@@ -233,7 +233,7 @@ const store = new Vuex.Store({
           // Filter by selected study
           filteredVisitsRecords = filteredVisitsRecords.filter(record => record.values['study'] === getStudyName(state.selectedStudy))
           commit('SET_FILTERED_VISITS_METADATA', filteredVisitsRecords)
-        }) 
+        })
 
         const patientsQuery = await getQuery('patient', state.searchModalSearch)
 
@@ -251,7 +251,7 @@ const store = new Vuex.Store({
           // Filter by selected study
           filteredSamplesRecords = filteredSamplesRecords.filter(record => record.values['study'] === getStudyName(state.selectedStudy))
           commit('SET_FILTERED_SAMPLES_METADATA', filteredSamplesRecords)
-        })     
+        })
       }
     },
     updateSearchModalVisible({ commit }, data) {
