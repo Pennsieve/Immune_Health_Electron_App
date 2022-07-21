@@ -70,13 +70,20 @@
 
 <script>
 /* eslint-disable */
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 
 import RecordsTable from './RecordsTable/RecordsTable.vue'
 import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
 
 import Request from '@/mixins/request/index'
 import FormatDate from '@/mixins/format-date'
+
+import { mergeRight } from 'ramda'
+
+import { 
+  fetchFilteredVisitsMetadataRelatedToStudy, 
+  fetchFilteredSamplesMetadataRelatedToStudy 
+} from '@/utils/fetchRecords'
 
 export default {
   name: 'SearchResults',
@@ -151,8 +158,8 @@ export default {
   },
 
   computed: {
-    ...mapState(['filteredVisitsMetadata', 'filteredSamplesMetadata', 'visitsTableHeadings', 'samplesTableHeadings']),
-
+    ...mapState(['selectedStudy', 'searchModalSearch']),
+    ...mapGetters(['userToken']),
     /**
      * Returns the current page postion for files table in pagination ticker
      * @returns {Number}
@@ -204,35 +211,40 @@ export default {
   },
 
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'setUploadTarget']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setLinkingTarget']),
 
     /**
      * Fetches record search results
      */
-    fetchRecords: function() {
-      const records = this.selectedButton === 'Visits' ? this.filteredVisitsMetadata : this.filteredSamplesMetadata
-      const headings = this.selectedButton === 'Visits' ? this.visitsTableHeadings : this.samplesTableHeadings
-      this.tableResultsTotalCount = records.length
-      this.recordHeadings = headings
-      this.recordResults = records
+    fetchRecords: async function() {
+      const metadata = this.selectedButton === 'Visits' ? 
+        await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset) : 
+        await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
+      // TODO: Figure out how to calculate total (records.length is incorrect)
+
+      this.tableResultsTotalCount = metadata.totalCount
+      this.recordHeadings = metadata.headings
+      this.recordResults = metadata.records
     },
 
     /**
      * Updates file search limit based on pagination selection
-     * @param {Nunber} limit
+     * @param {Nunber} newLimit
      */
-    updateTableSearchLimit: function(limit) {
-      this.tableSearchParams.limit = limit
-      this.fetchRecords()
+    updateTableSearchLimit: async function(newLimit) {
+      const newSearch = mergeRight(this.searchModalSearch, { limit: newLimit })
+      this.updateSearchModalSearch(newSearch)
+      await this.fetchRecords()
     },
 
     /**
      * Update pagination offset
      */
-    onPaginationPageChange: function(page) {
-      const offset = (page - 1) * this.tableSearchParams.limit
-      this.tableSearchParams.offset = offset
-      this.fetchRecords()
+    onPaginationPageChange: async function(page) {
+      const newOffset = (page - 1) * this.tableSearchParams.limit
+      const newSearch = mergeRight(this.searchModalSearch, { offset: newOffset })
+      this.updateSearchModalSearch(newSearch)
+      await this.fetchRecords()
     },
 
     /**
@@ -240,8 +252,8 @@ export default {
      * @param {Object} record
      */
     navigateToRecord: function(record) {
-      // Set the upload target when record is clicked
-      this.setUploadTarget(record)
+      // Set the target when record is clicked
+      this.setLinkingTarget(record)
       this.updateSearchModalVisible(false)
     },
   }

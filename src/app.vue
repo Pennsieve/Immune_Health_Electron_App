@@ -23,15 +23,12 @@ export default {
     ...mapGetters(['selectedStudy', 'searchModalVisible'])
   },
   methods: {
-    ...mapActions(['fetchAllPatientsMetadata', 'fetchAllVisitsMetadata', 'fetchAllSamplesMetadata', 'applyFiltersToMetadata', 'setUploadTarget']),
+    ...mapActions(['setLinkingTarget']),
   },
   watch: {
     async selectedStudy() {
-      await this.fetchAllPatientsMetadata()
-      await this.fetchAllVisitsMetadata()
-      await this.fetchAllSamplesMetadata()
-      await this.applyFiltersToMetadata()
-      this.setUploadTarget({})
+      // Clear the linking target when we change what study is selected
+      this.setLinkingTarget({})
     }
   }
 }
