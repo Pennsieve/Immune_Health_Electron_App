@@ -18,7 +18,6 @@
         class="mb-16"
         :models="modelsList"
         @delete-filter="deleteFilter"
-        @enter="executeSearch"
       />
 
       <div class="mb-24">
@@ -37,16 +36,24 @@
 
       <div class="filter-actions mb-48">
         <bf-button
+          v-if="searchPage === 'FileUpload'"
           class="btn-search"
           @click="executeSearch"
         >
           Search
         </bf-button>
         <bf-button
+          v-else
+          class="btn-search"
+          @click="closeDialog"
+        >
+          Apply Filters
+        </bf-button>
+        <bf-button
           class="secondary"
           @click="clearAll"
         >
-          Clear All
+          Clear All Filters
         </bf-button>
       </div>
 
@@ -127,17 +134,12 @@ export default {
     return {
       showSearchResults: false,
       allModels: [],
-      tableSearchParams: {
-        limit: 25,
-        offset: 0
-      },
       modelsList: MODELS_LIST
     }
   },
 
   computed: {
     ...mapState([
-      'searchModalVisible',
       'searchModalSearch',
       'searchPage'
     ]),
@@ -146,12 +148,12 @@ export default {
     title: function() {
       return `Search study: ${this.selectedStudyName}`
     },
-  },
 
-  watch: {
-    searchModalVisible() {
-      // execute the search whenever the modal is closed or opened
-      this.executeSearch()
+    tableSearchParams: function() {
+      return {
+        limit: this.searchModalSearch.limit,
+        offset: this.searchModalSearch.offset
+      }
     }
   },
 
@@ -162,12 +164,10 @@ export default {
      * Resets table search params for pagination
      */
     resetSearchParams: function() {
-      this.tableSearchParams = {
-        limit: 25,
-        offset: 0
-      }
-      this.$nextTick(() => {
-        this.$refs.searchResults.fetchRecords()
+      const newSearch = mergeRight(this.searchModalSearch, { limit: 25, offset: 0 })
+      this.updateSearchModalSearch(newSearch)
+      this.$nextTick(async () => {
+        await this.$refs.searchResults.fetchRecords()
       })
     },
 
@@ -180,17 +180,8 @@ export default {
 
       if (this.searchPage === 'FileUpload') {
         this.showSearchResults = true
-        this.tableSearchParams = {
-          limit: 25,
-          offset: 0
-        },
-        await this.applyFiltersToMetadata()
-        this.$nextTick(() => {
-          this.$refs.searchResults.fetchRecords()
-        })
-      } else {
-        await this.applyFiltersToMetadata()
-      }    
+        this.resetSearchParams()
+      }  
     },
 
     /**
