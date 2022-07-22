@@ -1,7 +1,7 @@
 <template>
   <div class="files-table">
     <div
-      v-if="selection.length > 0"   
+      v-if="selection.length > 0"
       class="selection-menu-wrap mb-16"
     >
       <el-checkbox

@@ -82,7 +82,7 @@ export default {
 
 <style scoped lang="scss">
 
-@import '../../shared/MarkdownEditor/_markdown.scss';
+//@import '../../shared/MarkdownEditor/_markdown.scss';
 
 /deep/ .el-dialog__body {
   max-height: 500px;

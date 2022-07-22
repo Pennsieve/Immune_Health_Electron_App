@@ -86,9 +86,13 @@ export default {
      } else if (Array.isArray(value)) {
       const formatter = getFormatter(dataType)
       return value.map(v => formatter(v)).join(', ')
-     } else if (dataType.hasOwnProperty('unit')) {
+     }
+     /*
+     else if (dataType('unit')) {
        return this.formatScientificUnitValues(dataType, value, dataType.unit)
-     } else {
+     }
+     */
+     else {
        return this.formatSingleValue(dataType, value)
      }
 

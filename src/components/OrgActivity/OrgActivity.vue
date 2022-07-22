@@ -19,7 +19,6 @@
             class="mr-24"
             :options="datasetCategoryOptions"
             :selected-option="datasetActivityParams.category"
-            //will just get all
             @select="updateDatasetActivityCategory"
           />
 
@@ -75,10 +74,10 @@
 
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex'
-import Cookies from 'js-cookie'
+//import Cookies from 'js-cookie'
 import { DATASET_ACTIVITY_ALL_CATEGORIES, DATASET_ACTIVITY_ALL_CONTRIBUTORS, DATASET_ACTIVITY_DATE_RANGE_30 } from '../../utils/constants.js'
 import DatasetActivityPanel from '../shared/DatasetActivityPanel/DatasetActivityPanel.vue'
-import BfButton from '../shared/BfButton/BfButton.vue'
+import BfButton from '../shared/BfButton.vue'
 import BfEmptyPageState from '../shared/bf-empty-page-state/BfEmptyPageState.vue'
 //import BfRafter from '../shared/bf-rafter/BfRafter.vue'
 //import BfStage from '@/components/layout/BfStage/BfStage.vue'

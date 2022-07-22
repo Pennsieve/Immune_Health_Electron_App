@@ -28,10 +28,14 @@
         </bf-button>
         </span>
         <span>
+          <div>
           <bf-button @click="linkToTarget()">
             Link selected files to record
           </bf-button>
-
+          </div>
+          <br>
+          <div style = "position:relative; right:135px;">
+          <h2 class="orgtext" style = "position:relative; right:280px;">Staged Files</h2>
           <files-table
             v-if="hasFiles"
             :data="files"
@@ -42,6 +46,7 @@
             @selection-change="setSelectedFiles"
             @click-file-label="onClickLabel">
           </files-table>
+          </div>
           <!--
           <bf-drop-info
             v-if="showDropInfo"
@@ -535,6 +540,10 @@ export default {
   }
   span:not(:last-of-type) {
     margin-right: 1rem;
+  }
+  .orgtext {
+    //padding: 0 2rem;
+    color: #2f26ad;
   }
 }
 </style>
