@@ -1,3 +1,4 @@
+#modify instructions to use yarn
 #name: Release
 #on:
 #  release:
