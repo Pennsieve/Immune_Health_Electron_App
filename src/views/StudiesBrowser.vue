@@ -84,9 +84,9 @@ export default {
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections']),
     ClearAllSelections: function(){
-      //clear all the clicked records for all models
+      this.clearClickedSelections()
     },
     filterSearch(model) {
       const newFilters = clone(this.searchModalSearch.filters)

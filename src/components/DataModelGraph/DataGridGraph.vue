@@ -145,7 +145,12 @@ export default {
       participantsPage: 0,
       visitsPage: 0,
       samplesPage: 0,
-      filesPage: 0
+      filesPage: 0,
+      //list of records that are currently clicked
+      shadedParticipants: [],
+      shadedVisits: [],
+      shadedSamples: [],
+      shadedFiles: []
     }
   },
 
@@ -154,6 +159,7 @@ export default {
     ...mapState([
       'relationshipTypes',
       'config',
+      /*
       'allSamples',
       'allVisits',
       'allParticipants',
@@ -166,6 +172,7 @@ export default {
       'selectedCurrVisit',
       'selectedCurrParticipants',
       'selectedCurrSample',
+      */
       'selectedStudy'
     ]),
     graphUrl: function() {
@@ -241,19 +248,31 @@ export default {
     },
     //will be in component data
     filteredPatientsMetadata: function(){
-      renderAfterFilter('patients', filteredPatientsMetadata)
+      renderAfterFilter('patients', filteredPatientsMetadata,false)
     },
     filteredVisitsMetadata: function(){
-      renderAfterFilter('visits', filteredVisitsMetadata)
+      renderAfterFilter('visits', filteredVisitsMetadata,false)
     },
     filteredSamplesMetadata: function(){
-      renderAfterFilter('samples', filteredSamplesMetadata)
+      renderAfterFilter('samples', filteredSamplesMetadata,false)
     },
     /*
     filteredFilesMetadata: function(){
       ...
     },
     */
+    shadedParticipants: function(){
+
+    },
+    shadedVisits: function(){
+
+    },
+    shadedSamples: function(){
+
+    },
+    shadedFiles: function(){
+
+    }
   },
 
   mounted() {
@@ -312,6 +331,8 @@ export default {
     //when an element is clicked, get its data and if it is a prev/ next, call appropriate function
     d3.select('.mainCanvas').on('click', function(d) {
       //draw the hidden canvas, and get the properties of the thing you clicked on (set elsewhere)
+      //NOTE: can probably omit this draw step since hover does this
+      /*
       vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
       // Get mouse positions from the main canvas.
       const cCoord = this.getBoundingClientRect();
@@ -322,16 +343,21 @@ export default {
       var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
       var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
       var nodeData = vm.colorToNode[colKey];
-      //if has data
-      if (nodeData){
+      */
+      //if has data, and checking to see that its not a record (bc they have parent??)
+      if (nodeData && !nodeData.parent){
       if (d.prev){
         console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
         //if currently clicking prev model attr
-        advancePage(d.displayName, prev);
-    } else {
+        vm.advancePage(d.displayName, prev);
+    } elseif (d.next) {
       console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
-      advancePage(d.displayName, next);
+      vm.advancePage(d.displayName, next);
     }
+      }
+      else {
+        //click will hold the number of clicks associated with a particular record. must bind click variable to record somehow (in recordbind)
+        vm.onClickRecord(nodeData,d.click, d.clientX, d.clientY);
       }
     }
   ); // canvas listener/handler
@@ -401,8 +427,13 @@ export default {
 
       },
 
-    renderAfterFilter: function(model,filter_results){
+    renderAfterFilter: function(model,filter_results,click_selection){
+      //NEED to check Eric's progress, filter selection might set all filtered models already
       //sets the model that was filtered
+      if(click_selection){
+        console.log('dont do anything');
+      }
+      else{
       switch(model){
         case 'patient':
           this.selectedPatientRecords = filter_results
@@ -422,6 +453,7 @@ export default {
           this.selectedRecordCount['files'] = filter_results.length
           */
       }
+    }
       //array of records that will be set in the store after iteration
       var temp_p_arr = [];
       var temp_v_arr = [];
@@ -535,6 +567,19 @@ export default {
           d.hiddenCol = vm.genColor();
           vm.colorToNode[d.hiddenCol] = d;
           return d.hiddenCol;
+        })
+        //attributes for pagination
+        .attr('prev',function(d){
+          //beginning (bottom left) coordinates x and y coordinates for the previous
+          let xCoordPrev = parseInt(attr('x')) + 50
+          let yCoordPrev = parseInt(attr('y')) - 5
+          //should return the coordinates associated with the bounding box
+        })
+        .attr('next',function(d){
+          //beginning x and y  coordinates of next box
+          let xCoordNext = parseInt(attr('x')) + 120
+          let yCoordNext = parseInt(attr('y')) - 5
+          //should return coordinates associated with bounding box
         })
 
     },
@@ -690,7 +735,7 @@ export default {
         if (elapsed > 600) vm.drawTimer.stop();
       })
     },
-  //updates model view according to current page. NOTE: add in logic for orderBy next
+  //updates model view according to current page. NOTE: In this function, need to add logic to apply all active filters to the next page that we retrieve
   updatePage: function(modelName, modelPage, orderBy, direction){
     //can't go back before the first page
     if (modelPage >= 0) {
@@ -699,12 +744,35 @@ export default {
         this.modelPage++;
         var pagenum = modelPage;
         var offset = 100*pagenum;
+        switch(nodelName){
+          case 'patient':
+          //if there are filters applied from either the filter search or manual click slection
+            if (filteredPatientsMetadata){
+              //use Eric's function to get a particular page with filters applied
+            }
+              break;
+          case 'visits':
+            if (filteredVisitsMetadata){
+            //use Eric's function to get a particular page with filters applied
+            }
+              break;
+          case 'samples':
+              if (filteredSamplesMetadata){
+                //use function
+              }
+              break;
+          case 'files':
+              console.log('nothing for files yet');
+        }
         const options = {
           method: 'GET',
           url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
           params: {
               limit: '100',
-              offset: `${offset}`
+              offset: `${offset}`,
+              recordOrderBy: `${orderBy}`,
+              ascending: 'true',
+              includeIncomingLinkedProperties: 'false'
             },
             headers: {
               Accept: 'application/json',
@@ -739,7 +807,10 @@ export default {
         url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
         params: {
             limit: '100',
-            offset: `${offset}`
+            offset: `${offset}`,
+            recordOrderBy: `${orderBy}`,
+            ascending: 'true',
+            includeIncomingLinkedProperties: 'false'
           },
           headers: {
             Accept: 'application/json',
@@ -770,7 +841,6 @@ export default {
 
   //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
   //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
-  //NOTE: NEED TO ACCOUNT FOR THE CASE WHERE THIS IS FILTERED. MUST MAKE A MODIFIED CALL TO renderAfterFilter()
   advancePage: function(modelName, direction) {
     var orderBy = ''
     var modelPage = ''
@@ -803,6 +873,93 @@ export default {
           updatePage('files', modelPage, orderBy, direction);
     }
   },
+  //called when record is clicked.
+  onClickRecord: function(nodeData, click, x, y){
+    var parent = nodeData.parent;
+    //parentname will determine what color we change the square to
+    var parentName = parent.attr.('modelName')
+    click ++;
+    if ((click)%2 == 0 ){
+          //will fill with grey default (or do nothing) if it is a 'clear' click. May need to pass in record coordinates...
+          //may have to use ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+          d3.select(this).style("fill","#afb3b0");
+          //depending on current model, we want to remove item from the list of selectedCurr___
+          //eliminate repition of code in future versions
+          var filter_results = [];
+          switch (parentName){
+            case 'patient':
+              var curr_p = this.shadedParticipants;
+              var removed_p = curr_p.filter(function(value, index, curr_p){
+                //confirm that this is what is used to uniquely identify
+                return value != nodeData.recordId;
+              });
+              this.shadedParticipants = removed_p;
+              filter_results = this.shadedParticipants;
+              break;
+            case 'visits':
+              var curr_v = this.shadedVisits;
+              var removed_v = curr_v.filter(function(value, index, curr_v){
+                return value != nodeData.recordId;
+              });
+              this.shadedVisits = removed_v;
+              filter_results = this.shadedVisits;
+              break;
+            case 'samples':
+              var curr_s = this.shadedSamples;
+              var removed_s = curr_s.filter(function(value, index, curr_s){
+                return value != nodeData.recordId;
+              });
+              this.shadedSamples = removed_s;
+              filter_results = this.shadedSamples;
+              break;
+            case 'files':
+              var curr_f = this.shadedFiles;
+              var removed_f = curr_f.filter(function(value, index, curr_f){
+                return value != nodeData.recordId;
+              });
+              this.shadedFiles = removed_f;
+              filter_results = this.shadedFiles;
+          }
+          //call function to update to related records for all models
+
+          renderAfterFilter(parentname,filter_results,true)
+        }
+        if ((click)%2 == 1 ){ //click to highlight
+          var filter_results = [];
+          switch (parentName) {
+            case 'patient':
+                //here, we want to get the current list of 'selected' records (can be empty), add our new selection to it,
+                // and (optionally) filter duplicates. Then set new list to store.
+                this.shadedParticipants = shadedParticipants.concat(nodeData.recordId);
+                filter_results = this.shadedParticipants;
+                //red square
+                //again, might need to call 'fillrect'
+                d3.select(this).style("fill","#d10a00");
+                //get related record data and set to store...
+                break;
+            case 'visits':
+              this.shadedVisits = shadedVisits.concat(nodeData.recordId);
+              filter_results = this.shadedVisits;
+                //blue
+                d3.select(this).style("fill","#0049d1");
+                break;
+            case 'samples':
+                this.shadedSamples = shadedSamples.concat(nodeData.recordId);
+                filter_results = this.shadedSamples;
+                //yellow
+                d3.select(this).style("fill","#f0cc00");
+                break;
+            case 'files':
+                this.shadedFiles = shadedFiles.conact(nodeData.recordId);
+                filter_results = this.shadedFiles;
+                d3.select(this).style("fill","#06a600");
+
+          }
+        }
+        //call function to update to related records for all models
+        renderAfterFilter(parentname,filter_results,true)
+      }
+    },
 
     onHoverElement: function(nodeData, x, y) {
       // TODO: remove return
@@ -990,6 +1147,10 @@ export default {
           d.hiddenCol = vm.genColor();
           vm.colorToNode[d.hiddenCol] = d;
           return d.hiddenCol;
+        })
+        .attr('click',function(d){
+          d.click = 0;
+          return d.click
         })
 
     },

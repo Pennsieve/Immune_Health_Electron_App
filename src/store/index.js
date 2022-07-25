@@ -80,7 +80,11 @@ const store = new Vuex.Store({
     //TODO: variable to be updated whenever a single visit or sample is selected on either the data viz page or the uploads page. Will just have one upload target for now
     //TODO: This can be set by: selectedCurrVisit and selectedCurrSample (under the condition that only one of the two is selected and the list has a length of 1),
     uploadTarget: {},
-    searchPage: ''
+    searchPage: '',
+    shadedParticipants: [],
+    shadedVisits: [],
+    shadedSamples: [],
+    shadedFiles: []
   },
   getters: {
     username (state) {
@@ -122,6 +126,18 @@ const store = new Vuex.Store({
     getDatasetRole (state) {
       return state.datasetRole
     },
+    shadedParticipants (state){
+      return state.shadedParticipants
+    },
+    shadedVisits (state) {
+      return state.shadedVisits
+    },
+    shadedSamples (state) {
+      return state.shadedSamples
+    },
+    shadedFiles (state) {
+      return state.shadedFiles
+    }
   },
   mutations: {
     SET_ALL_STUDIES(state, data) {
@@ -163,6 +179,13 @@ const store = new Vuex.Store({
     },
     SET_SEARCH_PAGE (state, data) {
       state.searchPage = data
+    },
+    CLEAR_CLICKED_SELECTIONS (state){
+      state.shadedParticipants = []
+      state.shadedVisits = []
+      state.shadedSamples = []
+      state.shadedFiles = []
+
     }
   },
   actions: {
@@ -259,6 +282,9 @@ const store = new Vuex.Store({
     },
     updateSearchModalSearch({ commit }, data) {
       commit('UPDATE_SEARCH_MODAL_SEARCH', data)
+    },
+    clearClickedSelections({commit}){
+      commit('CLEAR_CLICKED_SELECTIONS')
     },
     setDatasetRole({commit}, data) {
       commit('SET_DATASET_ROLE', data)
