@@ -248,13 +248,13 @@ export default {
     },
     //will be in component data
     filteredPatientsMetadata: function(){
-      renderAfterFilter('patients', filteredPatientsMetadata,false)
+      this.renderAfterFilter('patients', this.filteredPatientsMetadata,false)
     },
     filteredVisitsMetadata: function(){
-      renderAfterFilter('visits', filteredVisitsMetadata,false)
+      this.renderAfterFilter('visits', this.filteredVisitsMetadata,false)
     },
     filteredSamplesMetadata: function(){
-      renderAfterFilter('samples', filteredSamplesMetadata,false)
+      this.renderAfterFilter('samples', this.filteredSamplesMetadata,false)
     },
     /*
     filteredFilesMetadata: function(){
@@ -327,7 +327,7 @@ export default {
         vm.hideModelTooltip()
       }
 
-    }
+    })
     //when an element is clicked, get its data and if it is a prev/ next, call appropriate function
     d3.select('.mainCanvas').on('click', function(d) {
       //draw the hidden canvas, and get the properties of the thing you clicked on (set elsewhere)
@@ -346,14 +346,14 @@ export default {
       */
       //if has data, and checking to see that its not a record (bc they have parent??)
       if (nodeData && !nodeData.parent){
-      if (d.prev){
-        console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
-        //if currently clicking prev model attr
-        vm.advancePage(d.displayName, prev);
-    } elseif (d.next) {
-      console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
-      vm.advancePage(d.displayName, next);
-    }
+          if (d.prev){
+            console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
+            //if currently clicking prev model attr
+            vm.advancePage(d.displayName, prev);
+        } else if (d.next) {
+          console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
+          vm.advancePage(d.displayName, next);
+        }
       }
       else {
         //click will hold the number of clicks associated with a particular record. must bind click variable to record somehow (in recordbind)
@@ -408,7 +408,7 @@ export default {
               params: {
                   limit: '100',
                   offset: `${offset}`,
-                  recordOrderBy: `${orderBy}`,'externalparticipantid'
+                  recordOrderBy: `${orderBy}`,
                   ascending: 'true',
                   includeIncomingLinkedProperties: 'false'
                 },
@@ -428,88 +428,88 @@ export default {
       },
 
     renderAfterFilter: function(model,filter_results,click_selection){
-      //NEED to check Eric's progress, filter selection might set all filtered models already
-      //sets the model that was filtered
-      if(click_selection){
-        console.log('dont do anything');
-      }
-      else{
-      switch(model){
-        case 'patient':
-          this.selectedPatientRecords = filter_results
-          this.selectedRecordCount['patient'] = filter_results.length
-        break;
-        case 'visits':
-          this.selectedVisitRecords = filter_results
-          this.selectedRecordCount['visit'] = filter_results.length
-        break;
-        case 'samples':
-          this.selectedSampleRecords = filter_results
-          this.selectedRecordCount['samples'] = filter_results.length
-        break;
-        case 'files':
-          /*
-          this.selectedFileRecords = filter_results
-          this.selectedRecordCount['files'] = filter_results.length
-          */
-      }
-    }
-      //array of records that will be set in the store after iteration
-      var temp_p_arr = [];
-      var temp_v_arr = [];
-      var temp_s_arr = [];
-      var temp_f_arr = [];
-      //need to look at objects returned in list (id'd by either name or displayname)...
-      //we are assuming that the model name is heterogeneous here
-      var ex_list = ['patient','visits','samples','files'];
-      let ex_list2 = ex_list.filter(function(value) {
-        return value != model; });
-        //for each element of the filtered result list, get the related records of each other model type
-        for (var y = 0; y <filter_results.length; y++){
-          ex_list2.forEach((x, i) =>
-          switch(x){
-            case 'patient':
-              temp_p_arr.push(setAllRelatedFilter(model,filter_results[y],'patient',0);)
-            break;
-            case 'vist':
-              temp_v_arr.push(setAllRelatedFilter(model,filter_results[y],'visits',0);)
-            break;
-            case 'sample':
-              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'samples',0);)
-            break;
-            case 'file':
-              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'files',0);)
-          }
-          );
-        }
-      }
-      }
-      //eliminating duplicates in each array and setting variables
-      // and (optionally) filter duplicates.
-      //here we don't want to overwrite the model that we're filtering by. Check this
-      if(model != 'patient'){
-        let filtered_p_arr = temp_p_arr.filter((c, index) => {return temp_p_arr.indexOf(c) === index;});
-        //NOTE:beforte doing this, check what type of date this setter expects
-        this.selectedPatientRecords = filtered_p_arr
-        this.selectedRecordCount['patient'] = filtered_p_arr.length
-      }
-      if (model != 'visit'){
-        let filtered_v_arr = temp_v_arr.filter((c, index) => {return temp_v_arr.indexOf(c) === index;});
-        this.selectedVisitRecords = filtered_v_arr
-        this.selectedRecordCount['visits'] = filtered_v_arr.length
-      }
-      if (model != 'sample'){
-        let filtered_s_arr = temp_s_arr.filter((c, index) => {return temp_s_arr.indexOf(c) === index;});
-        this.selectedSampleRecords = filtered_s_arr
-        this.selectedRecordCount['samples'] = filtered_s_arr.length
-      }
-      if (model != 'file'){
-        let filtered_f_arr = temp_f_arr.filter((c, index) => {return temp_f_arr.indexOf(c) === index;});
-        /*
-        this.selectedFileRecords = filtered_f_arr
-        this.selectedRecordCount['files'] = filtered_f_arr.length
-        */
-      }
+    //   //NEED to check Eric's progress, filter selection might set all filtered models already
+    //   //sets the model that was filtered
+    //   if(click_selection){
+    //     console.log('dont do anything');
+    //   }
+    //   else{
+    //   switch(model){
+    //     case 'patient':
+    //       this.selectedPatientRecords = filter_results
+    //       this.selectedRecordCount['patient'] = filter_results.length
+    //     break;
+    //     case 'visits':
+    //       this.selectedVisitRecords = filter_results
+    //       this.selectedRecordCount['visit'] = filter_results.length
+    //     break;
+    //     case 'samples':
+    //       this.selectedSampleRecords = filter_results
+    //       this.selectedRecordCount['samples'] = filter_results.length
+    //     break;
+    //     case 'files':
+    //       /*
+    //       this.selectedFileRecords = filter_results
+    //       this.selectedRecordCount['files'] = filter_results.length
+    //       */
+    //   }
+    // }
+    //   //array of records that will be set in the store after iteration
+    //   var temp_p_arr = [];
+    //   var temp_v_arr = [];
+    //   var temp_s_arr = [];
+    //   var temp_f_arr = [];
+    //   //need to look at objects returned in list (id'd by either name or displayname)...
+    //   //we are assuming that the model name is heterogeneous here
+    //   var ex_list = ['patient','visits','samples','files'];
+    //   let ex_list2 = ex_list.filter(function(value) {
+    //     return value != model; });
+    //     //for each element of the filtered result list, get the related records of each other model type
+    //     for (var y = 0; y <filter_results.length; y++){
+    //       ex_list2.forEach((x, i) => {
+    //       switch(x){
+    //         case 'patient':
+    //           temp_p_arr.push(setAllRelatedFilter(model,filter_results[y],'patient',0);)
+    //         break;
+    //         case 'vist':
+    //           temp_v_arr.push(setAllRelatedFilter(model,filter_results[y],'visits',0);)
+    //         break;
+    //         case 'sample':
+    //           temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'samples',0);)
+    //         break;
+    //         case 'file':
+    //           temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'files',0);)
+    //       }}
+    //       );
+    //     }
+    //   }
+    //   }
+    //   //eliminating duplicates in each array and setting variables
+    //   // and (optionally) filter duplicates.
+    //   //here we don't want to overwrite the model that we're filtering by. Check this
+    //   if(model != 'patient'){
+    //     let filtered_p_arr = temp_p_arr.filter((c, index) => {return temp_p_arr.indexOf(c) === index;});
+    //     //NOTE:beforte doing this, check what type of date this setter expects
+    //     this.selectedPatientRecords = filtered_p_arr
+    //     this.selectedRecordCount['patient'] = filtered_p_arr.length
+    //   }
+    //   if (model != 'visit'){
+    //     let filtered_v_arr = temp_v_arr.filter((c, index) => {return temp_v_arr.indexOf(c) === index;});
+    //     this.selectedVisitRecords = filtered_v_arr
+    //     this.selectedRecordCount['visits'] = filtered_v_arr.length
+    //   }
+    //   if (model != 'sample'){
+    //     let filtered_s_arr = temp_s_arr.filter((c, index) => {return temp_s_arr.indexOf(c) === index;});
+    //     this.selectedSampleRecords = filtered_s_arr
+    //     this.selectedRecordCount['samples'] = filtered_s_arr.length
+    //   }
+    //   if (model != 'file'){
+    //     let filtered_f_arr = temp_f_arr.filter((c, index) => {return temp_f_arr.indexOf(c) === index;});
+    //     /*
+    //     this.selectedFileRecords = filtered_f_arr
+    //     this.selectedRecordCount['files'] = filtered_f_arr.length
+    //     */
+    //   }
     },
 
     loadModelData: function() {
@@ -803,6 +803,7 @@ export default {
         this.modelPage--;
         var pagenum = modelPage;
         var offset = 100*pagenum;
+        var options = {
         method: 'GET',
         url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
         params: {
@@ -877,7 +878,7 @@ export default {
   onClickRecord: function(nodeData, click, x, y){
     var parent = nodeData.parent;
     //parentname will determine what color we change the square to
-    var parentName = parent.attr.('modelName')
+    var parentName = parent.attr('modelName')
     click ++;
     if ((click)%2 == 0 ){
           //will fill with grey default (or do nothing) if it is a 'clear' click. May need to pass in record coordinates...
@@ -1469,7 +1470,6 @@ export default {
       //   }
       // }, 100)
     }
-  }
 }
 </script>
 
