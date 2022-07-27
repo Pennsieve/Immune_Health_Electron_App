@@ -1,10 +1,12 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from 'axios'
-import { compose, pathOr, propOr, isEmpty } from 'ramda'
+import { pathOr, propOr, isEmpty } from 'ramda'
 
 Vue.use(Vuex);
 
+const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
+const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
 const API_KEY = ''
 
@@ -65,7 +67,9 @@ const store = new Vuex.Store({
     searchModalSearch: {
       isModelInvalid: false,
       filters: [],
-      model: ''
+      model: '',
+      limit: 25,
+      offset: 0
     },
     scientificUnits: [],
     datasetRole: 'viewer',
@@ -84,7 +88,8 @@ const store = new Vuex.Store({
     shadedParticipants: [],
     shadedVisits: [],
     shadedSamples: [],
-    shadedFiles: []
+    shadedFiles: [],
+    linkingTarget: {}
   },
   getters: {
     username (state) {
@@ -106,7 +111,11 @@ const store = new Vuex.Store({
       return state.selectedStudy
     },
     selectedStudyName (state) {
-      return getStudyName(state.selectedStudy)
+      const studyValues = propOr([], 'values', state.selectedStudy)
+      if (isEmpty(studyValues)) {
+        return ''
+      }
+      return propOr('', 'value', studyValues[0])
     },
     scientificUnits (state) {
       return state.scientificUnits
@@ -146,24 +155,6 @@ const store = new Vuex.Store({
     SET_SELECTED_STUDY(state, data) {
       state.selectedStudy = data
     },
-    SET_ALL_PATIENTS_METADATA(state, data) {
-      state.allPatientsMetadata = data
-    },
-    SET_ALL_VISITS_METADATA(state, data) {
-      state.allVisitsMetadata = data
-    },
-    SET_ALL_SAMPLES_METADATA(state, data) {
-      state.allSamplesMetadata = data
-    },
-    SET_FILTERED_PATIENTS_METADATA(state, data) {
-      state.filteredPatientsMetadata = data
-    },
-    SET_FILTERED_VISITS_METADATA(state, data) {
-      state.filteredVisitsMetadata = data
-    },
-    SET_FILTERED_SAMPLES_METADATA(state, data) {
-      state.filteredSamplesMetadata = data
-    },
     UPDATE_SEARCH_MODAL_VISIBLE (state, data) {
       state.searchModalVisible = data
     },
@@ -185,8 +176,10 @@ const store = new Vuex.Store({
       state.shadedVisits = []
       state.shadedSamples = []
       state.shadedFiles = []
-
-    }
+    },
+      SET_LINKING_TARGET (state, data) {
+        state.linkingTarget = data
+      }
   },
   actions: {
     // TODO: 'token' should not take the value of API_KEY
@@ -205,7 +198,7 @@ const store = new Vuex.Store({
       commit('SET_SELECTED_STUDY', data)
     },
     async fetchStudies({ commit }) {
-      const studiesUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances?api_key=${API_KEY}`
+      const studiesUrl = `https://api.pennsieve.io/models/datasets/${IMMUNE_HEALTH_DATASET_ID}/concepts/${STUDY_CONCEPT_ID}/instances?api_key=${API_KEY}`
 
       await axios.get(studiesUrl).then(response => {
         commit('SET_ALL_STUDIES', response.data)
@@ -291,6 +284,9 @@ const store = new Vuex.Store({
     },
     setSearchPage({ commit }, data) {
       commit('SET_SEARCH_PAGE', data)
+    },
+    setLinkingTarget({ commit }, data) {
+      commit('SET_LINKING_TARGET', data)
     },
     async setScientificUnits ({ commit }) {
       const scientificUnitsUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/properties/units?api_key=${API_KEY}`

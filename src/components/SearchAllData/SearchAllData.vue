@@ -18,7 +18,6 @@
         class="mb-16"
         :models="modelsList"
         @delete-filter="deleteFilter"
-        @enter="executeSearch"
       />
 
       <div class="mb-24">
@@ -37,16 +36,24 @@
 
       <div class="filter-actions mb-48">
         <bf-button
+          v-if="searchPage === 'FileUpload'"
           class="btn-search"
           @click="executeSearch"
         >
           Search
         </bf-button>
         <bf-button
+          v-else
+          class="btn-search"
+          @click="closeDialog"
+        >
+          Apply Filters
+        </bf-button>
+        <bf-button
           class="secondary"
           @click="clearAll"
         >
-          Clear All
+          Clear All Filters
         </bf-button>
       </div>
 
@@ -57,6 +64,9 @@
           class="mb-48"
           :search-criteria="searchModalSearch"
           :show-search-results="showSearchResults"
+          :show-download-results=false
+          :show-dataset-column=false
+          :show-menu-column=false
           :table-search-params="tableSearchParams"
           @reset-search-params="resetSearchParams"
         />
@@ -124,17 +134,12 @@ export default {
     return {
       showSearchResults: false,
       allModels: [],
-      tableSearchParams: {
-        limit: 25,
-        offset: 0
-      },
       modelsList: MODELS_LIST
     }
   },
 
   computed: {
     ...mapState([
-      'searchModalVisible',
       'searchModalSearch',
       'searchPage'
     ]),
@@ -143,12 +148,11 @@ export default {
     title: function() {
       return `Search study: ${this.selectedStudyName}`
     },
-  },
 
-  watch: {
-    searchModalVisible(visible) {
-      if (!visible) {
-        this.executeSearch()
+    tableSearchParams: function() {
+      return {
+        limit: this.searchModalSearch.limit,
+        offset: this.searchModalSearch.offset
       }
     }
   },
@@ -159,26 +163,19 @@ export default {
     /**
      * Resets table search params for pagination
      */
-    resetSearchParams: function(buttonVal) {
-      this.tableSearchParams = {
-        limit: 25,
-        offset: 0
-      }
-      this.$nextTick(() => {
-        if (buttonVal === 'Files') {
-          this.$refs.searchResults.fetchFiles()
-        } else {
-          this.$refs.searchResults.fetchRecords()
-        }
+    resetSearchParams: function() {
+      const newSearch = mergeRight(this.searchModalSearch, { limit: 25, offset: 0 })
+      this.updateSearchModalSearch(newSearch)
+      this.$nextTick(async () => {
+        await this.$refs.searchResults.fetchRecords()
       })
     },
 
     /**
      * Execute search based on search criteria
      */
-    executeSearch: function() {
+    executeSearch: async function() {
       const isSearchInvalid = this.validateSearch()
-
       if (isSearchInvalid) { return }
 
       if (this.searchPage === 'FileUpload') {
@@ -194,6 +191,8 @@ export default {
       } else {
         this.applyFiltersToMetadata()
       }
+      this.resetSearchParams()
+    } 
     },
 
     /**
@@ -287,10 +286,10 @@ export default {
     deleteFilter: function(idx) {
       this.searchModalSearch.filters.splice(idx, 1)
       this.updateSearchModalSearch(clone(this.searchModalSearch))
-
       if (this.searchModalSearch.filters.length === 0) {
         this.addFilter()
       }
+      this.executeSearch()
     },
 
     /**
@@ -319,6 +318,8 @@ export default {
       // we can just hide the table since the result arrays are reset when making
       // a new call to get results
       this.showSearchResults = false
+
+      this.executeSearch()
     },
   }
 }
