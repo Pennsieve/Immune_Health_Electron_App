@@ -83,13 +83,14 @@ const store = new Vuex.Store({
     filteredVisitsMetadata: [],
     //TODO: variable to be updated whenever a single visit or sample is selected on either the data viz page or the uploads page. Will just have one upload target for now
     //TODO: This can be set by: selectedCurrVisit and selectedCurrSample (under the condition that only one of the two is selected and the list has a length of 1),
-    uploadTarget: {},
+    //uploadTarget: {},
     searchPage: '',
     shadedParticipants: [],
     shadedVisits: [],
     shadedSamples: [],
     shadedFiles: [],
     linkingTarget: {}
+
   },
   getters: {
     username (state) {

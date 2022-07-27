@@ -31,7 +31,12 @@
 
 // CONSIDER:
 // 1. performance and efficiency, esp. when iterating over a lot of records
+import {
+  fetchFilteredPatientsMetadataRelatedToStudy,
+  fetchFilteredVisitsMetadataRelatedToStudy,
+  fetchFilteredSamplesMetadataRelatedToStudy
 
+} from '@/utils/fetchRecords'
 import axios from 'axios'
 import * as d3 from 'd3'
 import { select } from 'd3-selection';
@@ -145,7 +150,12 @@ export default {
       participantsPage: 0,
       visitsPage: 0,
       samplesPage: 0,
-      filesPage: 0
+      filesPage: 0,
+      //these will house all of the records (all pages) when filters are applied
+      patientsBacklog: [],
+      visitsBacklog: [],
+      samplesBacklog: [],
+      filesBacklog: []
     }
   },
 
@@ -154,6 +164,7 @@ export default {
     ...mapState([
       'relationshipTypes',
       'config',
+      /*
       'allSamples',
       'allVisits',
       'allParticipants',
@@ -166,6 +177,7 @@ export default {
       'selectedCurrVisit',
       'selectedCurrParticipants',
       'selectedCurrSample',
+      */
       'selectedStudy'
     ]),
     graphUrl: function() {
@@ -239,7 +251,7 @@ export default {
     selectedSampleRecords: function() {
       this.updateView()
     },
-    //will be in component data
+    //MAYBE
     filteredPatientsMetadata: function(){
       renderAfterFilter('patients', filteredPatientsMetadata)
     },
@@ -254,6 +266,24 @@ export default {
       ...
     },
     */
+    //MAYBE
+    patientsBacklog: function(){
+      //if backlog not empty, then we apply the contents of the backlog of the page
+      //we're interested in to selected___
+    },
+    visitsBacklog: function(){
+
+    },
+    samplesBacklog: function(){
+
+    },
+    filesBacklog: function(){
+
+    },
+    searchModalSearch.filters: function(){
+      //whenever a filter is added or subtracted from list
+      this.handleFilterChange()
+    }
   },
 
   mounted() {
@@ -333,11 +363,11 @@ export default {
         // eslint-disable-next-line
         console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
         //if currently clicking prev model attr
-        vm.advancePage(d.displayName, prev);
+        vm.advancePage(d.displayName, prev, false);
     } elseif (d.next) {
       // eslint-disable-next-line
       console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
-      vm.advancePage(d.displayName, next);
+      vm.advancePage(d.displayName, next, false);
     } //if its a record
       elseif (nodeData.parent){
         vm.onClickElement(nodeData, d.click, d.clientX, d.clientY)
@@ -362,8 +392,77 @@ export default {
   methods: {
     //will not use these map actions since all data will be within component
     ...mapActions(['setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
-    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles']),
+    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
 
+    //filters the page for the model the filters are applied to and sets the backlog for that model
+    handleFilterChange: async function(){
+      model = this.searchModalSearch.model;
+      switch(model){
+        case 'patient':
+          //getting the first page of filtered records for the model
+          var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+          //set these to the correct vars
+          var results_total_count = page_1_metadata.totalCount
+          //this.recordHeadings = page_1_metadata.headings
+          this.selectedPatientRecords = page_1_metadata.records
+          //will need to set below properly
+          //this.selectedRecordCount['patient'] = filter_results.length
+          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
+          for (let i = 0; i < results_total_count; i += 100){
+            backlog_metadata = []
+            var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+            backlog_metadata.push(element);
+            this.patientsBacklog.push(backlog_metadata);
+          }
+          //call set all realated with patient as model and will use backlog as set of filtered reults
+          break;
+        case 'visits':
+            //getting the first page of filtered records for the model
+            var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+            //set these to the correct vars
+            var results_total_count = page_1_metadata.totalCount
+            //this.recordHeadings = page_1_metadata.headings
+            this.selectedVisitRecords = page_1_metadata.records
+            //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
+            for (let i = 0; i < results_total_count; i += 100){
+              backlog_metadata = []
+              var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+              backlog_metadata.push(element);
+              this.visitsBacklog.push(backlog_metadata);
+            }
+            break;
+        case 'samples':
+          //getting the first page of filtered records for the model
+          var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+          //set these to the correct vars
+          var results_total_count = page_1_metadata.totalCount
+          //this.recordHeadings = page_1_metadata.headings
+          this.selectedSampleRecords = page_1_metadata.records
+          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
+          for (let i = 0; i < results_total_count; i += 100){
+            backlog_metadata = []
+            var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+            backlog_metadata.push(element);
+            this.samplesBacklog.push(backlog_metadata);
+          }
+          break;
+        case 'files':
+          //getting the first page of filtered records for the model
+          var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+          //set these to the correct vars
+          var results_total_count = page_1_metadata.totalCount
+          //this.recordHeadings = page_1_metadata.headings
+          this.selectedFileRecords = page_1_metadata.records
+          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
+          for (let i = 0; i < results_total_count; i += 100){
+            backlog_metadata = []
+            var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+            backlog_metadata.push(element);
+            this.filesBacklog.push(backlog_metadata);
+          }
+
+      }
+    },
     //called when a record is clicked
     onClickElement(nodeData, click, x, y){
       //checking that its a record and not a model
@@ -538,21 +637,39 @@ export default {
       },
 
     renderAfterFilter: function(model,filter_results){
+      //change this / commbine this with the above to set the backlog full of related records
+      //...first, get all of the records from the first backlog into a flat array, then
+      //for each element, call the get related api and put into backlog, order entire thing by property according to
+      //model type, then break up into sublists 100 elements each...
       //sets the model that was filtered
       switch(model){
         case 'patient':
-          this.selectedPatientRecords = filter_results
-          this.selectedRecordCount['patient'] = filter_results.length
+          var flat_arr = this.patientsBacklog.flat();
+          var other_models = ['visits','samples','files']
+          for (x in flat_arr){
+            //get the related records for each model, and put into backlog for model
+          }
         break;
         case 'visits':
-          this.selectedVisitRecords = filter_results
-          this.selectedRecordCount['visit'] = filter_results.length
+          var other_models = ['patient','samples','files']
+          var flat_arr = this.visitsBacklog.flat();
+          for (x in flat_arr){
+
+          }
         break;
         case 'samples':
-          this.selectedSampleRecords = filter_results
-          this.selectedRecordCount['samples'] = filter_results.length
+          var other_models = ['patient','visits','files']
+          var flat_arr = this.samplesBacklog.flat();
+          for (x in flat_arr){
+
+          }
         break;
         case 'files':
+          var other_models = ['patient','visits','samples']
+          var flat_arr = this.filesBacklog.flat();
+          for (x in flat_arr){
+
+          }
           /*
           this.selectedFileRecords = filter_results
           this.selectedRecordCount['files'] = filter_results.length
@@ -911,7 +1028,8 @@ export default {
   //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
   //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
   //NOTE: NEED TO ACCOUNT FOR THE CASE WHERE THIS IS FILTERED. MUST MAKE A MODIFIED CALL TO renderAfterFilter()
-  advancePage: function(modelName, direction) {
+  //NOTE: when filter is applied, we can grab next element of backlog rather than make an api call
+  advancePage: function(modelName, direction, caller_is_filter) {
     var orderBy = ''
     var modelPage = ''
     switch (modelName) {
