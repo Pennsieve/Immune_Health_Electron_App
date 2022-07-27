@@ -179,7 +179,19 @@ const store = new Vuex.Store({
     },
       SET_LINKING_TARGET (state, data) {
         state.linkingTarget = data
-      }
+      },
+      SET_SHADED_PARTICIAPNTS(state, data){
+        state.shadedParticipants = data
+      },
+      SET_SHADED_VISITS(state, data){
+        state.shadedVisits = data
+      },
+      SET_SHADED_SAMPLES(state, data){
+        state.shadedSamples = data
+      },
+      SET_SHADED_FILES(state, data){
+        state.shadedFiles = data
+      },
   },
   actions: {
     // TODO: 'token' should not take the value of API_KEY
@@ -228,6 +240,7 @@ const store = new Vuex.Store({
         commit('SET_ALL_SAMPLES_METADATA', response.data)
       })
     },
+    /*
     async applyFiltersToMetadata({ commit, state }) {
       const toQueryParams = (params) => Object.keys(params).map(key => key + '=' + params[key]).join('&');
       const params = compose(
@@ -270,6 +283,7 @@ const store = new Vuex.Store({
         })
       }
     },
+    */
     updateSearchModalVisible({ commit }, data) {
       commit('UPDATE_SEARCH_MODAL_VISIBLE', data)
     },
@@ -287,6 +301,18 @@ const store = new Vuex.Store({
     },
     setLinkingTarget({ commit }, data) {
       commit('SET_LINKING_TARGET', data)
+    },
+    setShadedParticipants({commit}, data){
+      commit('SET_SHADED_PARTICIAPNTS',data)
+    },
+    setShadedVisits({commit}, data){
+      commit('SET_SHADED_VISITS',data)
+    },
+    setShadedSamples({commit}, data){
+      commit('SET_SHADED_SAMPLES',data)
+    },
+    setShadedFiles({commit}, data){
+      commit('SET_SHADED_FILES',data)
     },
     async setScientificUnits ({ commit }) {
       const scientificUnitsUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/properties/units?api_key=${API_KEY}`

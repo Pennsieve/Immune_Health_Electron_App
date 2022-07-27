@@ -145,12 +145,7 @@ export default {
       participantsPage: 0,
       visitsPage: 0,
       samplesPage: 0,
-      filesPage: 0,
-      //list of records that are currently clicked
-      shadedParticipants: [],
-      shadedVisits: [],
-      shadedSamples: [],
-      shadedFiles: []
+      filesPage: 0
     }
   },
 
@@ -159,7 +154,6 @@ export default {
     ...mapState([
       'relationshipTypes',
       'config',
-      /*
       'allSamples',
       'allVisits',
       'allParticipants',
@@ -172,7 +166,6 @@ export default {
       'selectedCurrVisit',
       'selectedCurrParticipants',
       'selectedCurrSample',
-      */
       'selectedStudy'
     ]),
     graphUrl: function() {
@@ -248,31 +241,19 @@ export default {
     },
     //will be in component data
     filteredPatientsMetadata: function(){
-      this.renderAfterFilter('patients', this.filteredPatientsMetadata,false)
+      renderAfterFilter('patients', filteredPatientsMetadata)
     },
     filteredVisitsMetadata: function(){
-      this.renderAfterFilter('visits', this.filteredVisitsMetadata,false)
+      renderAfterFilter('visits', filteredVisitsMetadata)
     },
     filteredSamplesMetadata: function(){
-      this.renderAfterFilter('samples', this.filteredSamplesMetadata,false)
+      renderAfterFilter('samples', filteredSamplesMetadata)
     },
     /*
     filteredFilesMetadata: function(){
       ...
     },
     */
-    shadedParticipants: function(){
-
-    },
-    shadedVisits: function(){
-
-    },
-    shadedSamples: function(){
-
-    },
-    shadedFiles: function(){
-
-    }
   },
 
   mounted() {
@@ -317,22 +298,23 @@ export default {
       var hiddenCtx = hiddenCanvas.node().getContext('2d');
       var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
       var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+      // eslint-disable-next-line
       var nodeData = vm.colorToNode[colKey];
-
+      // eslint-disable-next-line
       if (nodeData){
+        // eslint-disable-next-line
         console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        // eslint-disable-next-line
         vm.onHoverElement(nodeData, d.clientX, d.clientY)
 
       } else {
         vm.hideModelTooltip()
       }
 
-    })
+    }
     //when an element is clicked, get its data and if it is a prev/ next, call appropriate function
     d3.select('.mainCanvas').on('click', function(d) {
       //draw the hidden canvas, and get the properties of the thing you clicked on (set elsewhere)
-      //NOTE: can probably omit this draw step since hover does this
-      /*
       vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
       // Get mouse positions from the main canvas.
       const cCoord = this.getBoundingClientRect();
@@ -342,22 +324,24 @@ export default {
       var hiddenCtx = hiddenCanvas.node().getContext('2d');
       var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
       var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+      // eslint-disable-next-line
       var nodeData = vm.colorToNode[colKey];
-      */
-      //if has data, and checking to see that its not a record (bc they have parent??)
-      if (nodeData && !nodeData.parent){
-          if (d.prev){
-            console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
-            //if currently clicking prev model attr
-            vm.advancePage(d.displayName, prev);
-        } else if (d.next) {
-          console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
-          vm.advancePage(d.displayName, next);
-        }
+      //if has data
+      // eslint-disable-next-line
+      if (nodeData){
+      if (d.prev){
+        // eslint-disable-next-line
+        console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        //if currently clicking prev model attr
+        vm.advancePage(d.displayName, prev);
+    } elseif (d.next) {
+      // eslint-disable-next-line
+      console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+      vm.advancePage(d.displayName, next);
+    } //if its a record
+      elseif (nodeData.parent){
+        vm.onClickElement(nodeData, d.click, d.clientX, d.clientY)
       }
-      else {
-        //click will hold the number of clicks associated with a particular record. must bind click variable to record somehow (in recordbind)
-        vm.onClickRecord(nodeData,d.click, d.clientX, d.clientY);
       }
     }
   ); // canvas listener/handler
@@ -377,8 +361,134 @@ export default {
 
   methods: {
     //will not use these map actions since all data will be within component
-    ...mapActions(['setAllParticipants','setAllVisits','setAllSamples']), //include set all files potentially
-    ...mapGetters(['userToken']),
+    ...mapActions(['setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
+    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles']),
+
+    //called when a record is clicked
+    onClickElement(nodeData, click, x, y){
+      //checking that its a record and not a model
+      if (nodeData.parent && !nodeData.details){
+        var parent = nodeData.parent;
+        //parentname will determine what color we change the square to
+        var parentName = parent.attr('modelName')
+        //want to set color conditionally
+        //need to advance click on the individual record. Most likely need to use the same process as in recordbind()..i.e. join
+        click ++;
+        if ((click)%2 == 0 ){
+          //will fill with grey default (or do nothing) if it is first click or a 'clear' click
+          var ctx = canvas.node().getContext('2d');
+          //how do we grab the record we're interested in?
+          var element = this.custom('custom.record');
+          var node = d3.select(element);
+          ctx.fillstyle ="#afb3b0";
+          ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+          //OR just do this below
+          //d3.select(this).style("fill","#afb3b0");
+          //eliminate repition of code in future versions
+          switch (parentName){
+            case 'patient':
+            //we want to remove this record from our list of shaded records
+              var curr_p = this.shadedParticipants;
+              var removed_p = curr_p.filter(function(value, index, curr_p){
+                return value != nodeData.recordId;
+              });
+              setShadedParticipants(removed_p);
+              break;
+            case 'visits':
+              var curr_v = this.shadedVisits;
+              var removed_v = curr_v.filter(function(value, index, curr_v){
+                return value != nodeData.recordId;
+              });
+              setShadedVisits(removed_v);
+              break;
+            case 'samples':
+              var curr_s = this.shadedSamples;
+              var removed_s = curr_s.filter(function(value, index, curr_s){
+                return value != nodeData.recordId;
+              });
+              setShadedSamples(removed_s);
+              break;
+            case 'files':
+              var curr_selected_files = this.shadedFiles;
+              var removed_f = curr_f.filter(function(value, index, curr_f){
+                return value != nodeData.recordId;
+              });
+              setShadedFiles(removed_f);
+          }
+        }
+        //clicks that shade the records depending on model
+        if ((click)%2 == 1 ){
+          //what they've selected vs what is related to their selection
+          switch (parentName) {
+            case 'patient':
+                var curr_sshaded_participants = this.shadedParticipants;
+                //before doing this, check to see if selectedCurr particpants is recordID or record object. If the latter, need to get
+                //proper data from the current clicked node.
+                //here, we want to get the current list of 'selected' records (can be empty), add our new selectoin to it,
+                // and (optionally) filter duplicates. Then set new list to store.
+                var prelist = curr_selected_participants.concat(nodeData.recordId);
+                /*
+                let filteredlist = prelist.filter((c, index) => {
+                    return prelist.indexOf(c) === index;
+                });
+                */
+                setShadedParticipants(prelist);
+                //red square
+                var ctx = canvas.node().getContext('2d');
+                //how do we grab the record we're interested in?
+                var element = this.custom('custom.record');
+                var node = d3.select(element);
+                ctx.fillstyle ="#d10a00";
+                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+                //or just use d3.select(this).style("fill","#d10a00");
+                //get related record data and set to store... see how Eric's filter gets related first
+                break;
+            case 'visits':
+                var curr_selected_visits = this.shadedVisits;
+                var prelist = curr_selected_visits.concat(nodeData.recordId);
+                setShadedVisits(prelist);
+                //blue
+                var ctx = canvas.node().getContext('2d');
+                //how do we grab the record we're interested in?
+                var element = this.custom('custom.record');
+                var node = d3.select(element);
+                ctx.fillstyle ="#0049d1";
+                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+                //or just use
+                //d3.select(this).style("fill","#0049d1");
+                break;
+            case 'samples':
+                var curr_selected_samples = this.shadedSamples;
+                var prelist = curr_selected_samples.concat(nodeData.recordId);
+                setShadedSamples(prelist);
+                //yellow
+                var ctx = canvas.node().getContext('2d');
+                //how do we grab the record we're interested in?
+                var element = this.custom('custom.record');
+                var node = d3.select(element);
+                ctx.fillstyle ="#f0cc00";
+                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+                //or just use
+                //d3.select(this).style("fill","#f0cc00");
+                break;
+            case 'files':
+                var curr_selected_files = this.shadedFiles;
+                var prelist = curr_selected_files.concat(nodeData.recordId);
+                setShadedFiles(prelist);
+                //green
+                var ctx = canvas.node().getContext('2d');
+                //how do we grab the record we're interested in?
+                var element = this.custom('custom.record');
+                var node = d3.select(element);
+                ctx.fillstyle ="#06a600";
+                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+                //or just use
+                //d3.select(this).style("fill","#06a600");
+          }
+        }
+        //saving current selected to store
+      }
+    },
 
     setAllRelatedFilter: function(modelname, startrecord, targetmodel, pagenumber){
         //need to reset the pages for all models
@@ -408,7 +518,7 @@ export default {
               params: {
                   limit: '100',
                   offset: `${offset}`,
-                  recordOrderBy: `${orderBy}`,
+                  recordOrderBy: `${orderBy}`,'externalparticipantid'
                   ascending: 'true',
                   includeIncomingLinkedProperties: 'false'
                 },
@@ -427,89 +537,83 @@ export default {
 
       },
 
-    renderAfterFilter: function(model,filter_results,click_selection){
-    //   //NEED to check Eric's progress, filter selection might set all filtered models already
-    //   //sets the model that was filtered
-    //   if(click_selection){
-    //     console.log('dont do anything');
-    //   }
-    //   else{
-    //   switch(model){
-    //     case 'patient':
-    //       this.selectedPatientRecords = filter_results
-    //       this.selectedRecordCount['patient'] = filter_results.length
-    //     break;
-    //     case 'visits':
-    //       this.selectedVisitRecords = filter_results
-    //       this.selectedRecordCount['visit'] = filter_results.length
-    //     break;
-    //     case 'samples':
-    //       this.selectedSampleRecords = filter_results
-    //       this.selectedRecordCount['samples'] = filter_results.length
-    //     break;
-    //     case 'files':
-    //       /*
-    //       this.selectedFileRecords = filter_results
-    //       this.selectedRecordCount['files'] = filter_results.length
-    //       */
-    //   }
-    // }
-    //   //array of records that will be set in the store after iteration
-    //   var temp_p_arr = [];
-    //   var temp_v_arr = [];
-    //   var temp_s_arr = [];
-    //   var temp_f_arr = [];
-    //   //need to look at objects returned in list (id'd by either name or displayname)...
-    //   //we are assuming that the model name is heterogeneous here
-    //   var ex_list = ['patient','visits','samples','files'];
-    //   let ex_list2 = ex_list.filter(function(value) {
-    //     return value != model; });
-    //     //for each element of the filtered result list, get the related records of each other model type
-    //     for (var y = 0; y <filter_results.length; y++){
-    //       ex_list2.forEach((x, i) => {
-    //       switch(x){
-    //         case 'patient':
-    //           temp_p_arr.push(setAllRelatedFilter(model,filter_results[y],'patient',0);)
-    //         break;
-    //         case 'vist':
-    //           temp_v_arr.push(setAllRelatedFilter(model,filter_results[y],'visits',0);)
-    //         break;
-    //         case 'sample':
-    //           temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'samples',0);)
-    //         break;
-    //         case 'file':
-    //           temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'files',0);)
-    //       }}
-    //       );
-    //     }
-    //   }
-    //   }
-    //   //eliminating duplicates in each array and setting variables
-    //   // and (optionally) filter duplicates.
-    //   //here we don't want to overwrite the model that we're filtering by. Check this
-    //   if(model != 'patient'){
-    //     let filtered_p_arr = temp_p_arr.filter((c, index) => {return temp_p_arr.indexOf(c) === index;});
-    //     //NOTE:beforte doing this, check what type of date this setter expects
-    //     this.selectedPatientRecords = filtered_p_arr
-    //     this.selectedRecordCount['patient'] = filtered_p_arr.length
-    //   }
-    //   if (model != 'visit'){
-    //     let filtered_v_arr = temp_v_arr.filter((c, index) => {return temp_v_arr.indexOf(c) === index;});
-    //     this.selectedVisitRecords = filtered_v_arr
-    //     this.selectedRecordCount['visits'] = filtered_v_arr.length
-    //   }
-    //   if (model != 'sample'){
-    //     let filtered_s_arr = temp_s_arr.filter((c, index) => {return temp_s_arr.indexOf(c) === index;});
-    //     this.selectedSampleRecords = filtered_s_arr
-    //     this.selectedRecordCount['samples'] = filtered_s_arr.length
-    //   }
-    //   if (model != 'file'){
-    //     let filtered_f_arr = temp_f_arr.filter((c, index) => {return temp_f_arr.indexOf(c) === index;});
-    //     /*
-    //     this.selectedFileRecords = filtered_f_arr
-    //     this.selectedRecordCount['files'] = filtered_f_arr.length
-    //     */
-    //   }
+    renderAfterFilter: function(model,filter_results){
+      //sets the model that was filtered
+      switch(model){
+        case 'patient':
+          this.selectedPatientRecords = filter_results
+          this.selectedRecordCount['patient'] = filter_results.length
+        break;
+        case 'visits':
+          this.selectedVisitRecords = filter_results
+          this.selectedRecordCount['visit'] = filter_results.length
+        break;
+        case 'samples':
+          this.selectedSampleRecords = filter_results
+          this.selectedRecordCount['samples'] = filter_results.length
+        break;
+        case 'files':
+          /*
+          this.selectedFileRecords = filter_results
+          this.selectedRecordCount['files'] = filter_results.length
+          */
+      }
+      //array of records that will be set in the store after iteration
+      var temp_p_arr = [];
+      var temp_v_arr = [];
+      var temp_s_arr = [];
+      var temp_f_arr = [];
+      //need to look at objects returned in list (id'd by either name or displayname)...
+      //we are assuming that the model name is heterogeneous here
+      var ex_list = ['patient','visits','samples','files'];
+      let ex_list2 = ex_list.filter(function(value) {
+        return value != model; });
+        //for each element of the filtered result list, get the related records of each other model type
+        for (var y = 0; y <filter_results.length; y++){
+          ex_list2.forEach((x, i) =>
+          switch(x){
+            case 'patient':
+              temp_p_arr.push(setAllRelatedFilter(model,filter_results[y],'patient',0);)
+            break;
+            case 'vist':
+              temp_v_arr.push(setAllRelatedFilter(model,filter_results[y],'visits',0);)
+            break;
+            case 'sample':
+              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'samples',0);)
+            break;
+            case 'file':
+              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'files',0);)
+          }
+          );
+        }
+      }
+      }
+      //eliminating duplicates in each array and setting variables
+      // and (optionally) filter duplicates.
+      //here we don't want to overwrite the model that we're filtering by. Check this
+      if(model != 'patient'){
+        let filtered_p_arr = temp_p_arr.filter((c, index) => {return temp_p_arr.indexOf(c) === index;});
+        //NOTE:beforte doing this, check what type of date this setter expects
+        this.selectedPatientRecords = filtered_p_arr
+        this.selectedRecordCount['patient'] = filtered_p_arr.length
+      }
+      if (model != 'visit'){
+        let filtered_v_arr = temp_v_arr.filter((c, index) => {return temp_v_arr.indexOf(c) === index;});
+        this.selectedVisitRecords = filtered_v_arr
+        this.selectedRecordCount['visits'] = filtered_v_arr.length
+      }
+      if (model != 'sample'){
+        let filtered_s_arr = temp_s_arr.filter((c, index) => {return temp_s_arr.indexOf(c) === index;});
+        this.selectedSampleRecords = filtered_s_arr
+        this.selectedRecordCount['samples'] = filtered_s_arr.length
+      }
+      if (model != 'file'){
+        let filtered_f_arr = temp_f_arr.filter((c, index) => {return temp_f_arr.indexOf(c) === index;});
+        /*
+        this.selectedFileRecords = filtered_f_arr
+        this.selectedRecordCount['files'] = filtered_f_arr.length
+        */
+      }
     },
 
     loadModelData: function() {
@@ -567,19 +671,6 @@ export default {
           d.hiddenCol = vm.genColor();
           vm.colorToNode[d.hiddenCol] = d;
           return d.hiddenCol;
-        })
-        //attributes for pagination
-        .attr('prev',function(d){
-          //beginning (bottom left) coordinates x and y coordinates for the previous
-          let xCoordPrev = parseInt(attr('x')) + 50
-          let yCoordPrev = parseInt(attr('y')) - 5
-          //should return the coordinates associated with the bounding box
-        })
-        .attr('next',function(d){
-          //beginning x and y  coordinates of next box
-          let xCoordNext = parseInt(attr('x')) + 120
-          let yCoordNext = parseInt(attr('y')) - 5
-          //should return coordinates associated with bounding box
         })
 
     },
@@ -735,7 +826,7 @@ export default {
         if (elapsed > 600) vm.drawTimer.stop();
       })
     },
-  //updates model view according to current page. NOTE: In this function, need to add logic to apply all active filters to the next page that we retrieve
+  //updates model view according to current page. NOTE: add in logic for orderBy next
   updatePage: function(modelName, modelPage, orderBy, direction){
     //can't go back before the first page
     if (modelPage >= 0) {
@@ -744,35 +835,14 @@ export default {
         this.modelPage++;
         var pagenum = modelPage;
         var offset = 100*pagenum;
-        switch(nodelName){
-          case 'patient':
-          //if there are filters applied from either the filter search or manual click slection
-            if (filteredPatientsMetadata){
-              //use Eric's function to get a particular page with filters applied
-            }
-              break;
-          case 'visits':
-            if (filteredVisitsMetadata){
-            //use Eric's function to get a particular page with filters applied
-            }
-              break;
-          case 'samples':
-              if (filteredSamplesMetadata){
-                //use function
-              }
-              break;
-          case 'files':
-              console.log('nothing for files yet');
-        }
         const options = {
           method: 'GET',
           url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
           params: {
               limit: '100',
               offset: `${offset}`,
-              recordOrderBy: `${orderBy}`,
-              ascending: 'true',
-              includeIncomingLinkedProperties: 'false'
+              orderBy: `${orderBy}`,
+              ascending: 'true'
             },
             headers: {
               Accept: 'application/json',
@@ -803,15 +873,13 @@ export default {
         this.modelPage--;
         var pagenum = modelPage;
         var offset = 100*pagenum;
-        var options = {
         method: 'GET',
         url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
         params: {
             limit: '100',
             offset: `${offset}`,
-            recordOrderBy: `${orderBy}`,
-            ascending: 'true',
-            includeIncomingLinkedProperties: 'false'
+            orderBy: `${orderBy}`,
+            ascending: 'true'
           },
           headers: {
             Accept: 'application/json',
@@ -842,6 +910,7 @@ export default {
 
   //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
   //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
+  //NOTE: NEED TO ACCOUNT FOR THE CASE WHERE THIS IS FILTERED. MUST MAKE A MODIFIED CALL TO renderAfterFilter()
   advancePage: function(modelName, direction) {
     var orderBy = ''
     var modelPage = ''
@@ -874,102 +943,16 @@ export default {
           updatePage('files', modelPage, orderBy, direction);
     }
   },
-  //called when record is clicked.
-  onClickRecord: function(nodeData, click, x, y){
-    var parent = nodeData.parent;
-    //parentname will determine what color we change the square to
-    var parentName = parent.attr('modelName')
-    click ++;
-    if ((click)%2 == 0 ){
-          //will fill with grey default (or do nothing) if it is a 'clear' click. May need to pass in record coordinates...
-          //may have to use ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-          d3.select(this).style("fill","#afb3b0");
-          //depending on current model, we want to remove item from the list of selectedCurr___
-          //eliminate repition of code in future versions
-          var filter_results = [];
-          switch (parentName){
-            case 'patient':
-              var curr_p = this.shadedParticipants;
-              var removed_p = curr_p.filter(function(value, index, curr_p){
-                //confirm that this is what is used to uniquely identify
-                return value != nodeData.recordId;
-              });
-              this.shadedParticipants = removed_p;
-              filter_results = this.shadedParticipants;
-              break;
-            case 'visits':
-              var curr_v = this.shadedVisits;
-              var removed_v = curr_v.filter(function(value, index, curr_v){
-                return value != nodeData.recordId;
-              });
-              this.shadedVisits = removed_v;
-              filter_results = this.shadedVisits;
-              break;
-            case 'samples':
-              var curr_s = this.shadedSamples;
-              var removed_s = curr_s.filter(function(value, index, curr_s){
-                return value != nodeData.recordId;
-              });
-              this.shadedSamples = removed_s;
-              filter_results = this.shadedSamples;
-              break;
-            case 'files':
-              var curr_f = this.shadedFiles;
-              var removed_f = curr_f.filter(function(value, index, curr_f){
-                return value != nodeData.recordId;
-              });
-              this.shadedFiles = removed_f;
-              filter_results = this.shadedFiles;
-          }
-          //call function to update to related records for all models
-
-          renderAfterFilter(parentname,filter_results,true)
-        }
-        if ((click)%2 == 1 ){ //click to highlight
-          var filter_results = [];
-          switch (parentName) {
-            case 'patient':
-                //here, we want to get the current list of 'selected' records (can be empty), add our new selection to it,
-                // and (optionally) filter duplicates. Then set new list to store.
-                this.shadedParticipants = shadedParticipants.concat(nodeData.recordId);
-                filter_results = this.shadedParticipants;
-                //red square
-                //again, might need to call 'fillrect'
-                d3.select(this).style("fill","#d10a00");
-                //get related record data and set to store...
-                break;
-            case 'visits':
-              this.shadedVisits = shadedVisits.concat(nodeData.recordId);
-              filter_results = this.shadedVisits;
-                //blue
-                d3.select(this).style("fill","#0049d1");
-                break;
-            case 'samples':
-                this.shadedSamples = shadedSamples.concat(nodeData.recordId);
-                filter_results = this.shadedSamples;
-                //yellow
-                d3.select(this).style("fill","#f0cc00");
-                break;
-            case 'files':
-                this.shadedFiles = shadedFiles.conact(nodeData.recordId);
-                filter_results = this.shadedFiles;
-                d3.select(this).style("fill","#06a600");
-
-          }
-        }
-        //call function to update to related records for all models
-        renderAfterFilter(parentname,filter_results,true)
-      }
-    },
-
+    // eslint-disable-next-line
     onHoverElement: function(nodeData, x, y) {
       // TODO: remove return
       return
 
       // eslint-disable-next-line no-unreachable
       if (nodeData) {
-
+        // eslint-disable-next-line
         if (nodeData.parent && !nodeData.details) {
+          // eslint-disable-next-line
           const modelId = nodeData.parent.id
           if (this.recordPool[modelId].unMapped.length === 0 && !this.recordPool[modelId].isPending) {
             console.log('Getting more records')
@@ -977,17 +960,19 @@ export default {
           } else {
             const unMapped = this.recordPool[modelId].unMapped
             const randomIndex =Math.floor(Math.random() * unMapped.length);
+            // eslint-disable-next-line
             nodeData.details = this.recordPool[modelId].records[ unMapped[randomIndex]]
             unMapped.splice(randomIndex, 1)
           }
         }
         else {
+          // eslint-disable-next-line
           this.selectedNode = nodeData
 
           const tooltip = select('.model-tooltip')
 
           this.shouldHideTooltip = false
-
+          // eslint-disable-next-line
           this.hoveredModel = nodeData.details
 
           tooltip.style('transform', `translate(${x}px, ${y + 20}px)`)
@@ -1149,10 +1134,8 @@ export default {
           vm.colorToNode[d.hiddenCol] = d;
           return d.hiddenCol;
         })
-        .attr('click',function(d){
-          d.click = 0;
-          return d.click
-        })
+        //will be the click counter for a given record and will be initialized to 0 for every record
+        .attr('click',0)
 
     },
 
@@ -1470,6 +1453,7 @@ export default {
       //   }
       // }, 100)
     }
+  }
 }
 </script>
 

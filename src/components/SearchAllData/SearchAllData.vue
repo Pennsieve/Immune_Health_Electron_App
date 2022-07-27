@@ -192,7 +192,7 @@ export default {
         this.applyFiltersToMetadata()
       }
       this.resetSearchParams()
-    } 
+    }
     },
 
     /**
