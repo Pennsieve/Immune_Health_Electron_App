@@ -266,7 +266,7 @@ export default {
       ...
     },
     */
-    //MAYBE
+    //MAYBE (more confident)
     patientsBacklog: function(){
       //if backlog not empty, then we apply the contents of the backlog of the page
       //we're interested in to selected___
@@ -279,11 +279,13 @@ export default {
     },
     filesBacklog: function(){
 
-    },
-    searchModalSearch.filters: function(){
+    }
+    /*,
+    this.searchModalSearch.filters: function(){
       //whenever a filter is added or subtracted from list
       this.handleFilterChange()
     }
+    */
   },
 
   mounted() {
@@ -341,7 +343,7 @@ export default {
         vm.hideModelTooltip()
       }
 
-    }
+    });
     //when an element is clicked, get its data and if it is a prev/ next, call appropriate function
     d3.select('.mainCanvas').on('click', function(d) {
       //draw the hidden canvas, and get the properties of the thing you clicked on (set elsewhere)
@@ -361,20 +363,19 @@ export default {
       if (nodeData){
       if (d.prev){
         // eslint-disable-next-line
-        console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
         //if currently clicking prev model attr
         vm.advancePage(d.displayName, prev, false);
-    } elseif (d.next) {
+    } else if (d.next){
       // eslint-disable-next-line
       console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
       vm.advancePage(d.displayName, next, false);
     } //if its a record
-      elseif (nodeData.parent){
+      else if (nodeData.parent){
         vm.onClickElement(nodeData, d.click, d.clientX, d.clientY)
       }
       }
-    }
-  ); // canvas listener/handler
+    }); // canvas listener/handler
 
 
 
@@ -394,6 +395,9 @@ export default {
     ...mapActions(['setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
     ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
 
+    handleFilterChangeHelper(){
+
+    },
     //filters the page for the model the filters are applied to and sets the backlog for that model
     handleFilterChange: async function(){
       model = this.searchModalSearch.model;
@@ -414,6 +418,7 @@ export default {
             backlog_metadata.push(element);
             this.patientsBacklog.push(backlog_metadata);
           }
+          //have a helper function deal with the repitition
           //call set all realated with patient as model and will use backlog as set of filtered reults
           break;
         case 'visits':
@@ -472,8 +477,8 @@ export default {
         var parentName = parent.attr('modelName')
         //want to set color conditionally
         //need to advance click on the individual record. Most likely need to use the same process as in recordbind()..i.e. join
-        click ++;
-        if ((click)%2 == 0 ){
+        nodeData.click ++;
+        if ((nodeData.click)%2 == 0 ){
           //will fill with grey default (or do nothing) if it is first click or a 'clear' click
           var ctx = canvas.node().getContext('2d');
           //how do we grab the record we're interested in?
@@ -483,6 +488,7 @@ export default {
           ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
           //OR just do this below
           //d3.select(this).style("fill","#afb3b0");
+          //ACTUALLY: set nodeData.fillstyle = ..., then call draw(mainCanvas, false)
           //eliminate repition of code in future versions
           switch (parentName){
             case 'patient':
@@ -516,11 +522,11 @@ export default {
           }
         }
         //clicks that shade the records depending on model
-        if ((click)%2 == 1 ){
+        if ((nodeData.click)%2 == 1 ){
           //what they've selected vs what is related to their selection
           switch (parentName) {
             case 'patient':
-                var curr_sshaded_participants = this.shadedParticipants;
+                var curr_shaded_participants = this.shadedParticipants;
                 //before doing this, check to see if selectedCurr particpants is recordID or record object. If the latter, need to get
                 //proper data from the current clicked node.
                 //here, we want to get the current list of 'selected' records (can be empty), add our new selectoin to it,
@@ -617,7 +623,7 @@ export default {
               params: {
                   limit: '100',
                   offset: `${offset}`,
-                  recordOrderBy: `${orderBy}`,'externalparticipantid'
+                  recordOrderBy: `${orderBy}`,
                   ascending: 'true',
                   includeIncomingLinkedProperties: 'false'
                 },
@@ -635,9 +641,9 @@ export default {
           return Object.values(response.data);
 
       },
-
+    /*
     renderAfterFilter: function(model,filter_results){
-      //change this / commbine this with the above to set the backlog full of related records
+
       //...first, get all of the records from the first backlog into a flat array, then
       //for each element, call the get related api and put into backlog, order entire thing by property according to
       //model type, then break up into sublists 100 elements each...
@@ -646,34 +652,43 @@ export default {
         case 'patient':
           var flat_arr = this.patientsBacklog.flat();
           var other_models = ['visits','samples','files']
+          for (model in other_models){
           for (x in flat_arr){
             //get the related records for each model, and put into backlog for model
+
           }
+        }
         break;
         case 'visits':
           var other_models = ['patient','samples','files']
           var flat_arr = this.visitsBacklog.flat();
-          for (x in flat_arr){
+          for (model in other_models){
+            for (x in flat_arr){
 
+            }
           }
         break;
         case 'samples':
           var other_models = ['patient','visits','files']
           var flat_arr = this.samplesBacklog.flat();
-          for (x in flat_arr){
+          for (model in other_models){
+            for (x in flat_arr){
 
+            }
           }
         break;
         case 'files':
           var other_models = ['patient','visits','samples']
           var flat_arr = this.filesBacklog.flat();
-          for (x in flat_arr){
+          for (model in other_models){
+            for (x in flat_arr){
 
+            }
           }
-          /*
-          this.selectedFileRecords = filter_results
-          this.selectedRecordCount['files'] = filter_results.length
-          */
+
+          //this.selectedFileRecords = filter_results
+          //this.selectedRecordCount['files'] = filter_results.length
+
       }
       //array of records that will be set in the store after iteration
       var temp_p_arr = [];
@@ -706,7 +721,6 @@ export default {
       }
       }
       //eliminating duplicates in each array and setting variables
-      // and (optionally) filter duplicates.
       //here we don't want to overwrite the model that we're filtering by. Check this
       if(model != 'patient'){
         let filtered_p_arr = temp_p_arr.filter((c, index) => {return temp_p_arr.indexOf(c) === index;});
@@ -726,12 +740,12 @@ export default {
       }
       if (model != 'file'){
         let filtered_f_arr = temp_f_arr.filter((c, index) => {return temp_f_arr.indexOf(c) === index;});
-        /*
-        this.selectedFileRecords = filtered_f_arr
-        this.selectedRecordCount['files'] = filtered_f_arr.length
-        */
+        //this.selectedFileRecords = filtered_f_arr
+        //this.selectedRecordCount['files'] = filtered_f_arr.length
+
       }
     },
+    */
 
     loadModelData: function() {
       console.log(`loadModelData()`)
