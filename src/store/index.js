@@ -6,7 +6,10 @@ import { pathOr, propOr, isEmpty } from 'ramda'
 import toQueryParams from '@/utils/toQueryParams.js'
 Vue.use(Vuex);
 
+const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
+const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
+<<<<<<< HEAD
 const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzM5NjRlNjZhLTJkZDItNDE4MC1iNjIyLTVmMzM4N2IwYzM2YiIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjVjZGIyM2Q5LTU1ODEtNDUwYy1iZjdkLTBkYmVjYTcwMDRjYSIsImV2ZW50X2lkIjoiMDM1NzM0ODAtZjViYi00NmRiLWIxNDctZjViM2U5ZDliOTRhIiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1OTI5NTYxNiwiZXhwIjoxNjU5Mjk5MjE2LCJpYXQiOjE2NTkyOTU2MTYsImp0aSI6IjczNmQxMWFiLWRkN2MtNDJiNi1hYWE5LTc0OTljZmQ3NTVjZCIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.GCW5VJ_6BWAk0_89opAXKdiTSgiR5zorbF356tfn_7EVW-pVyy51Eq93-faruBo-N97TC2gAGefLI7qocAPa_UEQNU7HsjsZPlajvdfibnLM6CNEZ0yxBmj7EknPXIH3KggZzNML0U-VBGSPZ8naQWwAtsBtG3x_CJhQdM8h7_F7K3bLjr3ooFL4ylD5c_LE8NgRpx54EcM3ahJM02b5PrI4a_csd9LezWFfThjs5gl9BZ7cDGpPhQbJ905zsspWKgPR7kJrSoUEb8aP4SnJH76n6QNkkx-sgiBxUDUZQYI9I6V0qtZoyqhVsrbzGu-ohyIzGjB0DssiWRCbcmTLyg'
 
 const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
@@ -61,6 +64,9 @@ const getQueryParams = (params, apiKey) => {
   })
 }
 
+=======
+const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI5NzY0NGZkYy1iZjFmLTRkMzUtOWRlMC1hYzlkODUxZmEyZTEiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzZkNDc4M2U3LThhNTctNGY0Yy1iODQ5LWYzZGExMGUzMmRlNSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjU2YjI5NGZlLWIxODItNDA4ZS1hMmMyLWQzOTI5NDMwOWU1YSIsImV2ZW50X2lkIjoiYmMwMTRiOGQtOTgxZS00NGQ2LTliZmMtZWFiMjAyMzVmZTYzIiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1ODQxNjIzMiwiZXhwIjoxNjU4NDQ0OTMyLCJpYXQiOjE2NTg0NDEzMzIsImp0aSI6IjQ5NDIyODk2LWMwYTYtNDc4Mi04YWNjLTI2MDc4ZjA2NDNmMSIsInVzZXJuYW1lIjoiOTc2NDRmZGMtYmYxZi00ZDM1LTlkZTAtYWM5ZDg1MWZhMmUxIn0.KiUeW-8Oj6ksU792eJJDhMac9hkp7JsTD1nncQGw5sWqn5dXh5zD0-8i6bGBBoRvRFNDOfWWJqCinsxDr2I5l37BgWZBt5qAbTXXd3oXNU_b7fHD3w4MoTNAb1e9hRJqa39Zur6Mua6oJc_3xpYblqFyiML7Tp5sckNvl_Ubq7dudp1kISk14Sa8OTOdVjqx6B8HzW4dDrz6gL9kYXhLaWUeQ9m_iYh6886Kso-srAbIlwroRS4nCvJe7W3HsPaKtJYhpy24ajb82Vb8fZe2Ah_dQ69ue6xRUFPr2N_jfcZeZn7IqREJaaptYaJxYC2YREaFHLz1i6biLOWzjhCBxg'
+>>>>>>> main
 
 const initialState = () => ({
   datasetSearchParams: {
@@ -94,6 +100,7 @@ const store = new Vuex.Store({
     selectedStudy: {},
     selectedStudyPatientsMetadata: [],
     searchModalVisible: false,
+<<<<<<< HEAD
     searchModalSearch: {},
     scientificUnits: [],
     //hardcoded value for testing...random record to link files to'
@@ -111,6 +118,20 @@ const store = new Vuex.Store({
       dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
       userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
     }
+=======
+    searchModalSearch: {
+      isModelInvalid: false, 
+      filters: [],
+      model: '',
+      limit: 25,
+      offset: 0
+    },
+    scientificUnits: [],
+    datasetRole: 'viewer',
+    // The target that the uploaded files will be linked to
+    linkingTarget: {},
+    searchPage: '',
+>>>>>>> main
   },
   getters: {
     orgMembers: state => state.orgMembers,
@@ -187,9 +208,6 @@ const store = new Vuex.Store({
     SET_SELECTED_STUDY(state, data) {
       state.selectedStudy = data
     },
-    SET_SELECTED_STUDY_PATIENTS_METADATA(state, data) {
-      state.selectedStudyPatientsMetadata = data
-    },
     UPDATE_SEARCH_MODAL_VISIBLE (state, data) {
       state.searchModalVisible = data
     },
@@ -247,6 +265,7 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
     UPDATE_ORG_MEMBERS(state, members){
       state.orgMembers = members
     },
+<<<<<<< HEAD
     SET_DATASET (state, dataset) {
         state.dataset = dataset
         //const profileId = pathOr('', ['profile', 'id'], state)
@@ -254,6 +273,14 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
         //const isDatasetOwner = profileId === datasetId
         //state.isDatasetOwner = isDatasetOwner
       },
+=======
+    SET_SEARCH_PAGE (state, data) {
+      state.searchPage = data
+    },
+    SET_LINKING_TARGET (state, data) {
+      state.linkingTarget = data
+    },
+>>>>>>> main
   },
   actions: {
     setDataset: ({commit}, evt) => commit('SET_DATASET', evt),
@@ -332,7 +359,7 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
       await commit('SET_SELECTED_STUDY', data)
     },
     async fetchStudies({ commit }) {
-      const studiesUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances?api_key=${API_KEY}`
+      const studiesUrl = `https://api.pennsieve.io/models/datasets/${IMMUNE_HEALTH_DATASET_ID}/concepts/${STUDY_CONCEPT_ID}/instances?api_key=${API_KEY}`
 
       let responseData = []
       await axios.get(studiesUrl).then(response => {
@@ -340,6 +367,7 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
       })
       await commit('SET_ALL_STUDIES',responseData)
     },
+<<<<<<< HEAD
     async fetchSelectedStudyPatientsMetadata({ commit, state }) {
       const selectedStudyId = propOr('', 'id', state.selectedStudy)
       const patientsStudyMetadataUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances/${selectedStudyId}/relations/patient?includeIncomingLinkedProperties=true`
@@ -352,12 +380,26 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
       })
       await commit('SET_SELECTED_STUDY_PATIENTS_METADATA', responseData)
     },
+=======
+>>>>>>> main
     updateSearchModalVisible({ commit }, data) {
       commit('UPDATE_SEARCH_MODAL_VISIBLE', data)
     },
     updateSearchModalSearch: ({ commit }, data) => {
       commit('UPDATE_SEARCH_MODAL_SEARCH', data)
     },
+<<<<<<< HEAD
+=======
+    setDatasetRole({commit}, data) {
+      commit('SET_DATASET_ROLE', data)
+    },
+    setSearchPage({ commit }, data) {
+      commit('SET_SEARCH_PAGE', data)
+    },
+    setLinkingTarget({ commit }, data) {
+      commit('SET_LINKING_TARGET', data)
+    },
+>>>>>>> main
     async setScientificUnits ({ commit }) {
       const scientificUnitsUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/properties/units?api_key=${API_KEY}`
       let responseData = []

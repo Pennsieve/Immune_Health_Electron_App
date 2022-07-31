@@ -72,6 +72,9 @@ export default {
     BfNavigationSecondary,
     FilesTable
   },
+  mounted() {
+    this.setSearchPage('StudiesBrowser')
+  },
   computed: {
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
     //returns true if more than 1 select file
@@ -98,6 +101,7 @@ export default {
     }
   },
   methods: {
+<<<<<<< HEAD
     ...mapActions(['updateSearchModalVisible']),
     /**
      * Set selected files
@@ -120,6 +124,32 @@ export default {
           })
           this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)
           this.ancestors = filteredVisitsMetadata.ancestors
+=======
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage']),
+    filterSearch(model) {
+      const newFilters = clone(this.searchModalSearch.filters)
+      newFilters.push({
+        id: v1(),
+        type: 'model',
+        target: model,
+        targetLabel: model,
+        property: '',
+        propertyLabel: '',
+        propertyType: '',
+        operation: '',
+        operationLabel: '',
+        operators: [],
+        value: '',
+        isInvalid: false,
+        lockTarget: true
+      })
+      const search = mergeRight(this.searchModalSearch, {
+        filters: newFilters,
+        model: model
+      })
+      this.updateSearchModalSearch(search)
+      this.updateSearchModalVisible(true)
+>>>>>>> main
     }
   }
   */

@@ -6,7 +6,47 @@
     <span class="selected-content-container">
       <ih-subheader previousRoute="/studies">
         <template slot="text">
-          File Upload
+          <template v-if="!isLinkingTargetSet">No Linking Target Selected</template>
+          <template v-else-if="linkingTarget.modelId === 'visits'">
+            Linking Target:
+            <div class="ml-16">
+              <div class="property-text">
+                Visit Event ID
+              </div>
+              <div>
+                {{linkingTarget.visit_event}}
+              </div>
+            </div>
+            <div class="ml-16">
+              <div class="property-text">
+                Event Name
+              </div>
+              <div>
+                {{linkingTarget.event_name}}
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            Linking Target:
+            <div class="ml-16">
+              <div class="property-text">
+                Sample Type ID
+              </div>
+              <div>
+                <!--Figure out the name of the sample type id property that is set on the linking target-->
+                <!--{{linkingTarget.sample_type_id}}-->
+              </div>
+            </div>
+            <div class="ml-16">
+              <div class="property-text">
+                Study Sample ID
+              </div>
+              <div>
+                <!--Figure out the name of the study sample id property that is set on the linking target-->
+                <!--{{linkingTarget.study_sample_id}}-->
+              </div>
+            </div>
+          </template>
         </template>
         <template slot="buttons">
           <bf-button>
@@ -16,6 +56,7 @@
           </bf-button>
         </template>
       </ih-subheader>
+<<<<<<< HEAD
       <h2>Filter Files placeholder</h2>
       <bf-button @click="setPlaceholder()">
         Set test uploadDestination
@@ -75,6 +116,12 @@
           />
           -->
         </span>
+=======
+      <div>
+        <bf-button v-on:click="updateSearchModalVisible(true)">
+          Select Linking Target
+        </bf-button>
+>>>>>>> main
       </div>
     </span>
   </div>
@@ -84,6 +131,7 @@
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
+<<<<<<< HEAD
 //import BfUploadMenu from '@/components/BfUploadMenu/BfUploadMenu.vue'
 import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
@@ -97,6 +145,10 @@ import { mapGetters,
          //mapActions
        }
 from 'vuex'
+=======
+import { mapActions, mapGetters, mapState } from 'vuex'
+import { isEmpty } from 'ramda'
+>>>>>>> main
 
 export default {
   name: 'FileUpload',
@@ -108,6 +160,7 @@ export default {
     FilesTable
     //BfDeleteDialog
   },
+<<<<<<< HEAD
   mixins: [
     Sorter,
     Request,
@@ -513,6 +566,20 @@ export default {
           this.handleXhrError(response)
         })
     },
+=======
+  mounted() {
+    this.setSearchPage('FileUpload')
+  },
+  methods: {
+    ...mapActions(['setSearchPage', 'updateSearchModalVisible'])
+  },
+  computed: {
+    ...mapGetters(['allStudies', 'selectedStudyName']),
+    ...mapState(['linkingTarget']),
+    isLinkingTargetSet() {
+      return !isEmpty(this.linkingTarget)
+    }
+>>>>>>> main
   }
 }
 </script>
@@ -529,6 +596,7 @@ export default {
 .container {
   display: flex;
 }
+<<<<<<< HEAD
 .logo-container {
   gap: 5px;
   display: flex;
@@ -547,5 +615,14 @@ export default {
     //padding: 0 2rem;
     color: #2f26ad;
   }
+=======
+.property-text {
+  color: $app-primary-color;
+  font-size: 1rem;
+  font-weight: 500;
+}
+::v-deep .text-container {
+  align-items: flex-end;
+>>>>>>> main
 }
 </style>

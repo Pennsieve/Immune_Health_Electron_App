@@ -29,7 +29,6 @@
         :is-loading-targets="isLoadingTargets"
         :disabled="search.model === ''"
         @delete-filter="deleteFilter"
-        @enter="executeSearch"
       />
 
       <div class="mb-24">
@@ -49,28 +48,38 @@
 
       <div class="filter-actions mb-48">
         <bf-button
+          v-if="searchPage === 'FileUpload'"
           class="btn-search"
           @click="executeSearch"
         >
           Search
         </bf-button>
         <bf-button
+          v-else
+          class="btn-search"
+          @click="closeDialog"
+        >
+          Apply Filters
+        </bf-button>
+        <bf-button
           class="secondary"
           @click="clearAll"
         >
-          Clear All
+          Clear All Filters
         </bf-button>
       </div>
 
-      <template v-if="showSearchResults">
+      <template v-if="searchPage === 'FileUpload' && showSearchResults">
         <h2>Search Results</h2>
-
         <search-results
           ref="searchResults"
           class="mb-48"
           :dataset-list="selectedDatasets"
           :search-criteria="search"
           :show-search-results="showSearchResults"
+          :show-download-results=false
+          :show-dataset-column=false
+          :show-menu-column=false
           :table-search-params="tableSearchParams"
           @reset-search-params="resetSearchParams"
         />
@@ -159,6 +168,7 @@ export default {
       search: clone(search),
       showSearchResults: false,
       allModels: [],
+<<<<<<< HEAD
       relatedModels: [],
       isLoadingAllModels: false,
       isLoadingRelatedModels: false,
@@ -170,18 +180,25 @@ export default {
         offset: 0
       },
       filteredDatasets:[]
+=======
+      modelsList: MODELS_LIST
+>>>>>>> main
     }
   },
 
   computed: {
     ...mapState([
+<<<<<<< HEAD
       'config',
       'activeOrganization',
       'primaryNavOpen',
       'primaryNavCondensed',
       'secondaryNavOpen',
       'searchModalVisible',
+=======
+>>>>>>> main
       'searchModalSearch',
+      'searchPage'
     ]),
     ...mapGetters(['userToken']),
 
@@ -290,6 +307,7 @@ export default {
       }
     },
 
+<<<<<<< HEAD
     /**
      * Watch selected model and make a request
      * @param {String} val
@@ -297,27 +315,27 @@ export default {
     getRelatedModelsUrl: function(val) {
       if (val) {
         this.getRelatedModels()
+=======
+    tableSearchParams: function() {
+      return {
+        limit: this.searchModalSearch.limit,
+        offset: this.searchModalSearch.offset
+>>>>>>> main
       }
     }
   },
 
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'applyFiltersToMetadata']),
 
     /**
      * Resets table search params for pagination
      */
-    resetSearchParams: function(buttonVal) {
-      this.tableSearchParams = {
-        limit: 25,
-        offset: 0
-      }
-      this.$nextTick(() => {
-        if (buttonVal === 'Files') {
-          this.$refs.searchResults.fetchFiles()
-        } else {
-          this.$refs.searchResults.fetchRecords()
-        }
+    resetSearchParams: function() {
+      const newSearch = mergeRight(this.searchModalSearch, { limit: 25, offset: 0 })
+      this.updateSearchModalSearch(newSearch)
+      this.$nextTick(async () => {
+        await this.$refs.searchResults.fetchRecords()
       })
     },
 
@@ -446,13 +464,17 @@ export default {
     /**
      * Execute search based on search criteria
      */
+<<<<<<< HEAD
     executeSearch: function(shouldAddSavedSearch = true) {
+=======
+    executeSearch: async function() {
+>>>>>>> main
       const isSearchInvalid = this.validateSearch()
+      if (isSearchInvalid) { return }
 
-      if (isSearchInvalid) {
-        return
-      }
+      if (this.searchPage === 'FileUpload') {
         this.showSearchResults = true
+<<<<<<< HEAD
         this.tableSearchParams = {
           limit: 25,
           offset: 0
@@ -465,6 +487,10 @@ export default {
         if (shouldAddSavedSearch) {
           this.addSavedSearch(this.search)
         }
+=======
+        this.resetSearchParams()
+      }  
+>>>>>>> main
     },
 
     /**
@@ -505,11 +531,18 @@ export default {
      * @params {Number} idx
      */
     deleteFilter: function(idx) {
+<<<<<<< HEAD
       this.search.filters.splice(idx, 1)
 
       if (this.search.filters.length === 0) {
+=======
+      this.searchModalSearch.filters.splice(idx, 1)
+      this.updateSearchModalSearch(clone(this.searchModalSearch))
+      if (this.searchModalSearch.filters.length === 0) {
+>>>>>>> main
         this.addFilter()
       }
+      this.executeSearch()
     },
 
     /**
@@ -520,6 +553,8 @@ export default {
       // we can just hide the table since the result arrays are reset when making
       // a new call to get results
       this.showSearchResults = false
+
+      this.executeSearch()
     },
   }
 }
