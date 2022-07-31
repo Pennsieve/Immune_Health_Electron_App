@@ -171,7 +171,7 @@ import DataGridGraph from '@/components/DataModelGraph/DataGridGraph.vue'
 
   .graph-browser {
     height: 100%;
-    margin: -32px;
+    margin: 0px;
     height: calc(100vh - 130px);
     overflow: hidden;
     position: relative;

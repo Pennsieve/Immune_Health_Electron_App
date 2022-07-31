@@ -38,6 +38,9 @@
             Filter Search Patients
           </bf-button>
         </div>
+        <bf-button class='clearbtn' @click="ClearAllSelections()">
+            Clear selection
+          </bf-button>
         <div>
           <bf-button v-on:click="filterSearch('visits')">
             Filter Search Visits
@@ -52,9 +55,6 @@
       <div class="graph-browser-container">
         <graph-browser/>
       </div>
-      <bf-button @click="ClearAllSelections()">
-          Clear selection
-        </bf-button>
     </span>
   </div>
 </template>
@@ -132,5 +132,11 @@ export default {
   color: $app-primary-color;
   font-size: 1rem;
   font-weight: 500;
+}
+.clearbtn {
+  position: absolute;
+  right: 100px;
+}
+.graph-browser-container {
 }
 </style>

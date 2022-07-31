@@ -8,55 +8,7 @@ Vue.use(Vuex);
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
-const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzQzZWI4NjZmLTAyN2YtNDQxMC04YTU2LWVkNDQ3ZWQ0ZjljNCIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjRlNGQ2YzU4LTc3ZGMtNDgxYy05MTljLWU4Y2E0OGU5YjlkZiIsImV2ZW50X2lkIjoiNGFmNGI5Y2UtZTY1Yi00NmQwLWEzNjctMjQ2M2FlODQzOGIxIiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1OTExMjI1MiwiZXhwIjoxNjU5MTE1ODUyLCJpYXQiOjE2NTkxMTIyNTIsImp0aSI6ImFkNzYxMjg5LTM2ZTctNGE3ZS05MTZlLWY0NTBmNWJmNGRjMCIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.Wur-QGmM2ZG1x1PtCj2QPWkXWpDEkCuyaeKAVTJBeK6RI4KTNo0wTcKRvbFvOV8awGQwP-scZP0BmMzDYZhE7g-kfr08-GsUcHweaE40n0rWKmFFp9960B7zHT5ILnDp3yzHZ7zbpIuBGWIQlv09ahDCpeJZP7NnYY_RLqq7KIT_d5sjap-t2tbjrekr6EBMMKBJn1pdizLruQd42qDnHbI5GhbYCkMwsPOQkgsZL7DtoGUlgJCiQugwT-x94b4gU1MlpcK2Ko-9jhCtP0kqe0vm6Gh-_hh4KFPYUVPk7fsfbLMw5qZA_3hckB4LCq85WpkEyrcsbP9HgvQUAaI7qg'
-
-const header = {
-  headers: { Authorization: `Bearer ${API_KEY}`}
-}
-
-const getStudyName = function(study) {
-  const studyValues = propOr([], 'values', study)
-  if (isEmpty(studyValues)) {
-    return ''
-  }
-  return propOr('', 'value', studyValues[0])
-}
-
-const getQuery = async (model, searchCriteria) => {
-  const searchFilters = []
-  const filters = propOr([], 'filters', searchCriteria)
-  let query = {
-    model: model,
-    datasets: [2] // dataset id for Penn Immune Health dataset
-  }
-  const relevantModelsUrl = `https://api.pennsieve.io/models/v2/organizations/655/autocomplete/models?relatedTo=${model}`
-  const relevantModels = await axios.get(relevantModelsUrl, header).then(({data}) => {
-    return data.models.map((model) => { return model['name'] })
-  })
-
-  filters.forEach(filter => {
-    /**
-     * Only add filter if the target exists
-     * This is to allow searches with empty filters
-     * We're counting on the validation steps before
-     * this to ensure the filters are complete
-     */
-    if (filter.target && !filter.isInvalid) {
-      // Only add the filter if it is relevant to the model the query is being requested for
-      if (relevantModels.includes(filter.target)) {
-        searchFilters.push({
-          model: filter.target,
-          property: filter.property,
-          operator: filter.operation,
-          value: filter.value
-        })
-      }
-    }
-  })
-  query.filters = searchFilters
-
-  return query
-}
+const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzE2NDYyOWRiLWYxMzQtNDljNS1iYmNlLTAyNzFjMmUzYmE1ZCIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6Ijk3MjFhOWJjLTFjMzItNDcxNS1hYTIxLWJiY2Q1YWQ2NDZkZSIsImV2ZW50X2lkIjoiNThkN2YxMGQtOGE4ZS00M2ExLTk4NGQtNjI5YmUwMjY3YmQ5IiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1OTIyNjIyOCwiZXhwIjoxNjU5MjI5ODI4LCJpYXQiOjE2NTkyMjYyMjgsImp0aSI6ImE4NmRjYzk4LTBlODItNDFhOC04MTc0LTgzODc3ODNiMmM3YSIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.XexO1yyFHyXMrkLLO49bNML7_M_wR7CsxPdLMA0ZqE9GHrENO0XTGUZkvKYmHr8ZPDdS4lvekngsLemoCpb-iuxaNQkuTWoxccE5fuMsQJ7JdVUivijyl7_19-ZCY42BuLfvdF57Eq3xuI4vGZKLxmYbso30aAwiOx_wLoeUFOb4rNtYIxXijJCNS4JbP9wuLloYPMd6yd8Yhczq-D_3wbq3WwJc4O_qVsy6vFkSarCoOoZ6-0Vuf4ysI88PdZHDkI54oIMe2rzOCP51RwJ8fef-JCGrbGiVw_Zs39QTmJMjm5cmG0oG87lv1qYhuNolyA9tGcdR83fs0I5MB8GAig'
 
 const store = new Vuex.Store({
   state: {
@@ -73,24 +25,13 @@ const store = new Vuex.Store({
     },
     scientificUnits: [],
     datasetRole: 'viewer',
-    //The following 3 are all the records for the models of interest that are related to a selected study (selected study sets them initially)
-    allPatientsMetadata: [],
-    allVisitsMetadata: [],
-    allSamplesMetadata: [],
-    // The following 3 are filtered subsets of the 3 properties above after applying the searchModalSearch filters to them
-    filteredPatientsMetadata: [],
-    filteredSamplesMetadata: [],
-    filteredVisitsMetadata: [],
-    //TODO: variable to be updated whenever a single visit or sample is selected on either the data viz page or the uploads page. Will just have one upload target for now
-    //TODO: This can be set by: selectedCurrVisit and selectedCurrSample (under the condition that only one of the two is selected and the list has a length of 1),
-    //uploadTarget: {},
+    // The target that the uploaded files will be linked to
+    linkingTarget: {},
     searchPage: '',
-    shadedParticipants: [],
+shadedParticipants: [],
     shadedVisits: [],
     shadedSamples: [],
-    shadedFiles: [],
-    linkingTarget: {}
-
+    shadedFiles: []
   },
   getters: {
     username (state) {
@@ -172,16 +113,16 @@ const store = new Vuex.Store({
     SET_SEARCH_PAGE (state, data) {
       state.searchPage = data
     },
+    SET_LINKING_TARGET (state, data) {
+      state.linkingTarget = data
+    },
     CLEAR_CLICKED_SELECTIONS (state){
       state.shadedParticipants = []
       state.shadedVisits = []
       state.shadedSamples = []
       state.shadedFiles = []
     },
-      SET_LINKING_TARGET (state, data) {
-        state.linkingTarget = data
-      },
-      SET_SHADED_PARTICIAPNTS(state, data){
+    SET_SHADED_PARTICIAPNTS(state, data){
         state.shadedParticipants = data
       },
       SET_SHADED_VISITS(state, data){
@@ -192,10 +133,24 @@ const store = new Vuex.Store({
       },
       SET_SHADED_FILES(state, data){
         state.shadedFiles = data
-      },
+      }
   },
   actions: {
-    // TODO: 'token' should not take the value of API_KEY
+    clearClickedSelections({commit}){
+      commit('CLEAR_CLICKED_SELECTIONS')
+    },
+    setShadedParticipants({commit}, data){
+      commit('SET_SHADED_PARTICIAPNTS',data)
+    },
+    setShadedVisits({commit}, data){
+      commit('SET_SHADED_VISITS',data)
+    },
+    setShadedSamples({commit}, data){
+      commit('SET_SHADED_SAMPLES',data)
+    },
+    setShadedFiles({commit}, data){
+      commit('SET_SHADED_FILES',data)
+    },
     async login({ dispatch, state }) {
       // Set a dummy profile for now
       this.state.profile = {
@@ -217,82 +172,11 @@ const store = new Vuex.Store({
         commit('SET_ALL_STUDIES', response.data)
       })
     },
-    // fetches all the patients metadata for the selected study
-    async fetchAllPatientsMetadata({ commit, state }) {
-      const selectedStudyId = propOr('', 'id', state.selectedStudy)
-      const patientsStudyMetadataUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances/${selectedStudyId}/relations/patient?includeIncomingLinkedProperties=true`
-      await axios.get(patientsStudyMetadataUrl, header).then(response => {
-        commit('SET_ALL_PATIENTS_METADATA', response.data)
-      })
-    },
-    // fetches all the visits metadata for the selected study
-    async fetchAllVisitsMetadata({ commit, state }) {
-      const selectedStudyId = propOr('', 'id', state.selectedStudy)
-      const visitsStudyMetadataUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances/${selectedStudyId}/relations/visits?includeIncomingLinkedProperties=true`
-      await axios.get(visitsStudyMetadataUrl, header).then(response => {
-        commit('SET_ALL_VISITS_METADATA', response.data)
-      })
-    },
-    // fetches all the samples metadata for the selected study
-    async fetchAllSamplesMetadata({ commit, state }) {
-      const selectedStudyId = propOr('', 'id', state.selectedStudy)
-      const samplesStudyMetadataUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances/${selectedStudyId}/relations/samples?includeIncomingLinkedProperties=true`
-      await axios.get(samplesStudyMetadataUrl, header).then(response => {
-        commit('SET_ALL_SAMPLES_METADATA', response.data)
-      })
-    },
-    /*
-    async applyFiltersToMetadata({ commit, state }) {
-      const toQueryParams = (params) => Object.keys(params).map(key => key + '=' + params[key]).join('&');
-      const params = compose(
-        toQueryParams
-      )({limit: 25, offset: 0})
-
-      const filteredRecordsUrl = `https://api.pennsieve.io/models/v2/organizations/655/search/records?${params}`
-
-      // if there are no valid filters then return all metadata
-      if (!state.searchModalSearch.filters.some(filter => !filter.isInvalid)) {
-        commit('SET_FILTERED_VISITS_METADATA', state.allVisitsMetadata)
-        commit('SET_FILTERED_PATIENTS_METADATA', state.allPatientsMetadata)
-        commit('SET_FILTERED_SAMPLES_METADATA', state.allSamplesMetadata)
-      } else {
-        const visitsQuery = await getQuery('visits', state.searchModalSearch)
-
-        await axios.post(filteredRecordsUrl, visitsQuery, header).then(response => {
-          let filteredVisitsRecords = pathOr([], ['data', 'records'], response)
-          // Filter by selected study
-          filteredVisitsRecords = filteredVisitsRecords.filter(record => record.values['study'] === getStudyName(state.selectedStudy))
-          commit('SET_FILTERED_VISITS_METADATA', filteredVisitsRecords)
-        })
-
-        const patientsQuery = await getQuery('patient', state.searchModalSearch)
-
-        await axios.post(filteredRecordsUrl, patientsQuery, header).then(response => {
-          let filteredPatientsRecords = pathOr([], ['data', 'records'], response)
-          // Filter by selected study
-          filteredPatientsRecords = filteredPatientsRecords.filter(record => record.values['study'] === getStudyName(state.selectedStudy))
-          commit('SET_FILTERED_PATIENTS_METADATA', filteredPatientsRecords)
-        })
-
-        const samplesQuery = await getQuery('samples', state.searchModalSearch)
-
-        await axios.post(filteredRecordsUrl, samplesQuery, header).then(response => {
-          let filteredSamplesRecords = pathOr([], ['data', 'records'], response)
-          // Filter by selected study
-          filteredSamplesRecords = filteredSamplesRecords.filter(record => record.values['study'] === getStudyName(state.selectedStudy))
-          commit('SET_FILTERED_SAMPLES_METADATA', filteredSamplesRecords)
-        })
-      }
-    },
-    */
     updateSearchModalVisible({ commit }, data) {
       commit('UPDATE_SEARCH_MODAL_VISIBLE', data)
     },
     updateSearchModalSearch({ commit }, data) {
       commit('UPDATE_SEARCH_MODAL_SEARCH', data)
-    },
-    clearClickedSelections({commit}){
-      commit('CLEAR_CLICKED_SELECTIONS')
     },
     setDatasetRole({commit}, data) {
       commit('SET_DATASET_ROLE', data)
@@ -302,18 +186,6 @@ const store = new Vuex.Store({
     },
     setLinkingTarget({ commit }, data) {
       commit('SET_LINKING_TARGET', data)
-    },
-    setShadedParticipants({commit}, data){
-      commit('SET_SHADED_PARTICIAPNTS',data)
-    },
-    setShadedVisits({commit}, data){
-      commit('SET_SHADED_VISITS',data)
-    },
-    setShadedSamples({commit}, data){
-      commit('SET_SHADED_SAMPLES',data)
-    },
-    setShadedFiles({commit}, data){
-      commit('SET_SHADED_FILES',data)
     },
     async setScientificUnits ({ commit }) {
       const scientificUnitsUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/properties/units?api_key=${API_KEY}`

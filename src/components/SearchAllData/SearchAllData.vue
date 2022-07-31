@@ -180,19 +180,8 @@ export default {
 
       if (this.searchPage === 'FileUpload') {
         this.showSearchResults = true
-        this.tableSearchParams = {
-          limit: 25,
-          offset: 0
-        },
-        this.$nextTick(() => {
-          this.$refs.searchResults.fetchFiles()
-          this.$refs.searchResults.fetchRecords()
-        })
-      } else {
-        this.applyFiltersToMetadata()
+        this.resetSearchParams()
       }
-      this.resetSearchParams()
-    }
     },
 
     /**
