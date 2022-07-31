@@ -1,3 +1,4 @@
+
 <template>
   <div class="search-results">
     <div v-loading="isLoadingRecords">
@@ -41,14 +42,14 @@
                 @update-page-size="updateTableSearchLimit"
               />
             </div>
-            <!--<el-pagination
+            <el-pagination
               :page-size="tableSearchParams.limit"
               :pager-count="5"
               :current-page="curFileSearchPage"
               layout="prev, pager, next"
               :total="tableResultsTotalCount"
               @current-change="onPaginationPageChange"
-            />-->
+            />
           </div>
           <records-table
             class="search-results-records-table"
@@ -71,74 +72,22 @@
 <script>
 /* eslint-disable */
 import { mapActions, mapGetters, mapState } from 'vuex'
-
 import RecordsTable from './RecordsTable/RecordsTable.vue'
 import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
-
 import Request from '@/mixins/request/index'
 import FormatDate from '@/mixins/format-date'
-<<<<<<< HEAD
-import EventBus from '@/utils/event-bus'
-import { getFormatter } from '@/mixins/data-type/utils';
-
-/**
- * Compute query from searchCriteria
- * @param {Object} searchCriteria
- * @returns {Object}
- */
-const getQuery = (searchCriteria) => {
-  const searchFilters = []
-  const model = propOr('', 'model', searchCriteria)
-  const filters = propOr([], 'filters', searchCriteria)
-  const datasets = propOr([], 'datasets', searchCriteria)
-  let query = {
-    model: model,
-    datasets
-  }
-  filters.forEach(filter => {
-    const type = propOr('', 'type', filter)
-    if (type === 'dataset') {
-      // make dataset endpoint call here
-      const datasetIntId = propOr('', 'targetIntId', filter)
-      query.datasets.push(datasetIntId)
-    } else {
-      /**
-       * Only add filter if the target exists
-       * This is to allow searches with empty filters
-       * We're counting on the validation steps before
-       * this to ensure the filters are complete
-       */
-      if (filter.target && !filter.isInvalid) {
-        searchFilters.push({
-          model: filter.target,
-          property: filter.property,
-          operator: filter.operation,
-          value: filter.value
-        })
-      }
-    }
-  })
-  query.filters = searchFilters
-=======
->>>>>>> main
-
 import { mergeRight } from 'ramda'
-
-import { 
-  fetchFilteredVisitsMetadataRelatedToStudy, 
-  fetchFilteredSamplesMetadataRelatedToStudy 
+import {
+  fetchFilteredVisitsMetadataRelatedToStudy,
+  fetchFilteredSamplesMetadataRelatedToStudy
 } from '@/utils/fetchRecords'
-
 export default {
   name: 'SearchResults',
-
   components: {
     RecordsTable,
     PaginationPageMenu
   },
-
   mixins: [Request, FormatDate],
-
   props: {
     searchCriteria: {
       type: Object,
@@ -187,7 +136,6 @@ export default {
       default: false
     }
   },
-
   data() {
     return {
       recordResults: [],
@@ -200,49 +148,9 @@ export default {
       isLoadingFiles: false,
     }
   },
-
   computed: {
-<<<<<<< HEAD
-    ...mapGetters(['getModelById']),
-
-    ...mapState(['config', 'userToken', 'activeOrganization']),
-
-    /**
-     * Compute active organization int ID
-     * @returns {String}
-     */
-    activeOrgIntId: function() {
-      return pathOr('', ['organization', 'intId'], this.activeOrganization)
-    },
-
-    /**
-     * Gets files url
-     * @returns {String}
-     */
-    getFilesUrl: function() {
-      const params = compose(
-        toQueryParams
-      )(this.tableSearchParams)
-
-      return `${this.config.apiUrl}/models/v2/organizations/${this.activeOrgIntId}/search/packages?${params}`
-    },
-
-    /**
-     * Get records url
-     * @returns {String}
-     */
-    getRecordsUrl: function() {
-      const params = compose(
-        toQueryParams
-      )(this.tableSearchParams)
-
-      return `${this.config.apiUrl}/models/v2/organizations/${this.activeOrgIntId}/search/records?${params}`
-    },
-
-=======
     ...mapState(['selectedStudy', 'searchModalSearch']),
     ...mapGetters(['userToken']),
->>>>>>> main
     /**
      * Returns the current page postion for files table in pagination ticker
      * @returns {Number}
@@ -257,7 +165,6 @@ export default {
     noResultsFound: function() {
       return this.recordResults.length === 0
     },
-
     /**
      * Compute if the no results found state should be shown
      * @returns {Boolean}
@@ -266,7 +173,6 @@ export default {
       return this.noResultsFound
         && this.isLoadingRecords === false
     },
-
     /**
      * Compute if the results state should be shown
      * @returns {Boolean}
@@ -276,9 +182,7 @@ export default {
         && this.isLoadingRecords === false
     }
   },
-
   watch: {
-
     /**
      * Watches for button change in order
      * to reset pagination
@@ -292,24 +196,20 @@ export default {
       immediate: true
     }
   },
-
   methods: {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setLinkingTarget']),
-
     /**
      * Fetches record search results
      */
     fetchRecords: async function() {
-      const metadata = this.selectedButton === 'Visits' ? 
-        await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset) : 
+      const metadata = this.selectedButton === 'Visits' ?
+        await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset) :
         await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
       // TODO: Figure out how to calculate total (records.length is incorrect)
-
       this.tableResultsTotalCount = metadata.totalCount
       this.recordHeadings = metadata.headings
       this.recordResults = metadata.records
     },
-
     /**
      * Updates file search limit based on pagination selection
      * @param {Nunber} newLimit
@@ -319,7 +219,6 @@ export default {
       this.updateSearchModalSearch(newSearch)
       await this.fetchRecords()
     },
-
     /**
      * Update pagination offset
      */
@@ -329,7 +228,6 @@ export default {
       this.updateSearchModalSearch(newSearch)
       await this.fetchRecords()
     },
-
     /**
      * Navigate to records details route
      * @param {Object} record
@@ -345,14 +243,12 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/_variables.scss';
-
 h3 {
   font-size: 16px;
   font-weight: normal;
   letter-spacing: 0.5px;
   color: $gray_6;
 }
-
 .no-results-container {
   p {
     font-size: 13px;
@@ -363,7 +259,6 @@ h3 {
     margin-top: -14px;
   }
 }
-
 .results-container {
   display: inline-flex;
   flex-direction: column;
@@ -378,36 +273,30 @@ h3 {
     margin-top: 7px;
   }
 }
-
 .results-toggle {
   display: inline-flex;
   align-items: center;
   flex-direction: row;
   margin-bottom: 21px;
 }
-
 .file-pagination {
   margin-bottom: 14px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-
   /deep/ .el-dropdown-text-link:not(:hover, :active) {
     color: $gray_6;
   }
 }
-
 .files-radio-button {
   /deep/ .el-radio-button__inner {
     width: 85px !important;
   }
 }
-
 .el-loading-parent--relative {
   min-height: 52px // Matches the no results state
 }
-
 /deep/ .el-radio-button__inner {
   height: 32px;
   padding-top: 8px;
@@ -415,19 +304,16 @@ h3 {
   color: $gray_4;
   font-weight: 500;
 }
-
 /deep/ .el-radio-button__orig-radio:checked + .el-radio-button__inner {
   background-color: $purple_3;
   border-color: $purple_3;
   color: white;
 }
-
 /deep/ .el-radio-button__orig-radio:disabled + .el-radio-button__inner {
   color: $disabled-radio-button-text-color;
   border-color: $disabled-radio-button-border-color;
   background-color: $disabled-radio-button-background-color;
 }
-
 .download-icon {
   margin-top: -4px;
 }

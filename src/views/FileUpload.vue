@@ -56,27 +56,25 @@
           </bf-button>
         </template>
       </ih-subheader>
-<<<<<<< HEAD
-      <h2>Filter Files placeholder</h2>
-      <bf-button @click="setPlaceholder()">
-        Set test uploadDestination
+      <h2></h2>
+      <bf-button v-on:click="updateSearchModalVisible(true)">
+        Select Linking Target
       </bf-button>
-      <hr>
       <div class="logo-container">
         <span>
-        <bf-button @click="onUploadMenuClick">
-          Upload
+        <bf-button @click="linkToTarget()">
+          Link selected files to record
         </bf-button>
         </span>
+        </div>
         <span>
           <div>
-          <bf-button @click="linkToTarget()">
-            Link selected files to record
+          <bf-button @click="onUploadMenuClick">
+            Upload Files
           </bf-button>
           </div>
-          <br>
-          <div style = "position:relative; right:135px;">
-          <h2 class="orgtext" style = "position:relative; right:280px;">Staged Files</h2>
+          <hr>
+          <h2 class="orgtext">Staged Files</h2>
           <files-table
             v-if="hasFiles"
             :data="files"
@@ -87,7 +85,6 @@
             @selection-change="setSelectedFiles"
             @click-file-label="onClickLabel">
           </files-table>
-          </div>
           <!--
           <bf-drop-info
             v-if="showDropInfo"
@@ -116,12 +113,7 @@
           />
           -->
         </span>
-=======
       <div>
-        <bf-button v-on:click="updateSearchModalVisible(true)">
-          Select Linking Target
-        </bf-button>
->>>>>>> main
       </div>
     </span>
   </div>
@@ -131,7 +123,6 @@
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
-<<<<<<< HEAD
 //import BfUploadMenu from '@/components/BfUploadMenu/BfUploadMenu.vue'
 import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
@@ -142,13 +133,11 @@ import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
 import {findIndex,pathEq,} from 'ramda'
 import { mapGetters,
-         //mapActions
+         mapActions,
+         mapState
        }
 from 'vuex'
-=======
-import { mapActions, mapGetters, mapState } from 'vuex'
 import { isEmpty } from 'ramda'
->>>>>>> main
 
 export default {
   name: 'FileUpload',
@@ -160,7 +149,6 @@ export default {
     FilesTable
     //BfDeleteDialog
   },
-<<<<<<< HEAD
   mixins: [
     Sorter,
     Request,
@@ -168,7 +156,10 @@ export default {
   ],
   computed: {
     ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId']),
-
+  ...mapState(['linkingTarget']),
+  isLinkingTargetSet() {
+    return !isEmpty(this.linkingTarget)
+  },
     //returns true if more than 1 select file
     multipleSelected: function () {
       return this.selectedFiles.length > 1
@@ -198,6 +189,7 @@ export default {
   },
   mounted: function () {
     //if no files yet
+    this.setSearchPage('FileUpload')
     if (!this.files.length){
       this.fetchFiles()
     }
@@ -217,7 +209,7 @@ export default {
       EventBus.$off('update-external-file', this.onFileRenamed)
     },
   methods: {
-    //...mapActions(['setPlaceholderUploadDest']),
+      ...mapActions(['setSearchPage', 'updateSearchModalVisible']),
     /**
      * Handle upload menu click event
      * @param {String} command
@@ -566,20 +558,6 @@ export default {
           this.handleXhrError(response)
         })
     },
-=======
-  mounted() {
-    this.setSearchPage('FileUpload')
-  },
-  methods: {
-    ...mapActions(['setSearchPage', 'updateSearchModalVisible'])
-  },
-  computed: {
-    ...mapGetters(['allStudies', 'selectedStudyName']),
-    ...mapState(['linkingTarget']),
-    isLinkingTargetSet() {
-      return !isEmpty(this.linkingTarget)
-    }
->>>>>>> main
   }
 }
 </script>
@@ -596,7 +574,6 @@ export default {
 .container {
   display: flex;
 }
-<<<<<<< HEAD
 .logo-container {
   gap: 5px;
   display: flex;
@@ -615,7 +592,6 @@ export default {
     //padding: 0 2rem;
     color: #2f26ad;
   }
-=======
 .property-text {
   color: $app-primary-color;
   font-size: 1rem;
@@ -623,6 +599,6 @@ export default {
 }
 ::v-deep .text-container {
   align-items: flex-end;
->>>>>>> main
+}
 }
 </style>

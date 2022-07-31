@@ -32,26 +32,22 @@
           </bf-button>
         </template>
       </ih-subheader>
-      <div>
-        <bf-button v-on:click="updateSearchModalVisible(true)">
-          Search Studies
-        </bf-button>
-      </div>
-      <!-- graph browser here -->
-      <br>
-      <hr>
-      <h2 class="orgtext">Related Files</h2>
-      <div>
-        <files-table
-          v-if="hasFiles"
-          :data="files"
-          :multiple-selected="multipleSelected"
-          @delete="showDelete"
-          @process="processFile"
-          @copy-url="getPresignedUrl"
-          @selection-change="setSelectedFiles"
-          @click-file-label="onClickLabel">
-        </files-table>
+      <div v-if="Object.keys(selectedStudy).length != 0">
+        <div>
+          <bf-button v-on:click="filterSearch('patient')">
+            Filter Search Patients
+          </bf-button>
+        </div>
+        <div>
+          <bf-button v-on:click="filterSearch('visits')">
+            Filter Search Visits
+          </bf-button>
+        </div>
+        <div>
+          <bf-button v-on:click="filterSearch('samples')">
+            Filter Search Samples
+          </bf-button>
+        </div>
       </div>
     </span>
   </div>
@@ -59,72 +55,26 @@
 
 <script>
 import IhSubheader from '@/components/shared/IhSubheader.vue'
-import FilesTable from '@/components/FilesTable/FilesTable.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
-import { mapActions, mapGetters } from 'vuex'
-
+import { mapActions, mapGetters, mapState } from 'vuex'
+import { clone, mergeRight } from 'ramda'
+import { v1 } from 'uuid'
 export default {
   name: 'StudiesBrowser',
   components: {
     IhSubheader,
     BfButton,
-    BfNavigationSecondary,
-    FilesTable
+    BfNavigationSecondary
   },
   mounted() {
     this.setSearchPage('StudiesBrowser')
   },
   computed: {
+    ...mapState(['searchModalSearch']),
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
-    //returns true if more than 1 select file
-    multipleSelected: function () {
-      return this.selectedFiles.length > 1
-  }
-},
-  data(){
-    return {
-      hasFiles: true,
-      selectedFiles: [],
-      filteredFilesMetadata: {}
-  }
-  },
-  watch: {
-    //when related files are returned, fill the table with said files
-    filteredFilesMetadata: {
-      handler: function(){
-        //if there are no files yet, fetch them
-        if (!this.files.length){
-          this.fetchFiles()
-        }
-      }
-    }
   },
   methods: {
-<<<<<<< HEAD
-    ...mapActions(['updateSearchModalVisible']),
-    /**
-     * Set selected files
-     * @param {Array} selection
-     */
-    setSelectedFiles: function (selection) {
-      this.selectedFiles = selection
-    }/*
-    ,
-    //gets all related files. UNCOMMENT
-    fetchFiles: function () {
-
-          //must assign 'file'to something
-          this.file = filteredVisitsMetadata
-          this.files = filteredVisitsMetadata.children.map(file => {
-            //figure out whats happening here
-            file.storage = 0
-            }
-            return file
-          })
-          this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)
-          this.ancestors = filteredVisitsMetadata.ancestors
-=======
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage']),
     filterSearch(model) {
       const newFilters = clone(this.searchModalSearch.filters)
@@ -149,11 +99,8 @@ export default {
       })
       this.updateSearchModalSearch(search)
       this.updateSearchModalVisible(true)
->>>>>>> main
     }
   }
-  */
-}
 }
 </script>
 <style scoped lang="scss">
@@ -173,9 +120,5 @@ export default {
   color: $app-primary-color;
   font-size: 1rem;
   font-weight: 500;
-}
-.orgtext {
-  //padding: 0 2rem;
-  color: #2f26ad;
 }
 </style>
