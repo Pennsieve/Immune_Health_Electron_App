@@ -62,7 +62,7 @@
 <script>
 import { mapGetters } from 'vuex'
 
-import BfButton from '../shared/BfButton/BfButton.vue'
+import BfButton from '@/components/shared/BfButton.vue'
 import BfDialogHeader from '../shared/bf-dialog-header/BfDialogHeader.vue'
 import DialogBody from '../shared/dialog-body/DialogBody.vue'
 import DatasetActivityDetail from './DatasetActivityDetail.vue'

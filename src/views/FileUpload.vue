@@ -221,6 +221,7 @@ export default {
      * Creates relationships with file(s)
      */
     createFileRelationshipRequests: function() {
+      console.log('createrelationshiprequests called')
       //change datasetId
       this.isCreating = true
       const datasetId = this.datasetId;
@@ -228,6 +229,7 @@ export default {
       //CHANGE THIS URL
       const url = `https://api.pennsieve.io/datasets/${datasetId}/proxy/package/instances`
       //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
+
       const queues = Array.from(this.selectedFiles).map(itemId => {
         const recordId = itemId
         const packageId = this.uploadDestination //the record we are linking to
@@ -411,7 +413,7 @@ export default {
     createRelationships: function() {
       this.isLoading = true
     //  if (this.isFile) {
-
+      console.log('createrelationships called')
         //this.checkBelongsToExists()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
