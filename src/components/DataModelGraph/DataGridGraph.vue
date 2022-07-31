@@ -435,13 +435,74 @@ export default {
     ...mapActions(['setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
     ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
 
+    splitArrIntoPages(arr){
+      const chunkSize = 100;
+      const groups = arr.map((e, i) => {
+        return i % chunkSize === 0 ? arr.slice(i, i + chunkSize) : null; }).filter(e => { return e; });
+    },
     handleFilterChangeClick(){
       //Need to get the model from the click (nodeData.details.type, or parent.displayName)
-      //TO DO: update the backlogs of all the models that are not the current one. get all related on a per model basis as below, and filter returned by
-      //the property that they exist within the current backlogs
+      model = nodeData.details.type //nodeData.parent.displayName
+      var model_lst = ['patient','visits','samples','files']
+      model_lst = model_lst.filter(e => e !== model);
+      switch(model){
+        case 'patient':
+          var click_lst = this.shadedParticipants;
+        break;
+        case 'visits':
+          var click_lst = this.shadedVisits;
+        break;
+        case 'samples':
+          var click_lst = this.shadedSamples;
+        break;
+        case 'files':
+          var click_lst = this.shadedFiles;
+
+      }
+        for(record in click_lst){
+          for(m in model_lst){
+            switch(m){
+              case 'patient':
+                var mbacklog = this.patientsBacklog;
+                var view = this.selectedPatientRecords;
+                var orderBy = 'externalparticipantid';
+              break;
+              case 'visits':
+                var mbacklog = this.visitsBacklog;
+                var view = this.selectedVisitRecords;
+                var orderBy = 'event date and time';
+              break;
+              case 'samples':
+                var mbacklog = this.samplesBacklog;
+                var view = this.selectedSampleRecords;
+                var orderBy = 'study sample ID';
+              break;
+              case 'files':
+                var mbacklog = this.filesBacklog;
+                var view = this.selectedFileRecords;
+            }
+            //call to api that gets all of the things related (directly or transitivley) to current record for model type m
+            //for each in response, if recordID is in current instance of mbacklog, then add to temp backlog
+            var resp_arr =[];
+            //or put in resp_arr and get intersection
+            var flat_arr = mbacklog.flat();
+            const filteredBacklog = array1.filter(value => flat_arr.includes(value));
+            //sort this before breaking it up into pages
+            if (m == 'patient' || 'visits' || 'samples' ||){
+              filteredBacklog = filteredBacklog.sort((a, b) => b.orderBy - a.orderBy)
+            }
+            var new_arr = splitArrIntoPages(filteredBacklog);
+            //value or reference here??
+            mbacklog = new_arr
+            //setting the set of selected files that will appear on the page to the first page of the backlog
+            view = new_arr[0]
+
+          }
+        }
+      // --> do this for nonclick filters as well
     },
     handleFilterChangeHelper(){
-
+      //NOT optional
     },
     //filters the page for the model the filters are applied to and sets the backlog for that model
     // eslint-disable-next-line
@@ -725,7 +786,7 @@ export default {
         //saving current selected to store
       }
     },
-
+//DEPRECATED with new API endpoint
     setAllRelatedFilter: function(modelname, startrecord, targetmodel, pagenumber){
         //need to reset the pages for all models
         this.participantsPage = pagenumber;
@@ -779,6 +840,7 @@ export default {
 
       },
     /*
+    //DEPRECATED with new API endpoint
     renderAfterFilter: function(model,filter_results){
 
       //...first, get all of the records from the first backlog into a flat array, then
