@@ -92,6 +92,7 @@ import { mapGetters,
          //mapActions
        }
 from 'vuex'
+// import PennsieveClient from '@/utils/pennsieve/client.js'
 
 export default {
   name: 'FileUpload',
@@ -144,29 +145,28 @@ export default {
       this.fetchFiles()
     }
 
-    this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
-    EventBus.$on('add-uploaded-file', this.onAddUploadedFile.bind(this))
-      EventBus.$on('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
-      EventBus.$on('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
-      EventBus.$on('update-external-file', this.onFileRenamed)
-
-    },
-    destroyed: function () {
-      this.$el.removeEventListener('dragenter', this.onDragEnter.bind(this))
-      EventBus.$off('add-uploaded-file', this.onAddUploadedFile.bind(this))
-      EventBus.$off('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
-      EventBus.$off('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
-      EventBus.$off('update-external-file', this.onFileRenamed)
-    },
+    // this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
+    // EventBus.$on('add-uploaded-file', this.onAddUploadedFile.bind(this))
+    // EventBus.$on('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
+    // EventBus.$on('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
+    // EventBus.$on('update-external-file', this.onFileRenamed)
+  },
+  destroyed: function () {
+    // this.$el.removeEventListener('dragenter', this.onDragEnter.bind(this))
+    // EventBus.$off('add-uploaded-file', this.onAddUploadedFile.bind(this))
+    // EventBus.$off('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
+    // EventBus.$off('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
+    // EventBus.$off('update-external-file', this.onFileRenamed)
+  },
   methods: {
     //...mapActions(['setPlaceholderUploadDest']),
+
     /**
      * Handle upload menu click event
      * @param {String} command
      */
     // command is arg
     onUploadMenuClick: function(){
-      console.log('launching upload menu')
       this.uploadDialogOpen = true;
       //this.$emit('upload-menu-click', file)
       EventBus.$emit('open-uploader', true);
@@ -474,8 +474,6 @@ export default {
 
     //gets all files in the dataset within the staged directory on mount
     fetchFiles: function () {
-      console.log(this.userToken);
-      console.log('test');
       var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
       this.sendXhr(api_url)
         .then(response => {

@@ -17,7 +17,9 @@
         class="bf-upload-body"
         @dragenter="setIsDragging(true)"
       >
+        <!-- This is the template for when we are adding files -->
         <template v-if="isAddingFiles">
+          <!-- This is the file input area: file selector input, and drag-and-drop zone -->
           <div
             v-if="!errorPreflight"
             ref="bfUpload"
@@ -65,15 +67,6 @@
                   choose your files
                 </a>.
               </h3>
-              <p v-if="!hasItems(fileList)">
-                If you're uploading large amounts of data, please use the
-                <a
-                  href="https://docs.pennsieve.io/"
-                  target="_blank"
-                >
-                  Pennsieve API
-                </a>.
-              </p>
             </div>
 
             <input
@@ -85,6 +78,7 @@
             >
           </div>
 
+          <!-- these "warnings" may be obsolete, or we can repurpose for issues with Agent -->
           <div
             v-if="showWarnings"
             class="bf-upload-warning-wrap"
@@ -216,6 +210,10 @@
           </div>
         </template>
 
+        <!-- This is the template for when we are done adding files -->
+          <!-- TODO: refactor the !isAddingFiles case (done adding files)
+               TODO: when upload is started isAddingFiles should be set to false
+               TODO: when isAddingFiles is false, we can show the upload progress
         <template v-if="!isAddingFiles">
           <div
             ref="uploadWrap"
@@ -234,6 +232,7 @@
             />
           </div>
         </template>
+        -->
       </div>
 
       <template
@@ -242,7 +241,7 @@
       >
         <bf-button
           class="secondary"
-          @click="cancelQueue"
+          @click="cancelUpload"
         >
           Cancel
         </bf-button>
@@ -275,9 +274,28 @@
 </template>
 
 <script>
-  import Vue from 'vue'
-  //WHERE IS THIS??
-  //import qq from 'fine-uploader/lib/core'
+// TODO List
+// 1. import Pennsieve Agent JavaScript (in main.js?)
+// 2a. crate Pennsieve object (keep in Store?) (in login?)
+// 2b. switch profile and re-authenticate (in login?)
+// 3. use dataset (in login?)
+// 4. create manifest (with initial upload offering)
+// 5. add/remove files
+// 6. initiate upload
+
+// TODO how to handle adding files
+// 1. Input:
+// 2. drag and drop:
+// Note: may need to keep track of files here, and prevent duplicates
+// when user presses "Upload" then create the manifest from the file list
+// and initiate upload. The Agent does not prevent duplicates.
+
+// TODO Figure out / Questions
+// 1. how do we specify target path for uploads? (by name? with leading slash? by collection nodeId?)
+
+
+//  import Vue from 'vue'
+  import qq from 'fine-uploader/lib/core'
   import { mapActions, mapGetters, mapState } from 'vuex';
   import BfButton from '../shared/BfButton.vue'
   import BfDialog from '../shared/bf-dialog/bf-dialog.vue'
@@ -287,13 +305,12 @@
   import Request from '../../mixins/request';
   //import FileIcon from '../../mixins/file-icon'
   import debounce from 'lodash/debounce'
-  //import uuidv1 from 'uuid/v1'
-  import uuidv1 from 'uuid'
+  import {v1 as uuidv1} from 'uuid'
   //import {Pennsieve} from '../../pennsieve-agent-javascript-inapp/pennsieve/pennsieve.js'
   import {
     compose,
     defaultTo,
-    equals,
+//    equals,
     filter,
     find,
     findIndex,
@@ -307,7 +324,7 @@
     sum
   } from 'ramda';
   import EventBus from '../../utils/event-bus.js';
-  import { fetchRetry } from '../../typescript/lib/fetch-retry';
+//  import { fetchRetry } from '../../typescript/lib/fetch-retry';
 
   const transformPath = compose(
     init,
@@ -341,6 +358,7 @@
         showInfo: false,
         droppedFiles: [],
         uploader: {},
+        fileMap: {},
         fileList: [],
         packageList: [],
         uploadList: [],
@@ -419,27 +437,28 @@
     },
 
     watch: {
-      fileList: function(newFileList, oldFileList) {
+      fileList: function() { // function(newFileList, oldFileList) {
         // Only get package preview if adding a file to the list
-        if (newFileList.length > oldFileList.length) {
-          // Show onboarding info if first time
-          const hasSeenInfo = localStorage.getItem('seen-upload-info')
-          if (!hasSeenInfo) {
-            this.showInfo = true
-          }
-
-          this.getPackages()
-        }
-
-        this.checkOverflow(this.$refs.packageWrap)
+        // if (newFileList.length > oldFileList.length) {
+        //   // Show onboarding info if first time
+        //   const hasSeenInfo = localStorage.getItem('seen-upload-info')
+        //   if (!hasSeenInfo) {
+        //     this.showInfo = true
+        //   }
+        //
+        //   this.getPackages()
+        // }
+        //
+        // this.checkOverflow(this.$refs.packageWrap)
+        this.fileList.filter(d => !this.fileMap.has(d.filePath)).forEach(d => this.fileMap.set(d.filePath, d));
       },
 
       packageList: function() {
-        this.checkOverflow(this.$refs.packageWrap)
+        // this.checkOverflow(this.$refs.packageWrap)
       },
 
       uploadList: function() {
-        this.checkOverflow(this.$refs.uploadWrap)
+        // this.checkOverflow(this.$refs.uploadWrap)
       },
 
       isOpen: function() {
@@ -488,7 +507,12 @@
        * Cancel queueing files for upload
        */
       cancelQueue: function() {
-        this.uploader.clearStoredFiles()
+        // this.uploader.clearStoredFiles()
+        this.resetQueue()
+        this.onClose()
+      },
+
+      cancelUpload: function() {
         this.resetQueue()
         this.onClose()
       },
@@ -506,36 +530,39 @@
       },
 
       onOverlayClick: function() {
-        if (this.isAddingFiles) {
-          this.cancelQueue()
-        } else {
-          this.onClose()
-        }
+        // if (this.isAddingFiles) {
+        //   this.cancelQueue()
+        // } else {
+        //   this.onClose()
+        // }
+        this.onClose()
       },
 
       /**
        * Trigger input file click
        */
       triggerInputFile: function() {
+        console.log("triggerInputFile()")
         this.$refs.inputFile.click()
       },
 
       /**
-       * Callback when file input has changed
+       * onInputFileChange(): callback when file input has changed
        * @param {Object} Event
        */
       onInputFileChange: function(e) {
         const files = e.target.files || e.dataTransfer.files
-        if (!files || !files.length) {
-          return
-        }
-
         this.transformFiles(Array.from(files))
 
         // Reset file input
         this.$refs.inputFile.value = ''
       },
       //ON first instance of this, we want to call createManifest(), which will return the newly created manifest ID (for this upload)
+
+      /**
+       * onDrop(): handles the drag-and-drop of a file or folder into the upload area
+       * @param e DragEvent
+       */
       onDrop: function(e) {
         if (this.isAddingFiles) {
           this.handleDataTransfer(e.dataTransfer || e.target).then(() => {
@@ -550,17 +577,21 @@
         }
       },
 
+      /**
+       * transformFiles(): adds files to the fileList
+       *
+       * @param files an array of File objects
+       */
       transformFiles: function(files) {
         const fileList = files.map((file, index) => {
           const uploadId = (this.uploadListId += 1)
-
           file.uploadId = uploadId
 
           return {
             uploadId,
             fileName: file.name,
             size: file.size,
-            filePath: file.filePath,
+            filePath: file.path,
             importId: index + uuidv1(),
             processing: true,
             file
@@ -898,6 +929,7 @@
        */
       resetQueue: function() {
         this.fileList = []
+        this.fileMap = new Map()
         this.packageList = []
         this.errorPreflight = ''
       },
@@ -1008,302 +1040,303 @@
     },
 
     mounted: function() {
-      let customheaders = {}
-
+      this.fileMap = new Map();
+      // let customheaders = {}
+      //
       // Set header if userToken is available
-      if (this.userToken) {
-        customheaders = {
-          Authentication: `bearer ${this.userToken}`
-        }
-      }
+      // if (this.userToken) {
+      //   customheaders = {
+      //     Authentication: `bearer ${this.userToken}`
+      //   }
+      // }
       // eslint-disable-next-line no-undef
-      this.uploader = new qq.FineUploaderBasic({
-        element: this.$refs.bfUpload,
-        button: this.$refs.btnUpload,
-        autoUpload: false,
-
-        request: {
-          customheaders
-        },
-
-        validation: {
-          allowEmpty: true
-        },
-
-        chunking: {
-          enabled: true,
-          /**
-           * Set part size for each file
-           * This is set per file, from data received by the preview endpoint
-           * @param {Integer} id
-           */
-          partSize: id => {
-            const file = this.uploader.getFile(id)
-            const chunkSize = pathOr(200000, ['chunkedUpload', 'chunkSize'], file)
-            return chunkSize
-          },
-          mandatory: true
-        },
-
-        retry: {
-          enableAuto: true,
-          maxAutoAttempts: 5
-        },
-
-        resume: {
-          enabled: false
-        },
-
-        objectProperties: {
-          key: id => {
-            const file = this.uploader.getFile(id)
-            const name = file.name
-            const importId = file.importId
-            // eslint-disable-next-line no-undef
-            return qq.format(
-              '{}/{}',
-              `${this.$store.state.profile.email}/${importId}`,
-              name
-            )
-          },
-          bucket: this.$store.state.config.bucketName
-        },
-
-        callbacks: {
-          onUpload: id => {
-            // Get file to get import ID
-            const file = this.uploader.getFile(id)
-            const importId = file.importId
-            const organizationId = pathOr(
-              '',
-              ['organization', 'id'],
-              this.activeOrganization
-            )
-            const uploadListFile = this.getUploadListFile(id)
-
-            const multipartId = propOr('', 'multipartUploadId', uploadListFile)
-            const endpoint = `${
-              this.config.apiUrl
-            }/upload/fineuploaderchunk/organizations/${organizationId}/id/${importId}?multipartId=${multipartId}`
-
-            // Set endpoint for file
-            this.uploader.setEndpoint(endpoint, id)
-
-            Vue.set(uploadListFile, 'uploading', true)
-          },
-          /*
-          onAllComplete: (succeeded, failed) => {
-            this.$store.dispatch('updateUploadStatus', false)
-          },
-          */
-          /**
-           * Callback when a file has completed uploading
-           * @param {number} id
-           */
-          onComplete: (id, name, response) => {
-            // Check if all files in a package, and let API know
-            const file = this.uploader.getFile(id)
-            const importId = prop('importId', file)
-
-            // Check if all files in package are done
-            const packageIndex = findIndex(
-              propEq('importId', importId),
-              this.uploadList
-            )
-
-            // If the response failed, show an error message for the file
-            if (!response.success) {
-              this._onPackageCompleteError(packageIndex)
-              return
-            }
-
-            // Set uploading and complete properties
-            const uploadListFile = this.getUploadListFile(id)
-            Vue.set(uploadListFile, 'complete', true)
-            Vue.set(uploadListFile, 'uploading', false)
-
-            // Remove files count from state
-            this.$store.dispatch('uploadCountRemove', 1)
-
-            // Remove file size
-            this.$store.dispatch('updateUploadRemainingRemove', file.size)
-
-            if (uploadListFile && importId) {
-              const packageGroup = this.uploadList[packageIndex]
-              const completeFiles = filter(
-                propEq('complete', true),
-                packageGroup.files
-              )
-              const datasetId = propOr(
-                prop('id', this.uploadDestination),
-                'datasetId',
-                this.uploadDestination
-              )
-
-              if (equals(completeFiles, packageGroup.files)) {
-                let dataParams = `datasetId=${datasetId}`
-
-                // If uploading to a collection
-                if (packageGroup.uploadDestination.packageType !== 'DataSet') {
-                  dataParams += `&destinationId=${
-                    packageGroup.uploadDestination.id
-                  }`
-                }
-
-                const options = {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `bearer ${this.userToken}`,
-                    'X-SESSION-ID': this.userToken
-                  },
-                  retries: 3,
-                  retryDelay: 1000,
-                  retryBackoff: 2,
-                  retryOn: [429, 503]
-                }
-
-                // If adding a relationship to a record
-                if (packageGroup.modelId && packageGroup.recordId) {
-                  options.body = {
-                    conceptId: packageGroup.modelId,
-                    instanceId: packageGroup.recordId,
-                    targets: [
-                      {
-                        linkTarget: packageGroup.recordId,
-                        relationshipType: 'belongs_to',
-                        relationshipDirection: 'FromTarget'
-                      }
-                    ]
-                  }
-                }
-
-                // Send info to API
-                const organizationId = pathOr(
-                  '',
-                  ['organization', 'id'],
-                  this.activeOrganization
-                )
-                fetchRetry(
-                  `${this.config.apiUrl}/upload/complete/organizations/${organizationId}/id/${importId}?${dataParams}`,
-                  options
-                )
-                  .then(response => response.json())
-                  .then(response => {
-                    // update relationship table on record page
-                    if (
-                      packageGroup.modelId &&
-                      packageGroup.recordId &&
-                      packageGroup.recordId === this.$route.params.instanceId
-                    ) {
-                      EventBus.$emit('refresh-table-data', {
-                        name: 'package',
-                        displayName: 'Files',
-                        count: 1,
-                        type: 'Add'
-                      })
-                    }
-
-                    this.packageList = this.packageList.map(item => {
-                      if (item.importId === importId) {
-                        item.isUploaded = true
-                      }
-                      return item
-                    })
-
-                    this.uploadList = this.uploadList.map(item => {
-                      if (item.importId === importId) {
-                        item.isUploaded = true
-                      }
-                      return item
-                    })
-
-                    // update files list
-                    response.forEach(item => {
-                      // add package dto to each item in uploadList
-                      const uploadListPkg = find(
-                        propEq('importId', item.manifest.importId),
-                        this.uploadList
-                      )
-
-                      // Add file to files list
-                      const packageDTO =
-                        uploadListPkg.previewPath === null
-                          ? propOr({}, 'package', item)
-                          : pathOr({}, ['package', 'parent'], item)
-
-                      EventBus.$emit('add-uploaded-file', {
-                        packageDTO,
-                        uploadDestination: this.uploadDestination
-                      })
-
-                      this.$set(uploadListPkg, 'package', item.package)
-                    })
-
-                    // check for onboarding event state for uploading a file
-                    if (this.onboardingEvents.indexOf('AddedFile') === -1) {
-                      // make post request
-                      this.sendOnboardingEventsRequest()
-                    }
-
-                    // track file
-                    EventBus.$emit('track-event', {
-                      name: 'File Uploaded'
-                    })
-                  })
-                  /*
-                  .catch((err) => {
-                    this._onPackageCompleteError(packageIndex)
-                  })
-                  */
-              }
-            }
-          },
-          // eslint-disable-next-line no-unused-vars
-          onProgress: (id, name, uploadedBytes, totalBytes) => {
-            const uploadListFile = this.getUploadListFile(id)
-
-            Vue.set(uploadListFile, 'totalUploaded', uploadedBytes)
-          },
-
-          /**
-           * Callback when item has been canceled
-           */
-           // eslint-disable-next-line no-unused-vars
-          onCancel: (id, name) => {
-            if (this.isAddingFiles) {
-              // Remove from fileList
-              const index = findIndex(propEq('uploadId', id), this.fileList)
-              this.fileList.splice(index, 1)
-            } else {
-              const uploadListFile = this.getUploadListFile(id)
-              Vue.set(uploadListFile, 'canceled', true)
-
-              const file = this.uploader.getFile(id)
-              const packageIndex = findIndex(
-                propEq('importId', file.importId),
-                this.uploadList
-              )
-              const packageGroup = this.uploadList[packageIndex]
-
-              const canceledFiles = filter(
-                propEq('canceled', true),
-                packageGroup.files
-              )
-
-              // If all files for the package have been canceled, remove package from uploadList
-              if (equals(canceledFiles, packageGroup.files)) {
-                this.uploadList.splice(packageIndex, 1)
-              }
-            }
-          },
-          // eslint-disable-next-line no-unused-vars
-          onSubmit: (id, name) => {
-            const file = this.uploader.getFile(id)
-            const upload = this.uploader.getUploads({ id })
-            upload.uploadId = file.uploadId
-          }
-        }
-      })
+      // this.uploader = new qq.FineUploaderBasic({
+      //   element: this.$refs.bfUpload,
+      //   button: this.$refs.btnUpload,
+      //   autoUpload: false,
+      //
+      //   request: {
+      //     customheaders
+      //   },
+      //
+      //   validation: {
+      //     allowEmpty: true
+      //   },
+      //
+      //   chunking: {
+      //     enabled: true,
+      //     /**
+      //      * Set part size for each file
+      //      * This is set per file, from data received by the preview endpoint
+      //      * @param {Integer} id
+      //      */
+      //     partSize: id => {
+      //       const file = this.uploader.getFile(id)
+      //       const chunkSize = pathOr(200000, ['chunkedUpload', 'chunkSize'], file)
+      //       return chunkSize
+      //     },
+      //     mandatory: true
+      //   },
+      //
+      //   retry: {
+      //     enableAuto: true,
+      //     maxAutoAttempts: 5
+      //   },
+      //
+      //   resume: {
+      //     enabled: false
+      //   },
+      //
+      //   objectProperties: {
+      //     key: id => {
+      //       const file = this.uploader.getFile(id)
+      //       const name = file.name
+      //       const importId = file.importId
+      //       // eslint-disable-next-line no-undef
+      //       return qq.format(
+      //         '{}/{}',
+      //         `${this.$store.state.profile.email}/${importId}`,
+      //         name
+      //       )
+      //     },
+      //     bucket: this.$store.state.config.bucketName
+      //   },
+      //
+      //   callbacks: {
+      //     onUpload: id => {
+      //       // Get file to get import ID
+      //       const file = this.uploader.getFile(id)
+      //       const importId = file.importId
+      //       const organizationId = pathOr(
+      //         '',
+      //         ['organization', 'id'],
+      //         this.activeOrganization
+      //       )
+      //       const uploadListFile = this.getUploadListFile(id)
+      //
+      //       const multipartId = propOr('', 'multipartUploadId', uploadListFile)
+      //       const endpoint = `${
+      //         this.config.apiUrl
+      //       }/upload/fineuploaderchunk/organizations/${organizationId}/id/${importId}?multipartId=${multipartId}`
+      //
+      //       // Set endpoint for file
+      //       this.uploader.setEndpoint(endpoint, id)
+      //
+      //       Vue.set(uploadListFile, 'uploading', true)
+      //     },
+      //     /*
+      //     onAllComplete: (succeeded, failed) => {
+      //       this.$store.dispatch('updateUploadStatus', false)
+      //     },
+      //     */
+      //     /**
+      //      * Callback when a file has completed uploading
+      //      * @param {number} id
+      //      */
+      //     onComplete: (id, name, response) => {
+      //       // Check if all files in a package, and let API know
+      //       const file = this.uploader.getFile(id)
+      //       const importId = prop('importId', file)
+      //
+      //       // Check if all files in package are done
+      //       const packageIndex = findIndex(
+      //         propEq('importId', importId),
+      //         this.uploadList
+      //       )
+      //
+      //       // If the response failed, show an error message for the file
+      //       if (!response.success) {
+      //         this._onPackageCompleteError(packageIndex)
+      //         return
+      //       }
+      //
+      //       // Set uploading and complete properties
+      //       const uploadListFile = this.getUploadListFile(id)
+      //       Vue.set(uploadListFile, 'complete', true)
+      //       Vue.set(uploadListFile, 'uploading', false)
+      //
+      //       // Remove files count from state
+      //       this.$store.dispatch('uploadCountRemove', 1)
+      //
+      //       // Remove file size
+      //       this.$store.dispatch('updateUploadRemainingRemove', file.size)
+      //
+      //       if (uploadListFile && importId) {
+      //         const packageGroup = this.uploadList[packageIndex]
+      //         const completeFiles = filter(
+      //           propEq('complete', true),
+      //           packageGroup.files
+      //         )
+      //         const datasetId = propOr(
+      //           prop('id', this.uploadDestination),
+      //           'datasetId',
+      //           this.uploadDestination
+      //         )
+      //
+      //         if (equals(completeFiles, packageGroup.files)) {
+      //           let dataParams = `datasetId=${datasetId}`
+      //
+      //           // If uploading to a collection
+      //           if (packageGroup.uploadDestination.packageType !== 'DataSet') {
+      //             dataParams += `&destinationId=${
+      //               packageGroup.uploadDestination.id
+      //             }`
+      //           }
+      //
+      //           const options = {
+      //             method: 'POST',
+      //             headers: {
+      //               Authorization: `bearer ${this.userToken}`,
+      //               'X-SESSION-ID': this.userToken
+      //             },
+      //             retries: 3,
+      //             retryDelay: 1000,
+      //             retryBackoff: 2,
+      //             retryOn: [429, 503]
+      //           }
+      //
+      //           // If adding a relationship to a record
+      //           if (packageGroup.modelId && packageGroup.recordId) {
+      //             options.body = {
+      //               conceptId: packageGroup.modelId,
+      //               instanceId: packageGroup.recordId,
+      //               targets: [
+      //                 {
+      //                   linkTarget: packageGroup.recordId,
+      //                   relationshipType: 'belongs_to',
+      //                   relationshipDirection: 'FromTarget'
+      //                 }
+      //               ]
+      //             }
+      //           }
+      //
+      //           // Send info to API
+      //           const organizationId = pathOr(
+      //             '',
+      //             ['organization', 'id'],
+      //             this.activeOrganization
+      //           )
+      //           fetchRetry(
+      //             `${this.config.apiUrl}/upload/complete/organizations/${organizationId}/id/${importId}?${dataParams}`,
+      //             options
+      //           )
+      //             .then(response => response.json())
+      //             .then(response => {
+      //               // update relationship table on record page
+      //               if (
+      //                 packageGroup.modelId &&
+      //                 packageGroup.recordId &&
+      //                 packageGroup.recordId === this.$route.params.instanceId
+      //               ) {
+      //                 EventBus.$emit('refresh-table-data', {
+      //                   name: 'package',
+      //                   displayName: 'Files',
+      //                   count: 1,
+      //                   type: 'Add'
+      //                 })
+      //               }
+      //
+      //               this.packageList = this.packageList.map(item => {
+      //                 if (item.importId === importId) {
+      //                   item.isUploaded = true
+      //                 }
+      //                 return item
+      //               })
+      //
+      //               this.uploadList = this.uploadList.map(item => {
+      //                 if (item.importId === importId) {
+      //                   item.isUploaded = true
+      //                 }
+      //                 return item
+      //               })
+      //
+      //               // update files list
+      //               response.forEach(item => {
+      //                 // add package dto to each item in uploadList
+      //                 const uploadListPkg = find(
+      //                   propEq('importId', item.manifest.importId),
+      //                   this.uploadList
+      //                 )
+      //
+      //                 // Add file to files list
+      //                 const packageDTO =
+      //                   uploadListPkg.previewPath === null
+      //                     ? propOr({}, 'package', item)
+      //                     : pathOr({}, ['package', 'parent'], item)
+      //
+      //                 EventBus.$emit('add-uploaded-file', {
+      //                   packageDTO,
+      //                   uploadDestination: this.uploadDestination
+      //                 })
+      //
+      //                 this.$set(uploadListPkg, 'package', item.package)
+      //               })
+      //
+      //               // check for onboarding event state for uploading a file
+      //               if (this.onboardingEvents.indexOf('AddedFile') === -1) {
+      //                 // make post request
+      //                 this.sendOnboardingEventsRequest()
+      //               }
+      //
+      //               // track file
+      //               EventBus.$emit('track-event', {
+      //                 name: 'File Uploaded'
+      //               })
+      //             })
+      //             /*
+      //             .catch((err) => {
+      //               this._onPackageCompleteError(packageIndex)
+      //             })
+      //             */
+      //         }
+      //       }
+      //     },
+      //     // eslint-disable-next-line no-unused-vars
+      //     onProgress: (id, name, uploadedBytes, totalBytes) => {
+      //       const uploadListFile = this.getUploadListFile(id)
+      //
+      //       Vue.set(uploadListFile, 'totalUploaded', uploadedBytes)
+      //     },
+      //
+      //     /**
+      //      * Callback when item has been canceled
+      //      */
+      //      // eslint-disable-next-line no-unused-vars
+      //     onCancel: (id, name) => {
+      //       if (this.isAddingFiles) {
+      //         // Remove from fileList
+      //         const index = findIndex(propEq('uploadId', id), this.fileList)
+      //         this.fileList.splice(index, 1)
+      //       } else {
+      //         const uploadListFile = this.getUploadListFile(id)
+      //         Vue.set(uploadListFile, 'canceled', true)
+      //
+      //         const file = this.uploader.getFile(id)
+      //         const packageIndex = findIndex(
+      //           propEq('importId', file.importId),
+      //           this.uploadList
+      //         )
+      //         const packageGroup = this.uploadList[packageIndex]
+      //
+      //         const canceledFiles = filter(
+      //           propEq('canceled', true),
+      //           packageGroup.files
+      //         )
+      //
+      //         // If all files for the package have been canceled, remove package from uploadList
+      //         if (equals(canceledFiles, packageGroup.files)) {
+      //           this.uploadList.splice(packageIndex, 1)
+      //         }
+      //       }
+      //     },
+      //     // eslint-disable-next-line no-unused-vars
+      //     onSubmit: (id, name) => {
+      //       const file = this.uploader.getFile(id)
+      //       const upload = this.uploader.getUploads({ id })
+      //       upload.uploadId = file.uploadId
+      //     }
+      //   }
+      // })
     }
   }
 </script>
