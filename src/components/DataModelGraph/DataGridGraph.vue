@@ -38,14 +38,16 @@ import {
   // eslint-disable-next-line
   fetchFilteredVisitsMetadataRelatedToStudy,
   // eslint-disable-next-line
-  fetchFilteredSamplesMetadataRelatedToStudy
+  fetchFilteredSamplesMetadataRelatedToStudy,
+  // eslint-disable-next-line
+  handleV1RecordsResponse
 
 } from '@/utils/fetchRecords'
 import axios from 'axios'
 import * as d3 from 'd3'
 import { select } from 'd3-selection';
-
-import { pathOr, propOr } from 'ramda'
+import { v1 } from 'uuid'
+import { pathOr, propOr, clone, mergeRight} from 'ramda'
 import debounce from 'lodash/debounce'
 import { mapState, mapActions, mapGetters } from 'vuex'
 
@@ -160,7 +162,9 @@ export default {
       visitsBacklog: [],
       samplesBacklog: [],
       filesBacklog: [],
-      filters: this.searchModalSearch.filters
+      //to avoid infinite loop
+      ignoreHandleFilterChange: false;
+      //filters: this.searchModalSearch.filters
     }
   },
 
@@ -274,9 +278,10 @@ export default {
       renderAfterFilter('samples', filteredSamplesMetadata)
     },
     */
-    filters: function(){
+    searchModalSearch: function(){
       //whenever a filter is added or subtracted from list
-      this.handleFilterChange();
+      this.handleFilterChangeLinear();
+
     }
   },
 
@@ -432,78 +437,379 @@ export default {
 
   methods: {
     //will not use these map actions since all data will be within component
-    ...mapActions(['setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
     ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
+
+
+    handleFilterChangeClick(nodeData) {
+      const model = nodeData.parent.displayName;
+      const id = nodeData.details.id
+      //get identifier from nodedata (inspect elsewhere)
+      switch(model){
+        case 'patient':
+        //  var identifier =
+        var newFilters = clone(this.searchModalSearch.filters)
+        newFilters.push({
+          id: v1(),
+          isInvalid: false,
+          lockTarget: true,
+          operation: "=",
+          operationLabel: "equals",
+          operators: [
+            {
+              label: 'equals',
+              value: '='
+            },
+            {
+              label: 'does not equal',
+              value: '<>'
+            },
+            {
+              label: 'starts with',
+              value: 'STARTS WITH'
+            },
+          ],
+          property: "externalparticipantid",
+          propertyLabel: "externalparticipantid",
+          propertyType: {format: null, type: "String"},
+          target: "patient",
+          targetLabel: "patient",
+          type: "model",
+          value: identifier
+        })
+        var search = mergeRight(this.searchModalSearch, {
+          filters: newFilters,
+          model: model
+        })
+        this.updateSearchModalSearch(search)
+        break;
+        case 'visits':
+        //  var identifier =
+        var newFilters = clone(this.searchModalSearch.filters)
+        newFilters.push({
+          id: v1(),
+          isInvalid: false,
+          lockTarget: true,
+          operation: "=",
+          operationLabel: "equals",
+          operators: [
+            {
+              label: 'equals',
+              value: '='
+            },
+            {
+              label: 'does not equal',
+              value: '<>'
+            },
+            {
+              label: 'starts with',
+              value: 'STARTS WITH'
+            },
+          ],
+          property: "visit_event_id",
+          propertyLabel: "visit_event_id",
+          propertyType: {format: null, type: "String"},
+          target: "visits",
+          targetLabel: "visits",
+          type: "model",
+          value: identifier
+        })
+        var search = mergeRight(this.searchModalSearch, {
+          filters: newFilters,
+          model: model
+        })
+        this.updateSearchModalSearch(search)
+        break;
+        case 'samples'
+        //  var identifier =
+        //  var identifier =
+        var newFilters = clone(this.searchModalSearch.filters)
+        newFilters.push({
+          id: v1(),
+          isInvalid: false,
+          lockTarget: true,
+          operation: "=",
+          operationLabel: "equals",
+          operators: [
+            {
+              label: 'equals',
+              value: '='
+            },
+            {
+              label: 'does not equal',
+              value: '<>'
+            },
+            {
+              label: 'starts with',
+              value: 'STARTS WITH'
+            },
+          ],
+          property: "study_sample_id", //CHECK THIS
+          propertyLabel: "study_sample_id",
+          propertyType: {format: null, type: "String"},
+          target: "samples",
+          targetLabel: "samples",
+          type: "model",
+          value: identifier
+        })
+        var search = mergeRight(this.searchModalSearch, {
+          filters: newFilters,
+          model: model
+        })
+        this.updateSearchModalSearch(search)
+        break;
+      }
+      //nodeData.details.id
+
+      //this.updateSearchModalVisible(true)
+    },
+
+    /*
+    filterSearchAux(model,id) {
+      const newFilters = clone(this.searchModalSearch.filters)
+      newFilters.push({
+        //edit this for specific record
+        id: v1(),
+        isInvalid: false,
+        lockTarget: true,
+        operation: "=",
+        operationLabel: "equals",
+        operators: [
+          {
+            label: 'equals',
+            value: '='
+          },
+          {
+            label: 'does not equal',
+            value: '<>'
+          },
+          {
+            label: 'starts with',
+            value: 'STARTS WITH'
+          },
+        ],
+        property: "externalparticipantid",
+        propertyLabel: "externalparticipantid",
+        propertyType: {format: null, type: "String"},
+        target: "patient",
+        targetLabel: "patient",
+        type: "model",
+        value: id
+      })
+      const search = mergeRight(this.searchModalSearch, {
+        filters: newFilters,
+        model: model
+      })
+      this.updateSearchModalSearch(search)
+    },
+    */
 
     splitArrIntoPages(arr){
       const chunkSize = 100;
-      const groups = arr.map((e, i) => {
-        return i % chunkSize === 0 ? arr.slice(i, i + chunkSize) : null; }).filter(e => { return e; });
+      var return_arr = [];
+      for (let i = 0; i < arr.length; i += chunkSize) {
+        const chunk = arr.slice(i, i + chunkSize);
+        return_arr.push(chunk);
+      }
+      return return_arr;
     },
-    handleFilterChangeClick(){
+
+
+    /*
+    handleFilterChangeClick(nodeData){
+      // eslint-disable-next-line
       //Need to get the model from the click (nodeData.details.type, or parent.displayName)
-      model = nodeData.details.type //nodeData.parent.displayName
+      // eslint-disable-next-line
+      var model = nodeData.details.type //nodeData.parent.displayName
       var model_lst = ['patient','visits','samples','files']
+      // eslint-disable-next-line
       model_lst = model_lst.filter(e => e !== model);
       switch(model){
         case 'patient':
+        // eslint-disable-next-line
           var click_lst = this.shadedParticipants;
         break;
         case 'visits':
+        // eslint-disable-next-line
           var click_lst = this.shadedVisits;
         break;
         case 'samples':
+        // eslint-disable-next-line
           var click_lst = this.shadedSamples;
         break;
         case 'files':
+        // eslint-disable-next-line
           var click_lst = this.shadedFiles;
 
       }
-        for(record in click_lst){
-          for(m in model_lst){
+        // eslint-disable-next-line
+        for(let record = '';record in click_lst;){
+          // eslint-disable-next-line
+          for(let m = '';m in model_lst;){
+            // eslint-disable-next-line
             switch(m){
               case 'patient':
+              // eslint-disable-next-line
                 var mbacklog = this.patientsBacklog;
                 var view = this.selectedPatientRecords;
                 var orderBy = 'externalparticipantid';
               break;
               case 'visits':
+              // eslint-disable-next-line
                 var mbacklog = this.visitsBacklog;
+                // eslint-disable-next-line
                 var view = this.selectedVisitRecords;
+                // eslint-disable-next-line
                 var orderBy = 'event date and time';
               break;
               case 'samples':
+              // eslint-disable-next-line
                 var mbacklog = this.samplesBacklog;
+                // eslint-disable-next-line
                 var view = this.selectedSampleRecords;
+                // eslint-disable-next-line
                 var orderBy = 'study sample ID';
               break;
               case 'files':
+              // eslint-disable-next-line
                 var mbacklog = this.filesBacklog;
+                // eslint-disable-next-line
                 var view = this.selectedFileRecords;
             }
             //call to api that gets all of the things related (directly or transitivley) to current record for model type m
             //for each in response, if recordID is in current instance of mbacklog, then add to temp backlog
+            // eslint-disable-next-line
             var resp_arr =[];
             //or put in resp_arr and get intersection
             var flat_arr = mbacklog.flat();
-            const filteredBacklog = array1.filter(value => flat_arr.includes(value));
-            //sort this before breaking it up into pages
-            if (m == 'patient' || 'visits' || 'samples' ||){
+            // eslint-disable-next-line
+            var filteredBacklog = array1.filter(value => flat_arr.includes(value));
+            //sort this before breaking it up into
+            // eslint-disable-next-line
+            if (m == 'patient' || 'visits' || 'samples'){
+              // eslint-disable-next-line
               filteredBacklog = filteredBacklog.sort((a, b) => b.orderBy - a.orderBy)
             }
+            // eslint-disable-next-line
             var new_arr = splitArrIntoPages(filteredBacklog);
             //value or reference here??
             mbacklog = new_arr
             //setting the set of selected files that will appear on the page to the first page of the backlog
+            // eslint-disable-next-line
             view = new_arr[0]
 
           }
         }
       // --> do this for nonclick filters as well
     },
-    handleFilterChangeHelper(){
-      //NOT optional
+    */
+
+    handleFilterChangeLinear(){
+      const REQUEST_HEADER = (token) => {
+        return {
+          headers: { Authorization: `Bearer ${token}`}
+        }
+      }
+      var model = this.searchModalSearch.model;
+      switch(model){
+        case 'patient':
+        var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+        //set these to the correct vars
+        var results_total_count = page_1_metadata.totalCount
+        patient_res = [];
+        for (let i = 0; i < results_total_count; i += 100){
+          var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+            var recs = element.records
+            patient_res.push(recs)
+        }
+        var flat_arr = patient_res.flat();
+        //if API doesn't take orderby
+        flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
+        var send_to_backlog = splitArrIntoPages(flat_arr);
+        this.selectedPatientRecords = send_to_backlog[0];
+        this.patientsBacklog = send_to_backlog;
+        //this.ignoreHandleFilterChange = true;
+        var related_visit_recs = [];
+        for (const x of flat_arr){
+          var id = x.externalparticipantid //reference this correctly
+          //filterSearchAux(model,id); //see if you need anything else. will add extpid == x to filters which will return all related visits
+          //-------------
+            //ASK Eric about pagination for these... get the total count.. hardcoding to 500 for now
+            const patientsStudyMetadataUrl = `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${RELEVANT_CONCEPT_ID}/instances/${id}/relations/visits?limit=500&offset=0&includeIncomingLinkedProperties=true`
+
+            var resp =  await axios.get(patientsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
+              return handleV1RecordsResponse(response.data)
+            })
+            var related = resp.records;
+            related_visit_recs.push(related)
+        }
+        var flat_arr = related_visit_recs.flat();
+        //if cant specify orderby
+        flat_arr = flat_arr.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
+        var send_to_backlog = splitArrIntoPages(flat_arr);
+        this.selectedVisitRecords = send_to_backlog[0];
+        this.visitsBacklog = send_to_backlog;
+        break;
+
+        case 'visits':
+        var page_1_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+        //set these to the correct vars
+        var results_total_count = page_1_metadata.totalCount
+        var visit_res = [];
+        for (let i = 0; i < results_total_count; i += 100){
+          var element = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+            var recs = element.records
+            visit_res.push(recs)
+        }
+        var flat_arr = visit_res.flat();
+        //if API doesn't take orderby
+        flat_arr = flat_arr.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
+        var send_to_backlog = splitArrIntoPages(flat_arr);
+        this.selectedVisitRecords = send_to_backlog[0];
+        this.visitsBacklog = send_to_backlog;
+        //this.ignoreHandleFilterChange = true;
+        var related_samples_recs = [];
+        for (const x of flat_arr){
+          var id = x.study_participant_event_id //reference this correctly
+          //filterSearchAux(model,id); //see if you need anything else. will add extpid == x to filters which will return all related visits
+          //-------------
+            //ASK Eric about pagination for these... get the total count.. hardcoding to 500 for now
+            const visitsStudyMetadataUrl = `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${RELEVANT_CONCEPT_ID}/instances/${id}/relations/samples?limit=500&offset=0&includeIncomingLinkedProperties=true`
+
+            var resp =  await axios.get(visitsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
+              return handleV1RecordsResponse(response.data)
+            })
+            var related = resp.records;
+            related_sample_recs.push(related)
+        }
+        var flat_arr = related_sample_recs.flat();
+        //if cant specify orderby
+        flat_arr = flat_arr.sort((a, b) => b.study_sample_id - a.study_sample_id)
+        var send_to_backlog = splitArrIntoPages(flat_arr);
+        this.selectedSampleRecords = send_to_backlog[0];
+        this.samplesBacklog = send_to_backlog;
+        break;
+        case 'samples':
+        var page_1_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+        //set these to the correct vars
+        var results_total_count = page_1_metadata.totalCount
+        sample_res = [];
+        for (let i = 0; i < results_total_count; i += 100){
+          var element = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+            var recs = element.records
+            sample_res.push(recs)
+        }
+        var flat_arr = sample_res.flat();
+        //if API doesn't take orderby
+        flat_arr = flat_arr.sort((a, b) => b.study_sample_id - a.study_sample_id)
+        var send_to_backlog = splitArrIntoPages(flat_arr);
+        this.selectedSampleRecords = send_to_backlog[0];
+        this.samplesBacklog = send_to_backlog;
+
+      }
     },
+
+    /*
     //filters the page for the model the filters are applied to and sets the backlog for that model
     // eslint-disable-next-line
     handleFilterChange: async function(){
@@ -538,14 +844,14 @@ export default {
             this.patientsBacklog.push(backlog_metadata);
 
             //var flat_arr = this.patientsBacklog.flat();
-            /*
+
             var other_models = ['visits','samples','files']
             for (model in other_models){
             for (x in flat_arr){
               //make request to NEW API ENDPOINT. get the related records for each model, and put into respective backlogs
               //for response, call a helper that sets the backlog for each of the returned models just like the intended one that sets the backlog from filter
               //i.e. switch case if model is vists, set visits backlog, etc
-              */
+
             }
           break;
           case 'visits':
@@ -604,6 +910,9 @@ export default {
 
       }
     },
+    */
+
+
     //called when a record is clicked
     // eslint-disable-next-line
     onClickElement(nodeData, click, x, y){
@@ -641,6 +950,7 @@ export default {
               });
               // eslint-disable-next-line
               setShadedParticipants(removed_p);
+              // eslint-disable-next-line
               handleFilterChangeClick(nodeData);
               break;
             case 'visits':
@@ -652,6 +962,7 @@ export default {
               });
               // eslint-disable-next-line
               setShadedVisits(removed_v);
+              // eslint-disable-next-line
               handleFilterChangeClick(nodeData);
               break;
             case 'samples':
@@ -663,6 +974,7 @@ export default {
               });
               // eslint-disable-next-line
               setShadedSamples(removed_s);
+              // eslint-disable-next-line
               handleFilterChangeClick(nodeData);
               break;
             case 'files':
@@ -673,6 +985,7 @@ export default {
               });
               // eslint-disable-next-line
               setShadedFiles(removed_f);
+              // eslint-disable-next-line
               handleFilterChangeClick(nodeData);
           }
         }
@@ -697,6 +1010,7 @@ export default {
                 */
                 // eslint-disable-next-line
                 setShadedParticipants(prelist);
+                // eslint-disable-next-line
                 handleFilterChangeClick(nodeData);
                 //red square
                 //NOTE: use the same process as in the section above
@@ -721,6 +1035,7 @@ export default {
                 var prelist = curr_selected_visits.concat(nodeData.details.id);
                 // eslint-disable-next-line
                 setShadedVisits(prelist);
+                // eslint-disable-next-line
                 handleFilterChangeClick(nodeData);
                 //blue
                 // eslint-disable-next-line
@@ -743,6 +1058,7 @@ export default {
                 var prelist = curr_selected_samples.concat(nodeData.details.id);
                 // eslint-disable-next-line
                 setShadedSamples(prelist);
+                // eslint-disable-next-line
                 handleFilterChangeClick(nodeData);
                 //yellow
                 // eslint-disable-next-line
@@ -766,6 +1082,7 @@ export default {
                 var prelist = curr_selected_files.concat(nodeData.details.id);
                 // eslint-disable-next-line
                 setShadedFiles(prelist);
+                // eslint-disable-next-line
                 handleFilterChangeClick(nodeData);
                 //green
                 // eslint-disable-next-line
@@ -786,6 +1103,8 @@ export default {
         //saving current selected to store
       }
     },
+
+  /*
 //DEPRECATED with new API endpoint
     setAllRelatedFilter: function(modelname, startrecord, targetmodel, pagenumber){
         //need to reset the pages for all models
@@ -839,6 +1158,7 @@ export default {
           return Object.values(response.data);
 
       },
+    */
     /*
     //DEPRECATED with new API endpoint
     renderAfterFilter: function(model,filter_results){
@@ -1181,8 +1501,8 @@ export default {
       var vm = this;
       // eslint-disable-next-line
       if (direction == 'next') {
-        this.modelPage++;}
-        else if (direction == 'next'){
+        this.modelPage++}
+        else if(direction == 'prev'){
           this.modelPage--;
         }
         // eslint-disable-next-line
@@ -1191,15 +1511,17 @@ export default {
           //if this model has been filtered, we want to get its page from the backlog and set it to selected
           switch (modelName){
               case 'patient':
-                  var grabbed_page = patientsBacklog[pagenum-1]
+                  var grabbed_page = this.patientsBacklog[pagenum-1]
                   vm.updatePatients(grabbed_page);
                   break;
               case 'visits':
-                  var grabbed_page = visitsBacklog[pagenum-1]
+              // eslint-disable-next-line
+                  var grabbed_page = this.visitsBacklog[pagenum-1]
                   vm.updateVisits(grabbed_page);
                   break;
               case 'samples':
-                  var grabbed_page = samplesBacklog[pagenum-1]
+              // eslint-disable-next-line
+                  var grabbed_page = this.samplesBacklog[pagenum-1]
                   vm.updateSamples(grabbed_page);
                   break;
               case 'files':
@@ -1244,7 +1566,8 @@ export default {
           console.error(error);
         });
       }
-  },
+  }
+},
   //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
   //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
   //NOTE: NEED TO ACCOUNT FOR THE CASE WHERE THIS IS FILTERED. MUST MAKE A MODIFIED CALL TO renderAfterFilter()
@@ -1292,6 +1615,7 @@ export default {
           this.selectedSampleRecords['samples'] = 0;
           // eslint-disable-next-line
           if (this.samplesBacklog){
+            // eslint-disable-next-line
           updatePage('samples', modelPage, orderBy, direction,true);
         } else {
             // eslint-disable-next-line
@@ -1303,6 +1627,7 @@ export default {
           console.log('nothing for files yet');
           // eslint-disable-next-line
           if (this.filesBacklog){
+            // eslint-disable-next-line
           updatePage('files', modelPage, orderBy, direction,true);
         } else {
             // eslint-disable-next-line

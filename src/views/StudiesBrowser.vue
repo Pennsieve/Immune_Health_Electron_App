@@ -32,26 +32,32 @@
           </bf-button>
         </template>
       </ih-subheader>
+      <div>
+      <bf-button class='clearbtn' @click="ClearAllSelections()">
+          Clear selections
+        </bf-button>
+      </div>
       <div v-if="Object.keys(selectedStudy).length != 0">
-        <div>
+        <div v-if="SearchStep == 0">
           <bf-button v-on:click="filterSearch('patient')">
             Filter Search Patients
           </bf-button>
         </div>
-        <bf-button class='clearbtn' @click="ClearAllSelections()">
-            Clear selection
-          </bf-button>
-        <div>
+        <div v-if="SearchStep == 1">
           <bf-button v-on:click="filterSearch('visits')">
             Filter Search Visits
           </bf-button>
         </div>
-        <div>
+        <div v-if="SearchStep == 2">
           <bf-button v-on:click="filterSearch('samples')">
             Filter Search Samples
           </bf-button>
         </div>
+        <div v-if="SearchStep == 3">
+          <h2>Clear filters and selections to start another search</h2>
+        </div>
       </div>
+      <br>
       <div class="graph-browser-container">
         <graph-browser/>
       </div>
@@ -79,16 +85,30 @@ export default {
   mounted() {
     this.setSearchPage('StudiesBrowser')
   },
+  data() {
+    return {
+      SearchStep: 0,
+    }
+  },
   computed: {
     ...mapState(['searchModalSearch']),
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
+
+},
+  watch: {
+
   },
   methods: {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections']),
     ClearAllSelections: function(){
       this.clearClickedSelections()
+      this.SearchStep = 0;
+    },
+    incrementStep: function(){
+      this.SearchStep++;
     },
     filterSearch(model) {
+      this.SearchStep++;
       const newFilters = clone(this.searchModalSearch.filters)
       newFilters.push({
         id: v1(),
@@ -135,7 +155,7 @@ export default {
 }
 .clearbtn {
   position: absolute;
-  right: 100px;
+  right: 700px;
 }
 .graph-browser-container {
 }
