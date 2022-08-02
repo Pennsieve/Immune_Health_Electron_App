@@ -123,7 +123,7 @@ export default {
         operators: [],
         value: '',
         isInvalid: false,
-        lockTarget: true
+        lockTarget: false
       })
       const search = mergeRight(this.searchModalSearch, {
         filters: newFilters,

@@ -248,8 +248,8 @@ export default {
       const newFilter = {
         id: v1(),
         type: 'model',
-        target: this.searchModalSearch.model,
-        targetLabel: this.searchModalSearch.model,
+        target: this.searchModalSearch.model || 'patient',
+        targetLabel: this.searchModalSearch.model || 'patient',
         property: '',
         propertyLabel: '',
         propertyType: '',
@@ -258,7 +258,7 @@ export default {
         operators: [],
         value: '',
         isInvalid: false,
-        lockTarget: true
+        lockTarget: false
       }
       this.searchModalSearch.filters.push(newFilter)
       this.updateSearchModalSearch(clone(this.searchModalSearch))
@@ -288,8 +288,8 @@ export default {
       const newFilters = [{
         id: v1(),
         type: 'model',
-        target: this.searchModalSearch.model,
-        targetLabel: this.searchModalSearch.model,
+        target: this.searchModalSearch.model || 'patient',
+        targetLabel: this.searchModalSearch.model || 'patient',
         property: '',
         propertyLabel: '',
         propertyType: '',
@@ -298,7 +298,7 @@ export default {
         operators: [],
         value: '',
         isInvalid: false,
-        lockTarget: true
+        lockTarget: false
       }]
       const newSearch = mergeRight(this.searchModalSearch, { filters: newFilters })
 
