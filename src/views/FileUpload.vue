@@ -137,11 +137,8 @@ import { mapGetters,
          mapState
        }
 from 'vuex'
-<<<<<<< HEAD
 // import PennsieveClient from '@/utils/pennsieve/client.js'
-=======
 import { isEmpty } from 'ramda'
->>>>>>> a9958bb1ec3500b8b9a0fee8b6b415e2fb38294c
 
 export default {
   name: 'FileUpload',
@@ -212,12 +209,7 @@ export default {
     // EventBus.$off('update-external-file', this.onFileRenamed)
   },
   methods: {
-<<<<<<< HEAD
-    //...mapActions(['setPlaceholderUploadDest']),
-
-=======
       ...mapActions(['setSearchPage', 'updateSearchModalVisible']),
->>>>>>> a9958bb1ec3500b8b9a0fee8b6b415e2fb38294c
     /**
      * Handle upload menu click event
      * @param {String} command
