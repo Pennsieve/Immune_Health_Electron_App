@@ -823,26 +823,19 @@ export default {
           //set these to the correct vars
           var results_total_count = page_1_metadata.totalCount
           //this.recordHeadings = page_1_metadata.headings
-          //sort this array by the appropriate parameter...by date
-          //const flat_arr = activities.sort((a, b) => b.date - a.date)
-          //by alpha or numeric = array.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
-          this.selectedPatientRecords = page_1_metadata.records
-          //will need to set below properly
-          //this.selectedRecordCount['patient'] = filter_results.length
+          var to_be_sorted = page_1_metadata.records
+          sorted = to_be_sorted.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
+          this.selectedPatientRecords = sorted
+          this.selectedRecordCount['patient'] = sorted.length
           //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
           for (let i = 0; i < results_total_count; i += 100){
             // eslint-disable-next-line
             backlog_metadata = []
             var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-            //NEED TO SORT HERE TOO
-              //sort this array by the appropriate parameter...by date
-              //const flat_arr = activities.sort((a, b) => b.date - a.date)
-              //by alpha or numeric = array.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
             // eslint-disable-next-line
             backlog_metadata.push(element);
             // eslint-disable-next-line
             this.patientsBacklog.push(backlog_metadata);
-
             //var flat_arr = this.patientsBacklog.flat();
 
             var other_models = ['visits','samples','files']
