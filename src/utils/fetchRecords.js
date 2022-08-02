@@ -249,7 +249,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
 /**
  * Handle records response from v1 version of the API
  */
-const handleV1RecordsResponse = (v1ResponseData) => {
+export const handleV1RecordsResponse = (v1ResponseData) => {
   const recordHeadings = getRecordsV1Heading(v1ResponseData)
 
   const formattedRecords = v1ResponseData.map(record => {

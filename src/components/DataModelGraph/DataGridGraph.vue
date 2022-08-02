@@ -46,7 +46,9 @@ import {
 import axios from 'axios'
 import * as d3 from 'd3'
 import { select } from 'd3-selection';
+// eslint-disable-next-line
 import { v1 } from 'uuid'
+// eslint-disable-next-line
 import { pathOr, propOr, clone, mergeRight} from 'ramda'
 import debounce from 'lodash/debounce'
 import { mapState, mapActions, mapGetters } from 'vuex'
@@ -162,8 +164,7 @@ export default {
       visitsBacklog: [],
       samplesBacklog: [],
       filesBacklog: [],
-      //to avoid infinite loop
-      ignoreHandleFilterChange: false;
+
       //filters: this.searchModalSearch.filters
     }
   },
@@ -440,7 +441,8 @@ export default {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
     ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
 
-
+  //  NOTE: USE THIS ONE. MAYBE WE WANT TO HIDE IN SEARCHMODAL WHEN CALLED FROM HERE
+    /*
     handleFilterChangeClick(nodeData) {
       const model = nodeData.parent.displayName;
       const id = nodeData.details.id
@@ -563,47 +565,7 @@ export default {
 
       //this.updateSearchModalVisible(true)
     },
-
-    /*
-    filterSearchAux(model,id) {
-      const newFilters = clone(this.searchModalSearch.filters)
-      newFilters.push({
-        //edit this for specific record
-        id: v1(),
-        isInvalid: false,
-        lockTarget: true,
-        operation: "=",
-        operationLabel: "equals",
-        operators: [
-          {
-            label: 'equals',
-            value: '='
-          },
-          {
-            label: 'does not equal',
-            value: '<>'
-          },
-          {
-            label: 'starts with',
-            value: 'STARTS WITH'
-          },
-        ],
-        property: "externalparticipantid",
-        propertyLabel: "externalparticipantid",
-        propertyType: {format: null, type: "String"},
-        target: "patient",
-        targetLabel: "patient",
-        type: "model",
-        value: id
-      })
-      const search = mergeRight(this.searchModalSearch, {
-        filters: newFilters,
-        model: model
-      })
-      this.updateSearchModalSearch(search)
-    },
     */
-
     splitArrIntoPages(arr){
       const chunkSize = 100;
       var return_arr = [];
@@ -703,8 +665,8 @@ export default {
       // --> do this for nonclick filters as well
     },
     */
-
-    handleFilterChangeLinear(){
+    //Must put in correct metadata url
+    handleFilterChangeLinear: async function(){
       const REQUEST_HEADER = (token) => {
         return {
           headers: { Authorization: `Bearer ${token}`}
@@ -716,7 +678,7 @@ export default {
         var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
         //set these to the correct vars
         var results_total_count = page_1_metadata.totalCount
-        patient_res = [];
+        var patient_res = [];
         for (let i = 0; i < results_total_count; i += 100){
           var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
             var recs = element.records
@@ -725,6 +687,7 @@ export default {
         var flat_arr = patient_res.flat();
         //if API doesn't take orderby
         flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
+// eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(flat_arr);
         this.selectedPatientRecords = send_to_backlog[0];
         this.patientsBacklog = send_to_backlog;
@@ -735,74 +698,104 @@ export default {
           //filterSearchAux(model,id); //see if you need anything else. will add extpid == x to filters which will return all related visits
           //-------------
             //ASK Eric about pagination for these... get the total count.. hardcoding to 500 for now
+            // eslint-disable-next-line
             const patientsStudyMetadataUrl = `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${RELEVANT_CONCEPT_ID}/instances/${id}/relations/visits?limit=500&offset=0&includeIncomingLinkedProperties=true`
-
+            // eslint-disable-next-line
             var resp =  await axios.get(patientsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
               return handleV1RecordsResponse(response.data)
             })
             var related = resp.records;
             related_visit_recs.push(related)
         }
+        // eslint-disable-next-line
         var flat_arr = related_visit_recs.flat();
         //if cant specify orderby
         flat_arr = flat_arr.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
+        // eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(flat_arr);
         this.selectedVisitRecords = send_to_backlog[0];
         this.visitsBacklog = send_to_backlog;
         break;
 
         case 'visits':
+        // eslint-disable-next-line
+        const visits_to_compare = this.visitsBacklog.flat();
+        // eslint-disable-next-line
         var page_1_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
         //set these to the correct vars
+        // eslint-disable-next-line
         var results_total_count = page_1_metadata.totalCount
         var visit_res = [];
         for (let i = 0; i < results_total_count; i += 100){
+          // eslint-disable-next-line
           var element = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+          // eslint-disable-next-line
             var recs = element.records
             visit_res.push(recs)
         }
+        // eslint-disable-next-line
         var flat_arr = visit_res.flat();
+        var common = visits_to_compare.filter(x => visit_res.indexOf(x) !== -1)
         //if API doesn't take orderby
-        flat_arr = flat_arr.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
-        var send_to_backlog = splitArrIntoPages(flat_arr);
+        common = common.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
+// eslint-disable-next-line
+        var send_to_backlog = splitArrIntoPages(common);
         this.selectedVisitRecords = send_to_backlog[0];
         this.visitsBacklog = send_to_backlog;
         //this.ignoreHandleFilterChange = true;
+// eslint-disable-next-line
         var related_samples_recs = [];
-        for (const x of flat_arr){
+        for (const x of common){
+          // eslint-disable-next-line
           var id = x.study_participant_event_id //reference this correctly
           //filterSearchAux(model,id); //see if you need anything else. will add extpid == x to filters which will return all related visits
           //-------------
             //ASK Eric about pagination for these... get the total count.. hardcoding to 500 for now
+            // eslint-disable-next-line
             const visitsStudyMetadataUrl = `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${RELEVANT_CONCEPT_ID}/instances/${id}/relations/samples?limit=500&offset=0&includeIncomingLinkedProperties=true`
-
+// eslint-disable-next-line
             var resp =  await axios.get(visitsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
               return handleV1RecordsResponse(response.data)
             })
+            // eslint-disable-next-line
             var related = resp.records;
+            // eslint-disable-next-line
             related_sample_recs.push(related)
         }
+        // eslint-disable-next-line
         var flat_arr = related_sample_recs.flat();
         //if cant specify orderby
         flat_arr = flat_arr.sort((a, b) => b.study_sample_id - a.study_sample_id)
+// eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(flat_arr);
         this.selectedSampleRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
         break;
         case 'samples':
+        // eslint-disable-next-line
+        const samples_to_compare = this.samplesBacklog.flat();
+        // eslint-disable-next-line
         var page_1_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
         //set these to the correct vars
+        // eslint-disable-next-line
         var results_total_count = page_1_metadata.totalCount
-        sample_res = [];
+// eslint-disable-next-line
+        var sample_res = [];
         for (let i = 0; i < results_total_count; i += 100){
+          // eslint-disable-next-line
           var element = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
+          // eslint-disable-next-line
             var recs = element.records
             sample_res.push(recs)
         }
-        var flat_arr = sample_res.flat();
+        // eslint-disable-next-line
+        sample_res = sample_res.flat();
+        // eslint-disable-next-line
+        var common1 = samples_to_compare.filter(x => sample_res.indexOf(x) !== -1)
         //if API doesn't take orderby
-        flat_arr = flat_arr.sort((a, b) => b.study_sample_id - a.study_sample_id)
-        var send_to_backlog = splitArrIntoPages(flat_arr);
+        common1 = common1.sort((a, b) => b.study_sample_id - a.study_sample_id)
+// eslint-disable-next-line
+        var send_to_backlog = splitArrIntoPages(common1);
         this.selectedSampleRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
 
@@ -944,7 +937,7 @@ export default {
               // eslint-disable-next-line
               setShadedParticipants(removed_p);
               // eslint-disable-next-line
-              handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData);
               break;
             case 'visits':
             // eslint-disable-next-line
@@ -956,7 +949,7 @@ export default {
               // eslint-disable-next-line
               setShadedVisits(removed_v);
               // eslint-disable-next-line
-              handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData);
               break;
             case 'samples':
             // eslint-disable-next-line
@@ -968,7 +961,7 @@ export default {
               // eslint-disable-next-line
               setShadedSamples(removed_s);
               // eslint-disable-next-line
-              handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData);
               break;
             case 'files':
               var curr_selected_files = this.shadedFiles;
@@ -979,7 +972,7 @@ export default {
               // eslint-disable-next-line
               setShadedFiles(removed_f);
               // eslint-disable-next-line
-              handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData);
           }
         }
         //clicks that shade the records depending on model
@@ -1004,7 +997,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedParticipants(prelist);
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData);
                 //red square
                 //NOTE: use the same process as in the section above
                 // eslint-disable-next-line
@@ -1029,7 +1022,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedVisits(prelist);
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData);
                 //blue
                 // eslint-disable-next-line
                 var ctx = canvas.node().getContext('2d');
@@ -1052,7 +1045,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedSamples(prelist);
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData);
                 //yellow
                 // eslint-disable-next-line
                 var ctx = canvas.node().getContext('2d');
@@ -1076,7 +1069,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedFiles(prelist);
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData);
                 //green
                 // eslint-disable-next-line
                 var ctx = canvas.node().getContext('2d');
