@@ -32,12 +32,12 @@
           </bf-button>
         </template>
       </ih-subheader>
-      <div>
-      <bf-button class='clearbtn' @click="ClearAllSelections()">
-          Clear selections
-        </bf-button>
-      </div>
       <div v-if="Object.keys(selectedStudy).length != 0">
+        <div class="mb-16">
+          <bf-button  @click="clearAllSelections()">
+            Clear selections
+          </bf-button>
+        </div>
         <div v-if="SearchStep == 0">
           <bf-button v-on:click="filterSearch('patient')">
             Filter Search Patients
@@ -84,6 +84,7 @@ export default {
   },
   mounted() {
     this.setSearchPage('StudiesBrowser')
+    this.clearAllSelections()
   },
   data() {
     return {
@@ -94,14 +95,15 @@ export default {
     ...mapState(['searchModalSearch']),
     ...mapGetters(['allStudies', 'selectedStudy', 'selectedStudyName']),
 
-},
+  },
   watch: {
 
   },
   methods: {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections']),
-    ClearAllSelections: function(){
+    clearAllSelections: function() {
       this.clearClickedSelections()
+      this.clearFilters()
       this.SearchStep = 0;
     },
     incrementStep: function(){
@@ -123,7 +125,7 @@ export default {
         operators: [],
         value: '',
         isInvalid: false,
-        lockTarget: false
+        lockTarget: true
       })
       const search = mergeRight(this.searchModalSearch, {
         filters: newFilters,
@@ -131,6 +133,10 @@ export default {
       })
       this.updateSearchModalSearch(search)
       this.updateSearchModalVisible(true)
+    },
+    clearFilters() {
+      const newSearch = mergeRight(this.searchModalSearch, { filters: [] })
+      this.updateSearchModalSearch(newSearch)
     }
   }
 }
@@ -152,10 +158,6 @@ export default {
   color: $app-primary-color;
   font-size: 1rem;
   font-weight: 500;
-}
-.clearbtn {
-  position: absolute;
-  right: 700px;
 }
 .graph-browser-container {
 }

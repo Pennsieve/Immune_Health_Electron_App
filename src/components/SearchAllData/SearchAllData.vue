@@ -258,7 +258,7 @@ export default {
         operators: [],
         value: '',
         isInvalid: false,
-        lockTarget: false
+        lockTarget: this.searchPage === 'StudiesBrowser'
       }
       this.searchModalSearch.filters.push(newFilter)
       this.updateSearchModalSearch(clone(this.searchModalSearch))

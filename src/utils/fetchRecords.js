@@ -58,6 +58,23 @@ const getStudyName = function(study) {
 }
 
 /**
+ * Get the headings for the records, if there are results
+ * @param {Array}
+ * @returns {Array}
+ */
+ const getRecordsV1Heading = (response) => {
+  return response.length
+    ? response[0][1].values.map(value => {
+        return {
+          modelTitle: value.conceptTitle,
+          name: value.name,
+          displayName: value.displayName
+        }
+      })
+    : []
+}
+
+/**
  * fetches the filtered patients records related to the selected study
  * @param {string} selectedStudyId - retreived from state.selectedStudy
  * @param {[Object]} filters - retreived from state.searchModalSearch.filters
@@ -204,6 +221,41 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
   })
 }
 
+/**
+ * Handle records response from v1 version of the API
+ */
+ export const handleV1RecordsResponse = (v1ResponseData) => {
+  const recordHeadings = getRecordsV1Heading(v1ResponseData)
+
+  const formattedRecords = v1ResponseData.map(record => {
+    const formattedValues = Object.fromEntries(
+      record[1].values.map(property => {
+        const dataType = typeof property.dataType === 'object'
+          ? property.dataType
+          : { type: property.dataType }
+        const formatter = getFormatter( dataType )
+
+        const formattedValue = Array.isArray(property.value)
+          ? property.value.map(v => formatter(v)).join(", ")
+          : formatter(property.value)
+
+        return [ property.name, formattedValue ]
+      })
+    )
+
+    return {
+        recordId: record[1].id,
+        datasetId: IMMUNE_HEALTH_DATASET_ID,
+        modelId: record[1].type, // TODO: Convert type to its corresponding id using an enum
+        ...formattedValues
+    }
+  })
+
+  return {
+    headings: recordHeadings,
+    records: formattedRecords
+  }
+}
 
 /**
  * Handles response from v2 records search endpoint
