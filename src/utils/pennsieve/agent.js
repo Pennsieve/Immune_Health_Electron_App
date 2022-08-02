@@ -16,16 +16,24 @@ class PennsieveAgent {
         this.ps = new Pennsieve();
 
         ipcMain.on("pennsieveLoginRequest", (event, args) => {
-            console.log(args);
             this.ps.reAuthenticate(async function(err, response) {
                 if (err) {
                     event.sender.send("pennsieveLoginResponse", {status: 'error', error: err});
                 }
                 else {
                     let user = response;
-                    console.log('user:');
-                    console.log(user);
                     event.sender.send("pennsieveLoginResponse", {status: 'success', result: user});
+                }
+            })
+        })
+
+        ipcMain.on("pennsieveUseDatasetRequest", (event, args) => {
+            this.ps.useDataset(args.datasetId, async function (err, response) {
+                if (err) {
+                    event.sender.send("pennsieveUseDatasetResponse", {status: 'error', error: err});
+                }
+                else {
+                    event.sender.send("pennsieveUseDatasetResponse", {status: 'success', result: response});
                 }
             })
         })

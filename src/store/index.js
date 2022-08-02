@@ -103,6 +103,7 @@ const store = new Vuex.Store({
     scientificUnits: [],
     //hardcoded value for testing...random record to link files to'
     datasetId: DATASET_ID,
+    datasetNodeId: IMMUNE_HEALTH_DATASET_ID,
     dataset: {},
     uploadDestination: 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4',
     datasetActivity: [],
@@ -161,6 +162,9 @@ const store = new Vuex.Store({
     },
     datasetId (state) {
       return state.datasetId
+    },
+    datasetNodeId(state) {
+      return state.datasetNodeId
     }
   },
   mutations: {

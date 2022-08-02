@@ -306,7 +306,6 @@
   //import FileIcon from '../../mixins/file-icon'
   import debounce from 'lodash/debounce'
   import {v1 as uuidv1} from 'uuid'
-  //import {Pennsieve} from '../../pennsieve-agent-javascript-inapp/pennsieve/pennsieve.js'
   import {
     compose,
     defaultTo,
@@ -324,7 +323,7 @@
     sum
   } from 'ramda';
   import EventBus from '../../utils/event-bus.js';
-//  import { fetchRetry } from '../../typescript/lib/fetch-retry';
+  import PennsieveClient from '@/utils/pennsieve/client.js'
 
   const transformPath = compose(
     init,
@@ -367,12 +366,13 @@
         isAddingFiles: true,
         packageListBorders: false,
         recordId: '',
-        uploadListId: -1 // start at -1 because this is incremented for every file added
+        uploadListId: -1, // start at -1 because this is incremented for every file added
+        ps: null
       }
     },
 
     computed: {
-      ...mapGetters(['config', 'userToken', 'uploadDestination']),
+      ...mapGetters(['config', 'userToken', 'uploadDestination', 'datasetNodeId']),
       ...mapState(['onboardingEvents', 'activeOrganization', 'dataset']),
 
       /**
@@ -1041,6 +1041,9 @@
 
     mounted: function() {
       this.fileMap = new Map();
+      this.ps = new PennsieveClient()
+      this.ps.useDatset(this.datasetNodeId, function() {})
+
       // let customheaders = {}
       //
       // Set header if userToken is available

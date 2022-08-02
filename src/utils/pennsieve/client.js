@@ -16,6 +16,13 @@ class PennsieveClient {
         // send login request message via IPC channel
         window.api.pennsieveLoginRequest()
     }
+
+    useDatset(datasetNodeId, callback) {
+        // set callback for IPC response
+        window.api.pennsieveUseDatasetResponse(callback)
+        // send use dataset request message via IPC channel
+        window.api.pennsieveUseDatasetRequest(datasetNodeId)
+    }
 }
 
 export default PennsieveClient
