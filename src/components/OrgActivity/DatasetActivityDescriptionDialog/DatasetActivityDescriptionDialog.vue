@@ -36,16 +36,17 @@
 </template>
 
 <script>
-import marked from 'marked'
+//import marked from 'marked'
 
-import BfButton from '../../shared/BfButton/BfButton.vue'
+import BfButton from '@/components/shared/BfButton.vue'
 import BfDialogHeader from '../../shared/bf-dialog-header/BfDialogHeader.vue'
 import DialogBody from '../../shared/dialog-body/DialogBody.vue'
 
+/*
 marked.setOptions({
   sanitize: true
 })
-
+*/
 export default {
   name: 'DatasetActivityDescriptionDialog',
 
@@ -73,16 +74,18 @@ export default {
      * Parse markdown description to be rendered
      * @returns {String}
      */
+     /*
     parsedMarkdown: function() {
       return marked(this.description)
     }
+    */
   }
 }
 </script>
 
 <style scoped lang="scss">
 
-@import '../../shared/MarkdownEditor/_markdown.scss';
+//@import '../../shared/MarkdownEditor/_markdown.scss';
 
 /deep/ .el-dialog__body {
   max-height: 500px;

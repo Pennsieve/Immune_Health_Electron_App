@@ -56,7 +56,7 @@
     <h1 class="orgtext">Immune Health Organization Activity</h1>
         <div v-if="userToken" class="orgtext">
           <h3>Org activity would be showin'</h3>
-          <!--<org-activity/>-->
+           <org-activity/>
         </div>
         <div v-else class="orgtext">
           <h3>Please sign in to view organization activity</h3>

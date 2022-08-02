@@ -459,21 +459,24 @@ import { referenceTypeOptions } from '../../utils/constants'
        * Has parent folder
        * @returns {Boolean}
        */
+       /*
       hasParent: function() {
         return this.eventDetail.detail.hasOwnProperty('parent')
       },
+      */
 
       /**
        * Has new parent folder
        * @returns {Boolean}
        */
+       /*
       hasNewParent: function() {
         return this.eventDetail.detail.hasOwnProperty('newParent')
       }
+      */
     },
-
     methods: {
-      /**
+      /*******
        * Get reference type
        * @param {String} type
        * @returns {String}
@@ -485,7 +488,6 @@ import { referenceTypeOptions } from '../../utils/constants'
     }
   }
 </script>
-
 <style  scoped>
 /*@import '/../../assets/css/_variables.scss'; */
 .dataset-activity-detail {

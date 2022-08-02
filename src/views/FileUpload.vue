@@ -6,7 +6,47 @@
     <span class="selected-content-container">
       <ih-subheader previousRoute="/studies">
         <template slot="text">
-          File Upload
+          <template v-if="!isLinkingTargetSet">No Linking Target Selected</template>
+          <template v-else-if="linkingTarget.modelId === 'visits'">
+            Linking Target:
+            <div class="ml-16">
+              <div class="property-text">
+                Visit Event ID
+              </div>
+              <div>
+                {{linkingTarget.visit_event}}
+              </div>
+            </div>
+            <div class="ml-16">
+              <div class="property-text">
+                Event Name
+              </div>
+              <div>
+                {{linkingTarget.event_name}}
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            Linking Target:
+            <div class="ml-16">
+              <div class="property-text">
+                Sample Type ID
+              </div>
+              <div>
+                <!--Figure out the name of the sample type id property that is set on the linking target-->
+                <!--{{linkingTarget.sample_type_id}}-->
+              </div>
+            </div>
+            <div class="ml-16">
+              <div class="property-text">
+                Study Sample ID
+              </div>
+              <div>
+                <!--Figure out the name of the study sample id property that is set on the linking target-->
+                <!--{{linkingTarget.study_sample_id}}-->
+              </div>
+            </div>
+          </template>
         </template>
         <template slot="buttons">
           <bf-button>
@@ -16,22 +56,25 @@
           </bf-button>
         </template>
       </ih-subheader>
-      <h2>Filter Files placeholder</h2>
-      <bf-button @click="setPlaceholder()">
-        Set test uploadDestination
+      <h2></h2>
+      <bf-button v-on:click="updateSearchModalVisible(true)">
+        Select Linking Target
       </bf-button>
-      <hr>
       <div class="logo-container">
         <span>
-        <bf-button @click="onUploadMenuClick">
-          Upload
+        <bf-button @click="linkToTarget()">
+          Link selected files to record
         </bf-button>
         </span>
+        </div>
         <span>
-          <bf-button @click="linkToTarget()">
-            Link selected files to record
+          <div>
+          <bf-button @click="onUploadMenuClick">
+            Upload Files
           </bf-button>
-
+          </div>
+          <hr>
+          <h2 class="orgtext">Staged Files</h2>
           <files-table
             v-if="hasFiles"
             :data="files"
@@ -70,6 +113,7 @@
           />
           -->
         </span>
+      <div>
       </div>
     </span>
   </div>
@@ -89,10 +133,15 @@ import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
 import {findIndex,pathEq,} from 'ramda'
 import { mapGetters,
-         //mapActions
+         mapActions,
+         mapState
        }
 from 'vuex'
+<<<<<<< HEAD
 // import PennsieveClient from '@/utils/pennsieve/client.js'
+=======
+import { isEmpty } from 'ramda'
+>>>>>>> a9958bb1ec3500b8b9a0fee8b6b415e2fb38294c
 
 export default {
   name: 'FileUpload',
@@ -111,7 +160,10 @@ export default {
   ],
   computed: {
     ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId']),
-
+  ...mapState(['linkingTarget']),
+  isLinkingTargetSet() {
+    return !isEmpty(this.linkingTarget)
+  },
     //returns true if more than 1 select file
     multipleSelected: function () {
       return this.selectedFiles.length > 1
@@ -141,6 +193,7 @@ export default {
   },
   mounted: function () {
     //if no files yet
+    this.setSearchPage('FileUpload')
     if (!this.files.length){
       this.fetchFiles()
     }
@@ -159,8 +212,12 @@ export default {
     // EventBus.$off('update-external-file', this.onFileRenamed)
   },
   methods: {
+<<<<<<< HEAD
     //...mapActions(['setPlaceholderUploadDest']),
 
+=======
+      ...mapActions(['setSearchPage', 'updateSearchModalVisible']),
+>>>>>>> a9958bb1ec3500b8b9a0fee8b6b415e2fb38294c
     /**
      * Handle upload menu click event
      * @param {String} command
@@ -216,6 +273,7 @@ export default {
      * Creates relationships with file(s)
      */
     createFileRelationshipRequests: function() {
+      console.log('createrelationshiprequests called')
       //change datasetId
       this.isCreating = true
       const datasetId = this.datasetId;
@@ -223,6 +281,7 @@ export default {
       //CHANGE THIS URL
       const url = `https://api.pennsieve.io/datasets/${datasetId}/proxy/package/instances`
       //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
+
       const queues = Array.from(this.selectedFiles).map(itemId => {
         const recordId = itemId
         const packageId = this.uploadDestination //the record we are linking to
@@ -406,7 +465,7 @@ export default {
     createRelationships: function() {
       this.isLoading = true
     //  if (this.isFile) {
-
+      console.log('createrelationships called')
         //this.checkBelongsToExists()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
@@ -534,5 +593,17 @@ export default {
   span:not(:last-of-type) {
     margin-right: 1rem;
   }
+  .orgtext {
+    //padding: 0 2rem;
+    color: #2f26ad;
+  }
+.property-text {
+  color: $app-primary-color;
+  font-size: 1rem;
+  font-weight: 500;
+}
+::v-deep .text-container {
+  align-items: flex-end;
+}
 }
 </style>
