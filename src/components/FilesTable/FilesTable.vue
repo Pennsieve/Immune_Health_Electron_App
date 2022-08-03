@@ -33,7 +33,7 @@
         </li>
         <li class="mr-24">
           <button
-            v-if="!searchAllDataMenu"
+            v-if="enableFileMove && !searchAllDataMenu"
             class="linked btn-selection-action"
             :disabled="datasetLocked"
             @click="$emit('move')"
@@ -49,6 +49,7 @@
         </li>
         <li>
           <button
+            v-if="enableDownload"
             class="linked btn-selection-action"
             @click="onDownloadClick"
           >
@@ -223,6 +224,18 @@ export default {
     nonSortableColumns: {
       type: Array,
       default: () => []
+    },
+    datasetLocked: {
+      type: Boolean,
+      default: false
+    },
+    enableFileMove: {
+      type: Boolean,
+      default: true
+    },
+    enableDownload: {
+      type: Boolean,
+      default: true
     }
   },
 

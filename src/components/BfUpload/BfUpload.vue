@@ -79,6 +79,7 @@
           </div>
 
           <!-- these "warnings" may be obsolete, or we can repurpose for issues with Agent -->
+          <!-- COMMENT OUT TABLE VIEWS OF FILES TO BE UPLOADED
           <div
             v-if="showWarnings"
             class="bf-upload-warning-wrap"
@@ -208,6 +209,30 @@
               Need help? Contact Us
             </a>
           </div>
+          -->
+
+          <div
+              v-if="hasItems(fileListMap)"
+              ref="fileListMapWrap"
+              class="bf-upload-packages-wrap"
+              :class="[ hasWarnings ? 'has-warnings' : '' ]"
+          >
+            <!-- -->
+              <files-table
+                v-if="hasItems(fileListMap)"
+                :data="uploadFileList()"
+                :multiple-selected="false"
+                :enable-download="false"
+                :enable-file-move="false"
+                @delete="uploadRemoveFile"
+                @process="uploadProcessFile"
+                @copy-url="uploadGetPresignedUrl"
+                @selection-change="uploadSetSelectedFiles"
+                @click-file-label="uploadOnClickLabel">
+              </files-table>
+            <!-- -->
+          </div>
+
         </template>
 
         <!-- This is the template for when we are done adding files -->
@@ -247,7 +272,7 @@
         </bf-button>
 
         <bf-button
-          :disabled="packageList.length === 0"
+          :disabled="fileListMap.size === 0"
           @click="startUpload"
         >
           Start Upload
@@ -295,35 +320,36 @@
 
 
 //  import Vue from 'vue'
-  import qq from 'fine-uploader/lib/core'
-  import { mapActions, mapGetters, mapState } from 'vuex';
-  import BfButton from '../shared/BfButton.vue'
-  import BfDialog from '../shared/bf-dialog/bf-dialog.vue'
-  import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
-  import CheckOverflow from '../../mixins/check-overflow/index'
-  import Sorter from '../../mixins/sorter'
-  import Request from '../../mixins/request';
-  //import FileIcon from '../../mixins/file-icon'
-  import debounce from 'lodash/debounce'
-  import {v1 as uuidv1} from 'uuid'
-  import {
-    compose,
-    defaultTo,
+import qq from 'fine-uploader/lib/core'
+import { mapActions, mapGetters, mapState } from 'vuex';
+import BfButton from '../shared/BfButton.vue'
+import BfDialog from '../shared/bf-dialog/bf-dialog.vue'
+// import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
+import CheckOverflow from '../../mixins/check-overflow/index'
+import Sorter from '../../mixins/sorter'
+import Request from '../../mixins/request';
+//import FileIcon from '../../mixins/file-icon'
+import debounce from 'lodash/debounce'
+import {v1 as uuidv1} from 'uuid'
+import {
+  compose,
+  defaultTo,
 //    equals,
-    filter,
-    find,
-    findIndex,
-    init,
-    pathOr,
-    pluck,
-    prop,
-    propEq,
-    propOr,
-    split,
-    sum
-  } from 'ramda';
-  import EventBus from '../../utils/event-bus.js';
-  import PennsieveClient from '@/utils/pennsieve/client.js'
+  filter,
+  find,
+  findIndex,
+  init,
+  pathOr,
+  pluck,
+  prop,
+  propEq,
+  propOr,
+  split,
+  sum
+} from 'ramda';
+import EventBus from '../../utils/event-bus.js';
+import PennsieveClient from '@/utils/pennsieve/client.js'
+import FilesTable from "@/components/FilesTable/FilesTable";
 
   const transformPath = compose(
     init,
@@ -335,9 +361,10 @@
     name: 'BfUpload',
 
     components: {
+      FilesTable,
       BfButton,
       BfDialog,
-      BfUploadPackage
+      // BfUploadPackage
     },
 
     mixins: [Sorter, CheckOverflow, Request,
@@ -357,7 +384,7 @@
         showInfo: false,
         droppedFiles: [],
         uploader: {},
-        fileMap: {},
+        fileListMap: {},
         fileList: [],
         packageList: [],
         uploadList: [],
@@ -367,7 +394,8 @@
         packageListBorders: false,
         recordId: '',
         uploadListId: -1, // start at -1 because this is incremented for every file added
-        ps: null
+        ps: null,
+        selectedFiles: null
       }
     },
 
@@ -438,19 +466,13 @@
 
     watch: {
       fileList: function() { // function(newFileList, oldFileList) {
-        // Only get package preview if adding a file to the list
-        // if (newFileList.length > oldFileList.length) {
-        //   // Show onboarding info if first time
-        //   const hasSeenInfo = localStorage.getItem('seen-upload-info')
-        //   if (!hasSeenInfo) {
-        //     this.showInfo = true
-        //   }
-        //
-        //   this.getPackages()
-        // }
-        //
-        // this.checkOverflow(this.$refs.packageWrap)
-        this.fileList.filter(d => !this.fileMap.has(d.filePath)).forEach(d => this.fileMap.set(d.filePath, d));
+        // add items in fileList to fileListMap (that are not already there)
+        this.fileList.filter(d => !this.fileListMap.has(d.filePath)).forEach(d => this.fileListMap.set(d.filePath, d));
+
+        // remove items from fileListMap that are not in fileList
+        const fileListKeys = this.fileList.map(file => file.filePath)
+        const removeList = Array.from(this.fileListMap.keys()).filter(key => !fileListKeys.includes(key))
+        removeList.forEach(key => this.fileListMap.delete(key))
       },
 
       packageList: function() {
@@ -482,7 +504,7 @@
        * Compute if array has items
        */
       hasItems: function(list) {
-        return list && list.length > 0 ? true : false
+        return list && (list.length > 0 || list.size > 0) ? true : false
       },
 
       /**
@@ -542,7 +564,6 @@
        * Trigger input file click
        */
       triggerInputFile: function() {
-        console.log("triggerInputFile()")
         this.$refs.inputFile.click()
       },
 
@@ -929,7 +950,7 @@
        */
       resetQueue: function() {
         this.fileList = []
-        this.fileMap = new Map()
+        this.fileListMap = new Map()
         this.packageList = []
         this.errorPreflight = ''
       },
@@ -1036,11 +1057,41 @@
 
           uploadListPkg.package = item.package
         })
+      },
+
+      uploadFileList: function() {
+        const fileList = Array.from(this.fileListMap.values()).map(item => {
+          return {
+            content: {
+              name: item.file.path,
+              createdAt: '2022-07-31T23:59:59.999999Z',
+              nodeId: 'N:upload-file:00000000-0000-0000-0000-000000000000'
+            }
+          }
+        })
+        return fileList
+      },
+
+      uploadRemoveFile: function() {
+        const removeList = new Map()
+        this.selectedFiles.forEach(file => removeList.set(file.content.name, file))
+        const fileList = this.fileList.filter(file => !removeList.has(file.filePath))
+        this.fileList = fileList
+      },
+      uploadProcessFile: function() {
+      },
+      uploadGetPresignedUrl: function() {
+      },
+      uploadSetSelectedFiles: function(selection) {
+        this.selectedFiles = selection
+      },
+      // eslint-disable-next-line no-unused-vars
+      uploadOnClickLabel: function(file) {
       }
     },
 
     mounted: function() {
-      this.fileMap = new Map();
+      this.resetQueue()
       this.ps = new PennsieveClient()
       this.ps.useDatset(this.datasetNodeId, function() {})
 

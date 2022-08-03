@@ -520,6 +520,8 @@ export default {
      * @param {Array} selection
      */
     setSelectedFiles: function (selection) {
+      console.log('FileUpload::setSelectedFiles() selection:')
+      console.log(selection)
       this.selectedFiles = selection
     },
 
