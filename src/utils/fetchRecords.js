@@ -5,16 +5,16 @@ import { v1 } from 'uuid';
 
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 // pennsieve endpoint for retrieving a list of filtered records
-const GET_FILTERED_METADATA_RECORDS_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search/records'
+export const GET_FILTERED_METADATA_RECORDS_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search/records'
 
-const REQUEST_HEADER = (token) => {
+export const REQUEST_HEADER = (token) => {
   return {
     headers: { Authorization: `Bearer ${token}`}
   }
 }
 
 // construct the query that is to be used in the body of the post request to retrieve the filtered records
-const getQuery = async (model, filters, token) => {
+export const getQuery = async (model, filters, token) => {
   const searchFilters = []
   let query = {
     model: model,
@@ -260,7 +260,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
 /**
  * Handles response from v2 records search endpoint
  */
-const handleV2RecordsResponse = (v2ResponseData) => {
+export const handleV2RecordsResponse = (v2ResponseData) => {
   const recordModels = propOr([], 'models', v2ResponseData)
   const records = propOr([], 'records', v2ResponseData)
   const totalCount = v2ResponseData.totalCount
