@@ -15,7 +15,16 @@
       <canvas ref="mainCanvas" class="mainCanvas"/>
       <canvas ref="hiddenCanvas" class="hiddenCanvas"/>
     </div>
-
+<!--    <model-tooltip-->
+<!--        :model="hoveredModel"-->
+<!--        @mouseenter.native="shouldHideTooltip = false"-->
+<!--        @mouseleave.native="hideModelTooltip"-->
+<!--    />-->
+    <record-tooltip
+        :model="hoveredModel"
+        @mouseenter.native="shouldHideTooltip = false"
+        @mouseleave.native="hideModelTooltip"
+    />
   </div>
 </template>
 
@@ -53,9 +62,10 @@ import { pathOr, propOr, clone, mergeRight} from 'ramda'
 import debounce from 'lodash/debounce'
 import { mapState, mapActions, mapGetters } from 'vuex'
 
-//import ModelTooltip from './ModelTooltip/ModelTooltip.vue'
+// import ModelTooltip from './ModelTooltip/ModelTooltip.vue'
 
 import Request from '@/mixins/request'
+import RecordTooltip from "@/components/DataModelGraph/RecordTooltip/RecordTooltip";
 
 // NOTE: Defining simulation variable in global scope becuase we need to initiate d3 force simulation
 // within the context onf the renderChart function but we also need access to simulation in update chart function
@@ -68,6 +78,8 @@ export default {
   name: 'DataGridGraph',
 
   components: {
+    RecordTooltip,
+    //ModelTooltip
   },
 
   mixins: [
@@ -232,7 +244,7 @@ export default {
     selectedNode: {
       handler: function() {
         if (this.selectedNode && this.selectedNode.details){
-          console.log(this.selectedNode.details.id)
+          console.log(`selectedNode: ${this.selectedNode.details.id}`)
         }
       }
     },
@@ -287,18 +299,7 @@ export default {
   },
 
   mounted() {
-    console.log(`mounted()`)
     let vm = this
-
-
-    // d3.range(5000).forEach(function(el) {
-    //   vm.data.push({ value: el });
-    // })
-
-    //this.canvasSize = {
-    //  width: 1000,
-    //  height: 1000
-    //}
 
     var mainCanvas = d3.select('.mainCanvas')
       .attr('width', this.canvasSize.width)
@@ -309,8 +310,6 @@ export default {
 
     var customBase = document.createElement('custom');
     this.custom = d3.select(customBase);
-
-    // this.databind(this.data)
 
     this.drawTimer= d3.timer(function(elapsed) {
       vm.draw(mainCanvas, false);
@@ -328,12 +327,10 @@ export default {
       var hiddenCtx = hiddenCanvas.node().getContext('2d');
       var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
       var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
-      // eslint-disable-next-line
       var nodeData = vm.colorToNode[colKey];
-      // eslint-disable-next-line
       if (nodeData){
-        // eslint-disable-next-line
-        //console.log(`mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        // console.log(`mousemove() mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData:`)
+        // console.log(nodeData)
         // eslint-disable-next-line
         vm.onHoverElement(nodeData, d.clientX, d.clientY)
 
@@ -412,6 +409,7 @@ export default {
           // eslint-disable-next-line
           var node = d3.select(this);   // This is each individual element in the loop.
           console.log(node);
+          console.log(nodeData.hiddenCol === node._groups[0].attributes)
           //ctx.fillStyle = hidden ? node.attr('fillStyleHidden') : node.attr('fillStyle');
           //ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));  // Here you retrieve the position of the node and apply it to the fillRect context function which will fill and paint the square.
         });
@@ -423,9 +421,6 @@ export default {
       }
     }); // canvas listener/handler
 
-
-
-    // this.getModelData()
     this.loadModelData()
     this.bindModelData()
     window.addEventListener('resize', this.handleResize.bind(this))
@@ -1253,7 +1248,6 @@ export default {
     */
 
     loadModelData: function() {
-      console.log(`loadModelData()`)
       if (!this.userToken()) {
         return
       }
@@ -1274,7 +1268,6 @@ export default {
 
     bindModelData: function() {
       //NOTE: add in a section which binds creates 2 rectangles per model next to text, and gives first one prev attr, second one next attr
-      console.log(`bindModelData()`)
       var join = this.custom.selectAll('custom.model')
         .data(this.modelData);
 
@@ -1623,45 +1616,47 @@ export default {
   },
     // eslint-disable-next-line
     onHoverElement: function(nodeData, x, y) {
-      // TODO: remove return
-      //return
+      // console.log(`onHoverElement() x: ${x} y: ${y} nodeData:`)
+      // console.log(nodeData)
 
       // eslint-disable-next-line no-unreachable
-      if (nodeData) {
+      if (nodeData && nodeData.parent) {
         // eslint-disable-next-line
-        if (nodeData.parent && !nodeData.details) {
+        if (!nodeData.details) {
           // eslint-disable-next-line
-          console.log('no details yet')
+          // console.log('onHoverElement() nodeData.details: no details yet')
           const modelId = nodeData.parent.id
+          // console.log(`onHoverElement() modelId: ${modelId}`)
           if (this.recordPool[modelId].unMapped.length === 0 && !this.recordPool[modelId].isPending) {
-            console.log('Getting more records')
+            // console.log('onHoverElement() Getting more records')
             this.fetchRecords(modelId)
           } else {
             const unMapped = this.recordPool[modelId].unMapped
             const randomIndex =Math.floor(Math.random() * unMapped.length);
             // eslint-disable-next-line
             nodeData.details = this.recordPool[modelId].records[ unMapped[randomIndex]]
-            console.log(nodeData.details)
+            // console.log(nodeData.details)
             unMapped.splice(randomIndex, 1)
           }
         }
-        else {
-          // eslint-disable-next-line
-          this.selectedNode = nodeData
+        // eslint-disable-next-line
+        this.selectedNode = nodeData
 
-          const tooltip = select('.model-tooltip')
+        const tooltip = select('.record-tooltip')
 
-          this.shouldHideTooltip = false
-          // eslint-disable-next-line
-          this.hoveredModel = nodeData.details
-
-          tooltip.style('transform', `translate(${x}px, ${y + 20}px)`)
-
+        this.shouldHideTooltip = false
+        // eslint-disable-next-line
+        // this.hoveredModel = nodeData.details
+        this.hoveredModel = {
+          displayName: nodeData.parent.name,
+          properties: nodeData.details.values ? nodeData.details.values : []
         }
+
+        tooltip.style('transform', `translate(${x}px, ${y + 20}px)`)
       }
       else {
-        this.shouldHideTooltip = false
-
+        // there is no nodeData or this nodeData does not have a parent (i.e., it is a model)
+        this.hideModelTooltip()
       }
     },
 
@@ -2123,18 +2118,15 @@ export default {
      * `shouldHideTooltip` is set to `false` on `mouseenter` of the circle node or tooltip
      */
     hideModelTooltip: function() {
-      this.selectedNode = {}
-       this.shouldHideTooltip = false
+      this.shouldHideTooltip = true
+      clearTimeout(this.hideModelTooltipTimeout)
 
-       this.shouldHideTooltip = true
-       clearTimeout(this.hideModelTooltipTimeout)
-
-       this.hideModelTooltipTimeout = setTimeout(() => {
-         if (this.shouldHideTooltip) {
-           this.selectedNode = {}
-           this.shouldHideTooltip = false
-         }
-       }, 100)
+      this.hideModelTooltipTimeout = setTimeout(() => {
+        if (this.shouldHideTooltip) {
+          this.hoveredModel = {}
+          this.shouldHideTooltip = false
+        }
+      }, 100)
     }
   }
 }
