@@ -443,13 +443,14 @@ export default {
     ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
 /*
   //When a record is clicked, we want to add that as a filter and get the related records. We dont want to update the view for the current model (apart from coloring the selected record)
-    async handleFilterChangeClick(nodeData) {
+    async handleFilterChangeClick(nodeData, clickstatus) {
       const limit = 100
       const model = nodeData.parent.displayName;
       const identifier = nodeData.details.id
       const token = this.userToken()
       //get identifier from nodedata (use inspector)
-      switch(model){
+      if (clickstatus == 'click'){
+        switch(model){
         case 'patient':
         var offset = limit*this.visitsPage
         var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
@@ -563,6 +564,101 @@ export default {
         })
         break;
       }
+    }
+    else if (clickstatus == 'unclick'){
+    switch(model){
+      case 'patient':
+      var offset = limit*this.visitsPage
+      var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+      var newFilters = clone(this.searchModalSearch.filters)
+      var remove1 = {
+        id: v1(),
+        isInvalid: false,
+        lockTarget: true,
+        operation: "=",
+        operationLabel: "equals",
+        operators: [
+          {
+            label: 'equals',
+            value: '='
+          },
+          {
+            label: 'does not equal',
+            value: '<>'
+          },
+          {
+            label: 'starts with',
+            value: 'STARTS WITH'
+          },
+        ],
+        property: "externalparticipantid",
+        propertyLabel: "externalparticipantid",
+        propertyType: {format: null, type: "String"},
+        target: "patient",
+        targetLabel: "patient",
+        type: "model",
+        value: identifier
+      }
+      var newFilters = newFilters.filter(function(entry) {
+        return entry != remove1;
+      });
+       var  visitsQuery = await getQuery('visits', newFilters, token)
+
+      var new_vis =  await axios.post(filteredRecordsUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
+         return handleV2RecordsResponse(propOr([], 'data', response))
+       })
+       var visit_recs = new_vis.records;
+       this.selectedVisitRecords = visit_recs;
+      break;
+      case 'visits':
+      var offset = limit*this.samplesPage;
+      var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+      var newFilters = clone(this.searchModalSearch.filters)
+      var remove2 = {
+        id: v1(),
+        isInvalid: false,
+        lockTarget: true,
+        operation: "=",
+        operationLabel: "equals",
+        operators: [
+          {
+            label: 'equals',
+            value: '='
+          },
+          {
+            label: 'does not equal',
+            value: '<>'
+          },
+          {
+            label: 'starts with',
+            value: 'STARTS WITH'
+          },
+        ],
+        property: "visit_event_id",
+        propertyLabel: "visit_event_id",
+        propertyType: {format: null, type: "String"},
+        target: "visits",
+        targetLabel: "visits",
+        type: "model",
+        value: identifier
+      }
+      var newFilters = newFilters.filter(function(entry) {
+        return entry != remove2;
+      });
+      var  visitsQuery2 = await getQuery('samples', newFilters, token)
+
+     var new_samp =  await axios.post(filteredRecordsUrl, visitsQuery2, REQUEST_HEADER(token)).then(response => {
+        return handleV2RecordsResponse(propOr([], 'data', response))
+      })
+      var sample_recs = new_samp.records;
+      this.selectedSampleRecords = sample_recs;
+      break;
+      //TO DO: for samples, we want to have the selection influence files that are returned.
+      case 'samples'
+      var newFilters = clone(this.searchModalSearch.filters)
+      break;
+    }
+  }
     },
 */
 /*
@@ -969,7 +1065,7 @@ export default {
               // eslint-disable-next-line
               setShadedParticipants(removed_p);
               // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData, unclick);
               break;
             case 'visits':
             // eslint-disable-next-line
@@ -981,7 +1077,7 @@ export default {
               // eslint-disable-next-line
               setShadedVisits(removed_v);
               // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData, unclick);
               break;
             case 'samples':
             // eslint-disable-next-line
@@ -993,7 +1089,7 @@ export default {
               // eslint-disable-next-line
               setShadedSamples(removed_s);
               // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData, unclick);
               break;
             case 'files':
               var curr_selected_files = this.shadedFiles;
@@ -1004,12 +1100,12 @@ export default {
               // eslint-disable-next-line
               setShadedFiles(removed_f);
               // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData);
+              //handleFilterChangeClick(nodeData, unclick);
           }
         }
         //clicks that shade the records depending on model
         // eslint-disable-next-line
-        if ((nodeData.click_count)%2 == 1 ){
+        else if ((nodeData.click_count)%2 == 1 ){
           //what they've selected vs what is related to their selection
           switch (parentName) {
             case 'patient':
@@ -1029,7 +1125,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedParticipants(prelist);
                 // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData, click);
                 //red square
                 //NOTE: use the same process as in the section above
                 // eslint-disable-next-line
@@ -1054,7 +1150,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedVisits(prelist);
                 // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData, click);
                 //blue
                 // eslint-disable-next-line
                 var ctx = canvas.node().getContext('2d');
@@ -1077,7 +1173,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedSamples(prelist);
                 // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData, click);
                 //yellow
                 // eslint-disable-next-line
                 var ctx = canvas.node().getContext('2d');
@@ -1101,7 +1197,7 @@ export default {
                 // eslint-disable-next-line
                 setShadedFiles(prelist);
                 // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData);
+                //handleFilterChangeClick(nodeData, click);
                 //green
                 // eslint-disable-next-line
                 var ctx = canvas.node().getContext('2d');
