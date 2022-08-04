@@ -185,7 +185,8 @@ export default {
       isLoading: false,
       isAddingFiles: false,
       hasFiles: true,
-      uploadDialogOpen: false
+      uploadDialogOpen: false,
+      isCreating: false
     }
   },
   mounted: function () {
@@ -274,9 +275,9 @@ export default {
       const url = `https://api.pennsieve.io/datasets/${datasetId}/proxy/package/instances`
       //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
 
-      const queues = Array.from(this.selectedFiles).map(itemId => {
+      const queues = Array.from(this.selectedFiles.Id).map(itemId => {
         const recordId = itemId
-        const packageId = this.uploadDestination //the record we are linking to
+        const packageId = this.linkingTarget.visit_event //the record we are linking to
         //pathOr('', ['params', 'instanceId'], this.$route)
         const linkTarget = {
           'ConceptInstance': {
@@ -403,13 +404,13 @@ export default {
      * @param {Array} items
      */
     moveItems: function (destination, items) {
-      if (this.moveUrl) {
+      if (destination) {
         const things = items.map(item => item.content.id)
-        this.sendXhr(this.moveUrl, {
+        this.sendXhr(destination, {
           method: 'POST',
           body: {
             destination,
-            things
+            things //edit this
           }
         })
           .then(response => {
