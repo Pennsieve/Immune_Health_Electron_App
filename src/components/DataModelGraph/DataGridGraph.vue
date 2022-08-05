@@ -409,7 +409,7 @@ export default {
       console.log(nodeData.displayName,mouseX,xCoord, yCoord)
       if (mouseX >= 115 && mouseX <= 215){
         // eslint-disable-next-line
-        console.log(`CLICKED: PREVIOUS for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
+        console.log(`CLICKED: PREVIOUS for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} nodeData: ${nodeData}`);
         //if currently clicking prev model attr
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'prev');
@@ -417,7 +417,7 @@ export default {
       // eslint-disable-next-line
       else if (mouseX >= 215){
         // eslint-disable-next-line
-        console.log(`CLICKED: NEXT for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        console.log(`CLICKED: NEXT for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} nodeData: ${nodeData}`)
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'next');
       }
