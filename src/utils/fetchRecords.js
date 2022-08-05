@@ -11,7 +11,7 @@ const GET_METADATA_RECORDS_FOR_MODEL_ENDPOINT = `https://api.pennsieve.io/models
 const GET_FILTERED_METADATA_RECORDS_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search/records'
 
 const REQUEST_HEADER = (token) => {
-  return { 
+  return {
     headers: { Authorization: `Bearer ${token}`}
   }
 }
@@ -27,7 +27,7 @@ const getQuery = async (model, filters, token) => {
   const relevantModels = await axios.get(relevantModelsUrl, REQUEST_HEADER(token)).then(({data}) => {
     return data.models.map((model) => { return model['name'] })
   })
-  
+
   filters.forEach(filter => {
     /**
      * Only add filter if the target exists
@@ -74,7 +74,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
 
   if (!filters.some(filter => !filter.isInvalid)) {
     const patientsStudyMetadataUrl = `${GET_METADATA_RECORDS_FOR_MODEL_ENDPOINT}/${selectedStudyId}/relations/patient?limit=${limit}&offset=${offset}&includeIncomingLinkedProperties=true`
-  
+
     return await axios.get(patientsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
       return handleV1RecordsResponse(response.data)
     })
@@ -134,7 +134,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
 
   if (!filters.some(filter => !filter.isInvalid)) {
     const visitsStudyMetadataUrl = `${GET_METADATA_RECORDS_FOR_MODEL_ENDPOINT}/${selectedStudyId}/relations/visits?limit=${limit}&offset=${offset}&includeIncomingLinkedProperties=true`
-  
+
     return await axios.get(visitsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
       return handleV1RecordsResponse(response.data)
     })
@@ -194,7 +194,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
 
   if (!filters.some(filter => !filter.isInvalid)) {
     const samplesStudyMetadataUrl = `${GET_METADATA_RECORDS_FOR_MODEL_ENDPOINT}/${selectedStudyId}/relations/samples?limit=${limit}&offset=${offset}&includeIncomingLinkedProperties=true`
-  
+
     return await axios.get(samplesStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
       return handleV1RecordsResponse(response.data)
     })
@@ -241,7 +241,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
 }
 
 /**
- * The structure of the response data returned by the v1 endpoint https://api.pennsieve.io/models/datasets/{datasetId}/concepts/{conceptId}/instances/{instanceId}/relations/{relationsId} 
+ * The structure of the response data returned by the v1 endpoint https://api.pennsieve.io/models/datasets/{datasetId}/concepts/{conceptId}/instances/{instanceId}/relations/{relationsId}
  * is different than the structure returned by the v2 endpoint https://api.pennsieve.io/models/v2/organizations/{organizationId}/search/records/{params}
  * These methods will format the v1 and v2 response data to match the response structure expected by the records table as well as return the corresponding table headings
  */
@@ -355,7 +355,7 @@ const handleV2RecordsResponse = (v2ResponseData) => {
       datasetId: IMMUNE_HEALTH_DATASET_ID,
       modelId: record.modelId,
       ...formattedValues
-    } 
+    }
   })
 
   return {

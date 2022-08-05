@@ -274,8 +274,13 @@ export default {
       //CHANGE THIS URL
       const url = `https://api.pennsieve.io/datasets/${datasetId}/proxy/package/instances`
       //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
-
-      const queues = Array.from(this.selectedFiles.Id).map(itemId => {
+      var iter = this.selectedFiles;
+      var selecteditemids = []
+      for (const f of iter){
+        var i = f.content.id
+        selecteditemids.push(i)
+      }
+      const queues = Array.from(selecteditemids).map(itemId => {
         const recordId = itemId
         const packageId = this.linkingTarget.visit_event //the record we are linking to
         //pathOr('', ['params', 'instanceId'], this.$route)
@@ -313,7 +318,7 @@ export default {
      */
 
     // eslint-disable-next-line no-unused-vars
-    createRelationshipsSuccess: function(resp) {
+    createRelationshipsSuccess: function() {
       //const conceptName = propOr('', 'name', this.concept)
       //const displayName = propOr('', 'displayName', this.concept)
       //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
@@ -460,6 +465,8 @@ export default {
     //  if (this.isFile) {
       console.log('createrelationships called')
         //this.checkBelongsToExists()
+        //Below is for debugging
+        this.createFileRelationshipRequests()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
         .finally(() => this.isLoading === false)
