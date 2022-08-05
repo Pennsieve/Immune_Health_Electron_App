@@ -44,7 +44,11 @@ import {
   // eslint-disable-next-line
   fetchFilteredSamplesMetadataRelatedToStudy,
   fetchVisitsFilesRelatedToStudy,
-  fetchSamplesFilesRelatedToStudy
+  fetchSamplesFilesRelatedToStudy,
+  GET_FILTERED_METADATA_RECORDS_ENDPOINT,
+  REQUEST_HEADER,
+  handleV2RecordsResponse,
+  getQuery
 } from '@/utils/fetchRecords'
 
 import axios from 'axios'
@@ -276,9 +280,20 @@ export default {
       this.updateSamplesFiles()
     },
     searchModalSearch: function(){
-      //whenever a filter is added or subtracted from list
+      //whenever a filter is added or subtracted from list it will update the downstream elements
       this.handleFilterChangeSequential();
 
+    },
+    triggerForClearing: function(){
+      var shadedarr = []
+      shadedarr = shadedarr.push(this.shadedParticipants)
+      shadedarr = shadedarr.push(this.shadedVisits)
+      shadedarr = shadedarr.push(this.shadedSamples)
+      for (const x of shadedarr){
+        for (const y of x){
+          this.onClickElement(y) //will trigger branch of code that sets click to 0
+        }
+      }
     }
   },
 
@@ -317,7 +332,7 @@ export default {
   methods: {
     //will not use these map actions since all data will be within component
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
-    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
+    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch','triggerForClearing']),
 
     setupMouseOver: function() {
       const vm = this
@@ -410,11 +425,7 @@ export default {
       console.log(`mouseClickModel() displayName: ${nodeData.displayName} (mouseX: ${mouseX}, mouseY: ${mouseY}) (xCoord: ${xCoord}, yCoord: ${yCoord})`)
       if (mouseX >= 115 && mouseX <= 215){
         // eslint-disable-next-line
-<<<<<<< HEAD
-        console.log(`CLICKED: PREVIOUS for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} nodeData: ${nodeData}`);
-=======
         console.log(`mouseClickModel() CLICKED PREVIOUS for: ${nodeData.displayName}`);
->>>>>>> 53bf132138537b7da86881166fb8b0846ed6e5fe
         //if currently clicking prev model attr
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'prev');
@@ -422,11 +433,7 @@ export default {
       // eslint-disable-next-line
       else if (mouseX >= 215){
         // eslint-disable-next-line
-<<<<<<< HEAD
-        console.log(`CLICKED: NEXT for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} nodeData: ${nodeData}`)
-=======
         console.log(`mouseClickModel() CLICKED NEXT for: ${nodeData.displayName}`);
->>>>>>> 53bf132138537b7da86881166fb8b0846ed6e5fe
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'next');
       }
@@ -449,16 +456,16 @@ export default {
       });
 
       if (selectedRecord) {
-        vm.onClickElement(nodeData, selectedRecord)// , d.click, mouseX, mouseY)
+        vm.onClickElement(nodeData, selectedRecord,false)// , d.click, mouseX, mouseY)
       }
     },
 
-/*
+
   //When a record is clicked, we want to add that as a filter and get the related records. We dont want to update the view for the current model (apart from coloring the selected record)
-    async handleFilterChangeClick(nodeData, clickstatus) {
+    handleFilterChangeClick: async function(nodeData, clickstatus) {
       const limit = 100
       const model = nodeData.parent.displayName;
-      const identifier = nodeData.details.id
+      const identifier = nodeData.details.values[0].value
       const token = this.userToken()
       //get identifier from nodedata (use inspector)
       if (clickstatus == 'click'){
@@ -497,15 +504,18 @@ export default {
         })
          var  visitsQuery = await getQuery('visits', newFilters, token)
 
-        var new_vis =  await axios.post(filteredRecordsUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
+        var new_vis =  await axios.post(filteredRecordsUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
            return handleV2RecordsResponse(propOr([], 'data', response))
          })
          var visit_recs = new_vis.records;
          this.selectedVisitRecords = visit_recs;
         break;
         case 'visits':
+        // eslint-disable-next-line
         var offset = limit*this.samplesPage;
+        // eslint-disable-next-line
         var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+        // eslint-disable-next-line
         var newFilters = clone(this.searchModalSearch.filters)
         newFilters.push({
           id: v1(),
@@ -543,8 +553,9 @@ export default {
         var sample_recs = new_samp.records;
         this.selectedSampleRecords = sample_recs;
         break;
-        //TO DO: for samples, we want to have the selection influence files that are returned.
-        case 'samples'
+        case 'samples':
+        //NOTE: need to figure out how to use selection to limit or highlight the relevant files
+        // eslint-disable-next-line
         var newFilters = clone(this.searchModalSearch.filters)
         newFilters.push({
           id: v1(),
@@ -577,11 +588,14 @@ export default {
         break;
       }
     }
-    else if (clickstatus == 'unclick'){
+    else {
     switch(model){
       case 'patient':
+      // eslint-disable-next-line
       var offset = limit*this.visitsPage
+      // eslint-disable-next-line
       var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+      // eslint-disable-next-line
       var newFilters = clone(this.searchModalSearch.filters)
       var remove1 = {
         id: v1(),
@@ -611,20 +625,26 @@ export default {
         type: "model",
         value: identifier
       }
+      // eslint-disable-next-line
       var newFilters = newFilters.filter(function(entry) {
         return entry != remove1;
       });
+      // eslint-disable-next-line
        var  visitsQuery = await getQuery('visits', newFilters, token)
-
-      var new_vis =  await axios.post(filteredRecordsUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
+       // eslint-disable-next-line
+      var new_vis =  await axios.post(filteredRecordsUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
          return handleV2RecordsResponse(propOr([], 'data', response))
        })
+       // eslint-disable-next-line
        var visit_recs = new_vis.records;
        this.selectedVisitRecords = visit_recs;
       break;
       case 'visits':
+      // eslint-disable-next-line
       var offset = limit*this.samplesPage;
+      // eslint-disable-next-line
       var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+      // eslint-disable-next-line
       var newFilters = clone(this.searchModalSearch.filters)
       var remove2 = {
         id: v1(),
@@ -654,25 +674,29 @@ export default {
         type: "model",
         value: identifier
       }
+      // eslint-disable-next-line
       var newFilters = newFilters.filter(function(entry) {
         return entry != remove2;
       });
+      // eslint-disable-next-line
       var  visitsQuery2 = await getQuery('samples', newFilters, token)
-
+      // eslint-disable-next-line
      var new_samp =  await axios.post(filteredRecordsUrl, visitsQuery2, REQUEST_HEADER(token)).then(response => {
         return handleV2RecordsResponse(propOr([], 'data', response))
       })
+      // eslint-disable-next-line
       var sample_recs = new_samp.records;
       this.selectedSampleRecords = sample_recs;
       break;
       //TO DO: for samples, we want to have the selection influence files that are returned.
-      case 'samples'
+      case 'samples':
+      //NOTE: need to figure out how to use selection to limit or highlight the relevant files
+      // eslint-disable-next-line
       var newFilters = clone(this.searchModalSearch.filters)
       break;
     }
   }
-    },
-*/
+},
 /*
     splitArrIntoPages(arr){
       const chunkSize = 100;
@@ -942,112 +966,15 @@ export default {
       }
     },
 
-    /*
-    //filters the page for the model the filters are applied to and sets the backlog for that model
-    // eslint-disable-next-line
-    handleFilterChange: async function(){
-      // eslint-disable-next-line
-      model = this.searchModalSearch.model;
-      // eslint-disable-next-line
-      switch(model){
-        case 'patient':
-          //getting the first page of filtered records for the model
-          var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-          //set these to the correct vars
-          var results_total_count = page_1_metadata.totalCount
-          //this.recordHeadings = page_1_metadata.headings
-          var to_be_sorted = page_1_metadata.records
-          sorted = to_be_sorted.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
-          this.selectedPatientRecords = sorted
-          this.selectedRecordCount['patient'] = sorted.length
-          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-          for (let i = 0; i < results_total_count; i += 100){
-            // eslint-disable-next-line
-            backlog_metadata = []
-            var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-            // eslint-disable-next-line
-            backlog_metadata.push(element);
-            // eslint-disable-next-line
-            this.patientsBacklog.push(backlog_metadata);
-            //var flat_arr = this.patientsBacklog.flat();
-
-            var other_models = ['visits','samples','files']
-            for (model in other_models){
-            for (x in flat_arr){
-              //make request to NEW API ENDPOINT. get the related records for each model, and put into respective backlogs
-              //for response, call a helper that sets the backlog for each of the returned models just like the intended one that sets the backlog from filter
-              //i.e. switch case if model is vists, set visits backlog, etc
-
-            }
-          break;
-          case 'visits':
-            //getting the first page of filtered records for the model
-            var page_1_metadata1 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-            //set these to the correct vars
-            var results_total_count1 = page_1_metadata1.totalCount
-            //this.recordHeadings = page_1_metadata.headings
-            this.selectedVisitRecords = page_1_metadata1.records
-            //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-            for (let i = 0; i < results_total_count1; i += 100){
-              // eslint-disable-next-line
-              backlog_metadata = []
-              var element1 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-              // eslint-disable-next-line
-              backlog_metadata.push(element1);
-              // eslint-disable-next-line
-              this.visitsBacklog.push(backlog_metadata);
-            }
-            break;
-        case 'samples':
-          //getting the first page of filtered records for the model
-          var page_1_metadata2 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-          //set these to the correct vars
-          var results_total_count2 = page_1_metadata2.totalCount
-          //this.recordHeadings = page_1_metadata.headings
-          this.selectedSampleRecords = page_1_metadata2.records
-          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-          for (let i = 0; i < results_total_count2; i += 100){
-            // eslint-disable-next-line
-            backlog_metadata = []
-            var element2 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-            // eslint-disable-next-line
-            backlog_metadata.push(element2);
-            // eslint-disable-next-line
-            this.samplesBacklog.push(backlog_metadata);
-          }
-          break;
-        case 'files':
-          //getting the first page of filtered records for the model
-          var page_1_metadata3 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-          //set these to the correct vars
-          var results_total_count3 = page_1_metadata3.totalCount
-          //this.recordHeadings = page_1_metadata.headings
-          this.selectedFileRecords = page_1_metadata3.records
-          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-          for (let i = 0; i < results_total_count3; i += 100){
-            // eslint-disable-next-line
-            backlog_metadata = []
-            var element3 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-// eslint-disable-next-line
-            backlog_metadata.push(element3);
-            // eslint-disable-next-line
-            this.filesBacklog.push(backlog_metadata);
-          }
-
-      }
-    },
-    */
-
-
     //called when a record is clicked
     // eslint-disable-next-line
-    onClickElement(nodeData, selectedRecord){
+    onClickElement(nodeData, selectedRecord, clearing){
       //checking that its a record and not a model
       // console.log('onClickElement() nodeData:')
       // console.log(nodeData)
       // console.log('onClickElement() selectedRecord:')
       // console.log(selectedRecord)
-      if (nodeData.parent) {
+      if (nodeData.parent && clearing == false) {
         //parentname will determine what color we change the square to
         var parent = nodeData.parent;
         var parentName = parent.displayName
@@ -1118,6 +1045,8 @@ export default {
           //     // eslint-disable-next-line
           //     //handleFilterChangeClick(nodeData, unclick);
           // }
+          // eslint-disable-next-line
+          handleFilterChangeClick(nodeData, unclick);
         }
         //clicks that shade the records depending on model
         // eslint-disable-next-line
@@ -1159,7 +1088,16 @@ export default {
             //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
             //     //or just use d3.select(this).style("fill","#d10a00");
             //     //get related record data and set to store... see how Eric's filter gets related first
+            /*
+                var part_arr = this.shadedParticipants
+                console.log(part_arr)
+                var payload = [nodeData,selectedRecord, true]
+                this.shadedParticipants = part_arr.push(payload)
+                this.setShadedParticipants(this.shadedParticipants)
+            */
                 fillstyle ="#d10a00"
+                // eslint-disable-next-line
+                handleFilterChangeClick(nodeData, unclick);
                 break;
             case 'visits':
                 // var curr_selected_visits = this.shadedVisits;
@@ -1182,7 +1120,15 @@ export default {
                 // ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
                 // //or just use
                 // //d3.select(this).style("fill","#0049d1");
+                /*
+                var vis_arr = this.shadedVisits
+                var payload1 = [nodeData,selectedRecord, true]
+                this.shadedVisits = vis_arr.push(payload1)
+                this.setShadedVisits(this.shadedVisits)
+                */
                 fillstyle ="#0049d1"
+                // eslint-disable-next-line
+                handleFilterChangeClick(nodeData, unclick);
                 break;
             case 'samples':
             // // eslint-disable-next-line
@@ -1207,7 +1153,15 @@ export default {
             //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
             //     //or just use
             //     //d3.select(this).style("fill","#f0cc00");
+            /*
+                var samp_arr = this.shadedSamples
+                var payload2 = [nodeData,selectedRecord, true]
+                this.shadedSamples = samp_arr.push(payload2)
+                this.setShadedSamples(this.shadedSamples)
+            */
                 fillstyle ="#f0cc00"
+                // eslint-disable-next-line
+                handleFilterChangeClick(nodeData, unclick);
                 break;
             case 'files':
             // // eslint-disable-next-line
@@ -1242,6 +1196,18 @@ export default {
         selectedRecord.attr('fillStyle', fillstyle)
         const mainCanvas = d3.select('.mainCanvas')
         this.draw(mainCanvas, false)
+      }
+      else {
+        //we are in the case where clearing == true
+        //var parent_clear = nodeData.parent;
+        //var parentName_clear = parent_clear.displayName
+        let clickCount_clear = 0
+        selectedRecord.attr("clickcount", clickCount_clear)
+        // set default fill style (when record is 'unclicked')
+        let fillstyle_clear = '#C8C7C7'
+        selectedRecord.attr('fillStyle', fillstyle_clear)
+        const mainCanvas_clear = d3.select('.mainCanvas')
+        this.draw(mainCanvas_clear, false)
       }
     },
 

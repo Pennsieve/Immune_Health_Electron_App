@@ -8,7 +8,7 @@ Vue.use(Vuex);
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
 // HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
-const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzA3MzA4YmFmLTlkMGItNGVjZC05YzhiLTkxNmE0OWVkMGY5OCIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6Ijc3Y2ZhMjNmLTBlZTUtNGNkMi1iYjUwLWY4ZjlkNzYwNTFjNyIsImV2ZW50X2lkIjoiNjA2MGY1NWMtNjNkYS00M2NkLThkZGItNzBiYmQ3MGU4YzFmIiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1OTcxMzk3NCwiZXhwIjoxNjU5NzE3NTc0LCJpYXQiOjE2NTk3MTM5NzQsImp0aSI6ImYxZDJkODhiLWFmNTQtNGJiYy1iMGU5LTAwYTk5NWY0NGU2NCIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.VbYA-xmBPxqrBU_zxX63O0Nt0PVhHvSIX5UkFalB2L_iNOmuXf3UYp4OYYtUidrOIpp1daozbm6PXBmlz0k924fNcRz3wY1vd4xBBCcmkn6zsd-K6opGHYR_9bRGzxfMjCKbWr7NE9ylb1mD5ZU21wgH0CazKjtIXe0VHxlHWTBfNRNFqNZFUg8RkV8N8CqwNu6cIBkqU3T4zbYoINsoMHenYFgPOX5qK3VP_OMRlZSoWR9tuDp-7AcGqYZnqZt5KnWi1fwk8lOQkD3wmbIpQc8mZmUfNE0kqKw1z4c_ORIxYIH-c1P8pVoQFKYUgZ_CYUPSNVKsDc0tiUlXDMND2w'
+const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzk5NjhiOTUyLTFlY2EtNDk2Yi1hOTEwLTMzODA5MzlmZDQxMSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjEwNWYxMjViLTczM2MtNGRjOS1iOTVkLTZmNDdjZGEzYmQ4OCIsImV2ZW50X2lkIjoiYWYyMDBjNTYtZmIyZS00NDQ5LWE0ZTctYjgyYjFhNmVkZDE0IiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1OTcyNjM1OSwiZXhwIjoxNjU5NzI5OTU5LCJpYXQiOjE2NTk3MjYzNTksImp0aSI6IjNlNGFhOTNiLWE5ZGMtNDcxOC1iODQzLTc5NDcxZWE0YWQ0YSIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.AWNDktaFIJ5iZvXA2rRmD5gRtyEljkKQNZD9Ov2gadhoHZU958IsrYsuPOSBBKcfxiY2kUe7gI1CuzFlw16TPxzklAm-7eHB6SfTH0KrSYfSwVmkTImgTurVyxIU73kD_NyHJIdfggeZdP4M0fBS8WbjC9Tz7JxhfaL-t51RA0OwG-Ix2DYFqcwZZUVY9u3BAU9sfOdIpPuHhsPmiB5VO8cNp7rYWN3cfcA39uhepvmGC6yF05KxAWiQRKu8pkOzwVB9YwRQ_oClKcRyXJjv1XujxGMjqNJxFTwdllYdFh93Dup1tpVGU6rhQuTsPkHaTUCvSEU1K1hNpvqcIUZNeg'
 
 const store = new Vuex.Store({
   state: {
@@ -31,7 +31,8 @@ const store = new Vuex.Store({
 shadedParticipants: [],
     shadedVisits: [],
     shadedSamples: [],
-    shadedFiles: []
+    shadedFiles: [],
+    triggerForClearing: false
   },
   getters: {
     username (state) {
@@ -88,6 +89,9 @@ shadedParticipants: [],
     },
     shadedFiles (state) {
       return state.shadedFiles
+    },
+    triggerForClearing (state){
+      return state.triggerForClearing
     }
   },
   mutations: {
@@ -133,7 +137,10 @@ shadedParticipants: [],
       },
       SET_SHADED_FILES(state, data){
         state.shadedFiles = data
-      }
+      },
+    SET_TRIGGER_FOR_CLEARING(state,data){
+      state.triggerForClearing = data
+    }
   },
   actions: {
     clearClickedSelections({commit}){
@@ -150,6 +157,9 @@ shadedParticipants: [],
     },
     setShadedFiles({commit}, data){
       commit('SET_SHADED_FILES',data)
+    },
+    setTriggerForClearing({commit}, data){
+      commit('SET_TRIGGER_FOR_CLEARING',data)
     },
     async login({ dispatch, state }) {
       // Set a dummy profile for now

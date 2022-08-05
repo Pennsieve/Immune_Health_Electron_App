@@ -100,8 +100,9 @@ export default {
 
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections','setTriggerForClearing']),
     clearAllSelections: function() {
+      this.setTriggerForClearing(true)
       this.clearClickedSelections()
       this.clearFilters()
       this.SearchStep = 0;
