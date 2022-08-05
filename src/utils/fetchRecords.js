@@ -4,8 +4,8 @@ import { getFormatter } from '@/mixins/data-type/utils';
 import { v1 } from 'uuid';
 
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
-// pennsieve endpoint for retrieving a list of filtered records
-export const GET_FILTERED_METADATA_RECORDS_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search/records'
+// pennsieve endpoint for retrieving a list of filtered records or files
+const GET_FILTERED_METADATA_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search'
 
 export const REQUEST_HEADER = (token) => {
   return {
@@ -84,7 +84,7 @@ const getStudyName = function(study) {
  */
 export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
   // return the records related to the selected study with the filters applied
-  const filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+  const filteredRecordsUrl = `${GET_FILTERED_METADATA_ENDPOINT}/records?limit=${limit}&offset=${offset}`
 
   // filter the returned records by the selected study
   const modifiedFilters = clone(filters)
@@ -133,7 +133,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
  */
  export const fetchFilteredVisitsMetadataRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
   // return the records related to the selected study with the filters applied
-  const filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+  const filteredRecordsUrl = `${GET_FILTERED_METADATA_ENDPOINT}/records?limit=${limit}&offset=${offset}`
 
   // filter the returned records by the selected study
   const modifiedFilters = clone(filters)
@@ -182,7 +182,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
  */
  export const fetchFilteredSamplesMetadataRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
   // return the records related to the selected study with the filters applied
-  const filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+  const filteredRecordsUrl = `${GET_FILTERED_METADATA_ENDPOINT}/records?limit=${limit}&offset=${offset}`
 
   // filter the returned records by the selected study
   const modifiedFilters = clone(filters)
@@ -217,6 +217,104 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
   const samplesQuery = await getQuery('samples', modifiedFilters, token)
 
   return await axios.post(filteredRecordsUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
+    return handleV2RecordsResponse(propOr([], 'data', response))
+  })
+}
+
+/**
+ * fetches the files linked to the filtered visits records that are related to the selected study
+ * @param {string} selectedStudyId - retreived from state.selectedStudy
+ * @param {[Object]} filters - retreived from state.searchModalSearch.filters
+ * @param {string} token - retrieved from state.apiKey
+ * @param {int} limit - the upper limit of the list of records returned
+ * @param {int} offset - the offset of the list of records returned
+ */
+ export const fetchVisitsFilesRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
+  // return the files related to the selected study with the filters applied
+  const filteredFilesUrl = `${GET_FILTERED_METADATA_ENDPOINT}/packages?limit=${limit}&offset=${offset}`
+
+  // filter the returned files by the selected study
+  const modifiedFilters = clone(filters) || []
+  modifiedFilters.push({
+    id: v1(),
+    isInvalid: false,
+    lockTarget: true,
+    operation: "=",
+    operationLabel: "equals",
+    operators: [
+      {
+        label: 'equals',
+        value: '='
+      },
+      {
+        label: 'does not equal',
+        value: '<>'
+      },
+      {
+        label: 'starts with',
+        value: 'STARTS WITH'
+      },
+    ],
+    property: "sstudyid",
+    propertyLabel: "sstudyid",
+    propertyType: {format: null, type: "String"},
+    target: "study",
+    targetLabel: "study",
+    type: "model",
+    value: getStudyName(selectedStudy)
+  })
+  const visitsQuery = await getQuery('visits', modifiedFilters, token)
+
+  return await axios.post(filteredFilesUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
+    return handleV2RecordsResponse(propOr([], 'data', response))
+  })
+}
+
+/**
+ * fetches the files linked to the filtered samples records that are related to the selected study
+ * @param {string} selectedStudyId - retreived from state.selectedStudy
+ * @param {[Object]} filters - retreived from state.searchModalSearch.filters
+ * @param {string} token - retrieved from state.apiKey
+ * @param {int} limit - the upper limit of the list of records returned
+ * @param {int} offset - the offset of the list of records returned
+ */
+ export const fetchSamplesFilesRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
+  // return the files related to the selected study with the filters applied
+  const filteredFilesUrl = `${GET_FILTERED_METADATA_ENDPOINT}/packages?limit=${limit}&offset=${offset}`
+
+  // filter the returned files by the selected study
+  const modifiedFilters = clone(filters) || []
+  modifiedFilters.push({
+    id: v1(),
+    isInvalid: false,
+    lockTarget: true,
+    operation: "=",
+    operationLabel: "equals",
+    operators: [
+      {
+        label: 'equals',
+        value: '='
+      },
+      {
+        label: 'does not equal',
+        value: '<>'
+      },
+      {
+        label: 'starts with',
+        value: 'STARTS WITH'
+      },
+    ],
+    property: "sstudyid",
+    propertyLabel: "sstudyid",
+    propertyType: {format: null, type: "String"},
+    target: "study",
+    targetLabel: "study",
+    type: "model",
+    value: getStudyName(selectedStudy)
+  })
+  const samplesQuery = await getQuery('samples', modifiedFilters, token)
+
+  return await axios.post(filteredFilesUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
     return handleV2RecordsResponse(propOr([], 'data', response))
   })
 }

@@ -43,13 +43,8 @@ import {
   fetchFilteredVisitsMetadataRelatedToStudy,
   // eslint-disable-next-line
   fetchFilteredSamplesMetadataRelatedToStudy,
-  // eslint-disable-next-line
-  GET_FILTERED_METADATA_RECORDS_ENDPOINT,
-  // eslint-disable-next-line
-  getQuery,
-  // eslint-disable-next-line
-  REQUEST_HEADER,
-  // eslint-disable-next-line
+  fetchVisitsFilesRelatedToStudy,
+  fetchSamplesFilesRelatedToStudy
 } from '@/utils/fetchRecords'
 
 import axios from 'axios'
@@ -166,16 +161,12 @@ export default {
       selectedPatientRecords: [],
       selectedVisitRecords: [],
       selectedSampleRecords: [],
-      selectedFileRecords: [],
+      selectedVisitsFiles: [],
+      selectedSamplesFiles: [],
       participantsPage: 0,
       visitsPage: 0,
       samplesPage: 0,
       filesPage: 0,
-      //these will house all of the records (all pages) when filters are applied
-      patientsBacklog: [],
-      visitsBacklog: [],
-      samplesBacklog: [],
-      filesBacklog: [],
 
       //filters: this.searchModalSearch.filters
     }
@@ -277,10 +268,12 @@ export default {
     selectedVisitRecords: function() {
       console.log('updating view')
       this.updateView()
+      this.updateVisitsFiles()
     },
     selectedSampleRecords: function() {
       console.log('updating view')
       this.updateView()
+      this.updateSamplesFiles()
     },
     searchModalSearch: function(){
       //whenever a filter is added or subtracted from list
@@ -1759,6 +1752,14 @@ updatePage: function(modelName, modelPage, orderBy, direction){
                   console.log('nothing for files yet');
           }
 },
+
+    async updateVisitsFiles() {
+      this.selectedVisitsFiles = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, 0)
+    },
+
+    async updateSamplesFiles() {
+      this.selectedSamplesFiles = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, 0)
+    },
 
   //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
   //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
