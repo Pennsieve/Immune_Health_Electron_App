@@ -15,11 +15,6 @@
       <canvas ref="mainCanvas" class="mainCanvas"/>
       <canvas ref="hiddenCanvas" class="hiddenCanvas"/>
     </div>
-<!--    <model-tooltip-->
-<!--        :model="hoveredModel"-->
-<!--        @mouseenter.native="shouldHideTooltip = false"-->
-<!--        @mouseleave.native="hideModelTooltip"-->
-<!--    />-->
     <record-tooltip
         :model="hoveredModel"
         @mouseenter.native="shouldHideTooltip = false"
@@ -297,14 +292,16 @@ export default {
   mounted() {
     let vm = this
 
-    var mainCanvas = d3.select('.mainCanvas')
+    // eslint-disable-next-line
+    const mainCanvas = d3.select('.mainCanvas')
       .attr('width', this.canvasSize.width)
       .attr('height', this.canvasSize.height);
-    var hiddenCanvas = d3.select('.hiddenCanvas')
+    // eslint-disable-next-line
+    const hiddenCanvas = d3.select('.hiddenCanvas')
       .attr('width', this.canvasSize.width)
       .attr('height', this.canvasSize.height);
 
-    var customBase = document.createElement('custom');
+    const customBase = document.createElement('custom');
     this.custom = d3.select(customBase);
 
     this.drawTimer= d3.timer(function(elapsed) {
@@ -312,111 +309,8 @@ export default {
       if (elapsed > 300) vm.drawTimer.stop();
     }); // Timer running the draw function repeatedly for 300 ms.
 
-    d3.select('.mainCanvas').on('mousemove', function(d) {
-
-      vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
-      // Get mouse positions from the main canvas.
-      const cCoord = this.getBoundingClientRect();
-      const mouseY = d.clientY - cCoord.top;
-      const mouseX = d.clientX - cCoord.left;
-
-      var hiddenCtx = hiddenCanvas.node().getContext('2d');
-      var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
-      var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
-      var nodeData = vm.colorToNode[colKey];
-      if (nodeData){
-        // console.log(`mousemove() mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData:`)
-        // console.log(nodeData)
-        // eslint-disable-next-line
-        vm.onHoverElement(nodeData, d.clientX, d.clientY)
-
-      } else {
-        vm.hideModelTooltip()
-      }
-
-    });
-    //when an element is clicked, get its data and if it is a prev/ next, call appropriate function
-    // eslint-disable-next-line
-    d3.select('.mainCanvas').on('click', function(d) {
-      //draw the hidden canvas, and get the properties of the thing you clicked on (set elsewhere)
-      vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
-      // Get mouse positions from the main canvas.
-      const cCoord = this.getBoundingClientRect();
-      const mouseY = d.clientY - cCoord.top;
-      const mouseX = d.clientX - cCoord.left;
-
-      var hiddenCtx = hiddenCanvas.node().getContext('2d');
-      var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
-      var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
-      // eslint-disable-next-line
-      var nodeData = vm.colorToNode[colKey];
-      //if has data
-      // eslint-disable-next-line
-      if (nodeData){
-        // eslint-disable-next-line
-      if (!nodeData.parent){ //i.e. if it is a model
-        console.log(nodeData)
-        var models = vm.custom.selectAll('custom.model');
-        var xCoord = ''
-        var yCoord = ''
-        // eslint-disable-next-line
-        models.each(function(d,i) { //iterate through models, find model x and y coords
-          var node = d3.select(this);
-          //console.log(node.attr('modelName'))
-          if (node.attr('modelName') == nodeData.displayName){
-                // eslint-disable-next-line
-            xCoord = node.attr('x')
-            // eslint-disable-next-line
-            yCoord = node.attr('y')
-            //console.log(nodeData.displayName)
-          }
-        });
-        /*
-        var yStartPrev = yCoord - 35
-        var  xStartPrev = xCoord +70
-        var  xStopPrev = xCoord +140
-        var  xStopNext = xCoord +250
-        */
-        console.log(nodeData.displayName,mouseX,xCoord, yCoord)
-        if (mouseX >= 115 && mouseX <= 215){
-          // eslint-disable-next-line
-          console.log(`CLICKED: PREVIOUS for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
-          //if currently clicking prev model attr
-          // eslint-disable-next-line
-          vm.advancePage(nodeData.displayName, 'prev');
-        }
-        // eslint-disable-next-line
-     else if (mouseX >= 215){
-      // eslint-disable-next-line
-      console.log(`CLICKED: NEXT for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
-       // eslint-disable-next-line
-      vm.advancePage(nodeData.displayName, 'next');
-    }
-  } //if its a record
-      else if (nodeData.parent){
-        // eslint-disable-next-line
-        console.log(nodeData)
-
-        console.log(`CLICKED: ${nodeData} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
-        console.log(nodeData)
-        var records = vm.custom.selectAll('custom.record');// Grab all elements you bound data to in the databind() function.
-        // eslint-disable-next-line no-unused-vars
-        records.each(function(d,i) { // For each virtual/custom element...
-          // eslint-disable-next-line
-          var node = d3.select(this);   // This is each individual element in the loop.
-          console.log(node);
-          console.log(nodeData.hiddenCol === node._groups[0].attributes)
-          //ctx.fillStyle = hidden ? node.attr('fillStyleHidden') : node.attr('fillStyle');
-          //ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));  // Here you retrieve the position of the node and apply it to the fillRect context function which will fill and paint the square.
-        });
-
-        //vm.onHoverElement(nodeData, d.clientX, d.clientY)
-        //NOTE: must pass in the actual record data (i.e. nod.attr...)
-        vm.onClickElement(nodeData, d.click, mouseX, mouseY)
-      }
-      }
-    }); // canvas listener/handler
-
+    this.setupMouseOver()
+    this.setupMouseClick()
     this.loadModelData()
     this.bindModelData()
     window.addEventListener('resize', this.handleResize.bind(this))
@@ -431,6 +325,132 @@ export default {
     //will not use these map actions since all data will be within component
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
     ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
+
+    setupMouseOver: function() {
+      const vm = this
+      const hiddenCanvas = d3.select('.hiddenCanvas')
+      d3.select('.mainCanvas').on('mousemove', function(d) {
+
+        vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
+        // Get mouse positions from the main canvas.
+        const cCoord = this.getBoundingClientRect();
+        const mouseY = d.clientY - cCoord.top;
+        const mouseX = d.clientX - cCoord.left;
+
+        var hiddenCtx = hiddenCanvas.node().getContext('2d');
+        var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
+        var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+        var nodeData = vm.colorToNode[colKey];
+        if (nodeData){
+          // console.log(`mousemove() mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData:`)
+          // console.log(nodeData)
+          // eslint-disable-next-line
+          vm.onHoverElement(nodeData, d.clientX, d.clientY)
+
+        } else {
+          vm.hideModelTooltip()
+        }
+
+      });
+    },
+
+    setupMouseClick: function() {//when an element is clicked, get its data and if it is a prev/ next, call appropriate function
+      const vm = this
+      const hiddenCanvas = d3.select('.hiddenCanvas')
+
+      d3.select('.mainCanvas').on('click', function(d) {
+        //draw the hidden canvas, and get the properties of the thing you clicked on (set elsewhere)
+        vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
+        // Get mouse positions from the main canvas.
+        const cCoord = this.getBoundingClientRect();
+        const mouseY = d.clientY - cCoord.top;
+        const mouseX = d.clientX - cCoord.left;
+
+        var hiddenCtx = hiddenCanvas.node().getContext('2d');
+        var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
+        var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+        // eslint-disable-next-line
+        var nodeData = vm.colorToNode[colKey];
+        //if has data
+        // eslint-disable-next-line
+
+        if (nodeData) {
+          console.log("mouseClick() nodeData:")
+          console.log(nodeData)
+          if (nodeData.parent) {
+            // it is a record
+            vm.mouseClickRecord(nodeData)
+          } else {
+            // it is a model
+            vm.mouseClickModel(nodeData, mouseX, mouseY)
+          }
+        }
+      })
+    },
+
+    mouseClickModel: function(nodeData, mouseX, mouseY) {
+      console.log('mouseClickModel() nodeData:')
+      console.log(nodeData)
+      const vm = this
+      var models = vm.custom.selectAll('custom.model');
+      var xCoord = ''
+      var yCoord = ''
+      // eslint-disable-next-line
+      models.each(function(d,i) { //iterate through models, find model x and y coords
+        var node = d3.select(this);
+        //console.log(node.attr('modelName'))
+        if (node.attr('modelName') == nodeData.displayName){
+          // eslint-disable-next-line
+          xCoord = node.attr('x')
+          // eslint-disable-next-line
+          yCoord = node.attr('y')
+          //console.log(nodeData.displayName)
+        }
+      });
+      /*
+      var yStartPrev = yCoord - 35
+      var  xStartPrev = xCoord +70
+      var  xStopPrev = xCoord +140
+      var  xStopNext = xCoord +250
+      */
+      console.log(nodeData.displayName,mouseX,xCoord, yCoord)
+      if (mouseX >= 115 && mouseX <= 215){
+        // eslint-disable-next-line
+        console.log(`CLICKED: PREVIOUS for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
+        //if currently clicking prev model attr
+        // eslint-disable-next-line
+        vm.advancePage(nodeData.displayName, 'prev');
+      }
+      // eslint-disable-next-line
+      else if (mouseX >= 215){
+        // eslint-disable-next-line
+        console.log(`CLICKED: NEXT for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        // eslint-disable-next-line
+        vm.advancePage(nodeData.displayName, 'next');
+      }
+    },
+
+    mouseClickRecord: function(nodeData) {
+      const vm = this
+
+      let records = vm.custom.selectAll('custom.record');// Grab all elements you bound data to in the databind() function.
+      let selectedRecord = null
+      // eslint-disable-next-line no-unused-vars
+      records.each(function(d,i) { // For each virtual/custom element...
+        var node = d3.select(this);   // This is each individual element in the loop.
+        // eslint-disable-next-line no-unused-vars
+        node.each(function(enclosed, index) {
+          if (enclosed.hiddenCol === nodeData.hiddenCol) {
+            selectedRecord = node
+          }
+        })
+      });
+
+      if (selectedRecord) {
+        vm.onClickElement(nodeData, selectedRecord)// , d.click, mouseX, mouseY)
+      }
+    },
+
 /*
   //When a record is clicked, we want to add that as a filter and get the related records. We dont want to update the view for the current model (apart from coloring the selected record)
     async handleFilterChangeClick(nodeData, clickstatus) {
@@ -1019,192 +1039,207 @@ export default {
 
     //called when a record is clicked
     // eslint-disable-next-line
-    onClickElement(nodeData, click, x, y){
+    onClickElement(nodeData, selectedRecord){
       //checking that its a record and not a model
-      console.log('executing click element')
-      if (nodeData.parent){
-        console.log('has a parent')
-        var parent = nodeData.parent;
+      // console.log('onClickElement() nodeData:')
+      // console.log(nodeData)
+      // console.log('onClickElement() selectedRecord:')
+      // console.log(selectedRecord)
+      if (nodeData.parent) {
         //parentname will determine what color we change the square to
+        var parent = nodeData.parent;
         var parentName = parent.displayName
-        //want to set color conditionally
-        //need to advance click on the individual record. Most likely need to use the same process as in recordbind()..i.e. join
-// eslint-disable-next-line
-        nodeData.click_count ++;
-        //NOTE: must figure out how to actually access this!
-        // eslint-disable-next-line
-        if ((nodeData.click_clickcount)%2 == 0 ){
+        let clickCount = +selectedRecord.attr("clickcount") + 1
+        selectedRecord.attr("clickcount", clickCount)
+
+        // set default fill style (when record is 'unclicked')
+        let fillstyle = '#C8C7C7'
+
+        if (clickCount%2 == 0){
+          // TODO: add selectedNode to a "selected nodes" list (based on record type -> `parentName`)
+
           //will fill with grey default (or do nothing) if it is first click or a 'clear' click
           // eslint-disable-next-line
-          var ctx = canvas.node().getContext('2d');
+          // var ctx = canvas.node().getContext('2d');
           //how do we grab the record we're interested in?
           // eslint-disable-next-line
-          ctx.fillstyle ="#afb3b0";
+          // ctx.fillstyle ="#afb3b0";
           //ACTUALLY:
             //ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
             //vm.draw(mainCanvas,false); //or this.draw(mainCanvas,false);
-          switch (parentName){
-            case 'patient':
-            //we want to remove this record from our list of shaded records
-            // eslint-disable-next-line
-              var curr_p = this.shadedParticipants;
-              // eslint-disable-next-line
-              var removed_p = curr_p.filter(function(value, index, curr_p){
-                return value != nodeData.details.id;
-              });
-              // eslint-disable-next-line
-              setShadedParticipants(removed_p);
-              // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData, unclick);
-              break;
-            case 'visits':
-            // eslint-disable-next-line
-              var curr_v = this.shadedVisits;
-              // eslint-disable-next-line
-              var removed_v = curr_v.filter(function(value, index, curr_v){
-                return value != nodeData.details.id;
-              });
-              // eslint-disable-next-line
-              setShadedVisits(removed_v);
-              // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData, unclick);
-              break;
-            case 'samples':
-            // eslint-disable-next-line
-              var curr_s = this.shadedSamples;
-              // eslint-disable-next-line
-              var removed_s = curr_s.filter(function(value, index, curr_s){
-                return value != nodeData.details.id;
-              });
-              // eslint-disable-next-line
-              setShadedSamples(removed_s);
-              // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData, unclick);
-              break;
-            case 'files':
-              var curr_selected_files = this.shadedFiles;
-              // eslint-disable-next-line
-              var removed_f = curr_f.filter(function(value, index, curr_f){
-                return value != nodeData.details.id;
-              });
-              // eslint-disable-next-line
-              setShadedFiles(removed_f);
-              // eslint-disable-next-line
-              //handleFilterChangeClick(nodeData, unclick);
-          }
+          // switch (parentName){
+          //   case 'patient':
+          //   //we want to remove this record from our list of shaded records
+          //   // eslint-disable-next-line
+          //     var curr_p = this.shadedParticipants;
+          //     // eslint-disable-next-line
+          //     var removed_p = curr_p.filter(function(value, index, curr_p){
+          //       return value != nodeData.details.id;
+          //     });
+          //     // eslint-disable-next-line
+          //     this.setShadedParticipants(removed_p);
+          //     // eslint-disable-next-line
+          //     //handleFilterChangeClick(nodeData, unclick);
+          //     break;
+          //   case 'visits':
+          //   // eslint-disable-next-line
+          //     var curr_v = this.shadedVisits;
+          //     // eslint-disable-next-line
+          //     var removed_v = curr_v.filter(function(value, index, curr_v){
+          //       return value != nodeData.details.id;
+          //     });
+          //     // eslint-disable-next-line
+          //     setShadedVisits(removed_v);
+          //     // eslint-disable-next-line
+          //     //handleFilterChangeClick(nodeData, unclick);
+          //     break;
+          //   case 'samples':
+          //   // eslint-disable-next-line
+          //     var curr_s = this.shadedSamples;
+          //     // eslint-disable-next-line
+          //     var removed_s = curr_s.filter(function(value, index, curr_s){
+          //       return value != nodeData.details.id;
+          //     });
+          //     // eslint-disable-next-line
+          //     setShadedSamples(removed_s);
+          //     // eslint-disable-next-line
+          //     //handleFilterChangeClick(nodeData, unclick);
+          //     break;
+          //   case 'files':
+          //     var curr_selected_files = this.shadedFiles;
+          //     // eslint-disable-next-line
+          //     var removed_f = curr_f.filter(function(value, index, curr_f){
+          //       return value != nodeData.details.id;
+          //     });
+          //     // eslint-disable-next-line
+          //     setShadedFiles(removed_f);
+          //     // eslint-disable-next-line
+          //     //handleFilterChangeClick(nodeData, unclick);
+          // }
         }
         //clicks that shade the records depending on model
         // eslint-disable-next-line
-        else if ((nodeData.click_count)%2 == 1 ){
+        else if (clickCount%2 == 1 ){
+          // TODO: remove selectedNode from a "selected nodes" list (based on record type -> `parentName`)
           //what they've selected vs what is related to their selection
           switch (parentName) {
             case 'patient':
-            // eslint-disable-next-line
-                var curr_shaded_participants = this.shadedParticipants;
-                //before doing this, check to see if selectedCurr particpants is recordID or record object. If the latter, need to get
-                //proper data from the current clicked node.
-                //here, we want to get the current list of 'selected' records (can be empty), add our new selectoin to it,
-                // and (optionally) filter duplicates. Then set new list to store.
-                // eslint-disable-next-line
-                var prelist = curr_selected_participants.concat(nodeData.details.id);
-                /*
-                let filteredlist = prelist.filter((c, index) => {
-                    return prelist.indexOf(c) === index;
-                });
-                */
-                // eslint-disable-next-line
-                setShadedParticipants(prelist);
-                // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData, click);
-                //red square
-                //NOTE: use the same process as in the section above
-                // eslint-disable-next-line
-                // eslint-disable-next-line
-                var ctx = canvas.node().getContext('2d');
-                //how do we grab the record we're interested in?
-                // eslint-disable-next-line
-                var element = this.custom('custom.record');
-                // eslint-disable-next-line
-                var node = d3.select(element);
-                // eslint-disable-next-line
-                ctx.fillstyle ="#d10a00";
-                // eslint-disable-next-line
-                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-                //or just use d3.select(this).style("fill","#d10a00");
-                //get related record data and set to store... see how Eric's filter gets related first
+            // // eslint-disable-next-line
+            //     var curr_shaded_participants = this.shadedParticipants;
+            //     //before doing this, check to see if selectedCurr particpants is recordID or record object. If the latter, need to get
+            //     //proper data from the current clicked node.
+            //     //here, we want to get the current list of 'selected' records (can be empty), add our new selectoin to it,
+            //     // and (optionally) filter duplicates. Then set new list to store.
+            //     // eslint-disable-next-line
+            //     var prelist = curr_selected_participants.concat(nodeData.details.id);
+            //     /*
+            //     let filteredlist = prelist.filter((c, index) => {
+            //         return prelist.indexOf(c) === index;
+            //     });
+            //     */
+            //     // eslint-disable-next-line
+            //     setShadedParticipants(prelist);
+            //     // eslint-disable-next-line
+            //     //handleFilterChangeClick(nodeData, click);
+            //     //red square
+            //     //NOTE: use the same process as in the section above
+            //     // eslint-disable-next-line
+            //     // eslint-disable-next-line
+            //     var ctx = canvas.node().getContext('2d');
+            //     //how do we grab the record we're interested in?
+            //     // eslint-disable-next-line
+            //     var element = this.custom('custom.record');
+            //     // eslint-disable-next-line
+            //     var node = d3.select(element);
+            //     // eslint-disable-next-line
+            //     ctx.fillstyle ="#d10a00";
+            //     // eslint-disable-next-line
+            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+            //     //or just use d3.select(this).style("fill","#d10a00");
+            //     //get related record data and set to store... see how Eric's filter gets related first
+                fillstyle ="#d10a00"
                 break;
             case 'visits':
-                var curr_selected_visits = this.shadedVisits;
-                // eslint-disable-next-line
-                var prelist = curr_selected_visits.concat(nodeData.details.id);
-                // eslint-disable-next-line
-                setShadedVisits(prelist);
-                // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData, click);
-                //blue
-                // eslint-disable-next-line
-                var ctx = canvas.node().getContext('2d');
-                //how do we grab the record we're interested in?
-                // eslint-disable-next-line
-                var element = this.custom('custom.record');
-                // eslint-disable-next-line
-                var node = d3.select(element);
-                ctx.fillstyle ="#0049d1";
-                // eslint-disable-next-line
-                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-                //or just use
-                //d3.select(this).style("fill","#0049d1");
+                // var curr_selected_visits = this.shadedVisits;
+                // // eslint-disable-next-line
+                // var prelist = curr_selected_visits.concat(nodeData.details.id);
+                // // eslint-disable-next-line
+                // setShadedVisits(prelist);
+                // // eslint-disable-next-line
+                // //handleFilterChangeClick(nodeData, click);
+                // //blue
+                // // eslint-disable-next-line
+                // var ctx = canvas.node().getContext('2d');
+                // //how do we grab the record we're interested in?
+                // // eslint-disable-next-line
+                // var element = this.custom('custom.record');
+                // // eslint-disable-next-line
+                // var node = d3.select(element);
+                // ctx.fillstyle ="#0049d1";
+                // // eslint-disable-next-line
+                // ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+                // //or just use
+                // //d3.select(this).style("fill","#0049d1");
+                fillstyle ="#0049d1"
                 break;
             case 'samples':
-            // eslint-disable-next-line
-                var curr_selected_samples = this.shadedSamples;
-                // eslint-disable-next-line
-                var prelist = curr_selected_samples.concat(nodeData.details.id);
-                // eslint-disable-next-line
-                setShadedSamples(prelist);
-                // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData, click);
-                //yellow
-                // eslint-disable-next-line
-                var ctx = canvas.node().getContext('2d');
-                //how do we grab the record we're interested in?
-                // eslint-disable-next-line
-                var element = this.custom('custom.record');
-                // eslint-disable-next-line
-                var node = d3.select(element);
-                // eslint-disable-next-line
-                ctx.fillstyle ="#f0cc00";
-                // eslint-disable-next-line
-                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-                //or just use
-                //d3.select(this).style("fill","#f0cc00");
+            // // eslint-disable-next-line
+            //     var curr_selected_samples = this.shadedSamples;
+            //     // eslint-disable-next-line
+            //     var prelist = curr_selected_samples.concat(nodeData.details.id);
+            //     // eslint-disable-next-line
+            //     setShadedSamples(prelist);
+            //     // eslint-disable-next-line
+            //     //handleFilterChangeClick(nodeData, click);
+            //     //yellow
+            //     // eslint-disable-next-line
+            //     var ctx = canvas.node().getContext('2d');
+            //     //how do we grab the record we're interested in?
+            //     // eslint-disable-next-line
+            //     var element = this.custom('custom.record');
+            //     // eslint-disable-next-line
+            //     var node = d3.select(element);
+            //     // eslint-disable-next-line
+            //     ctx.fillstyle ="#f0cc00";
+            //     // eslint-disable-next-line
+            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+            //     //or just use
+            //     //d3.select(this).style("fill","#f0cc00");
+                fillstyle ="#f0cc00"
                 break;
             case 'files':
-            // eslint-disable-next-line
-                var curr_selected_files = this.shadedFiles;
-                // eslint-disable-next-line
-                var prelist = curr_selected_files.concat(nodeData.details.id);
-                // eslint-disable-next-line
-                setShadedFiles(prelist);
-                // eslint-disable-next-line
-                //handleFilterChangeClick(nodeData, click);
-                //green
-                // eslint-disable-next-line
-                var ctx = canvas.node().getContext('2d');
-                //how do we grab the record we're interested in?
-                // eslint-disable-next-line
-                var element = this.custom('custom.record');
-                // eslint-disable-next-line
-                var node = d3.select(element);
-                // eslint-disable-next-line
-                ctx.fillstyle ="#06a600";
-                // eslint-disable-next-line
-                ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-                //or just use
-                //d3.select(this).style("fill","#06a600");
+            // // eslint-disable-next-line
+            //     var curr_selected_files = this.shadedFiles;
+            //     // eslint-disable-next-line
+            //     var prelist = curr_selected_files.concat(nodeData.details.id);
+            //     // eslint-disable-next-line
+            //     setShadedFiles(prelist);
+            //     // eslint-disable-next-line
+            //     //handleFilterChangeClick(nodeData, click);
+            //     //green
+            //     // eslint-disable-next-line
+            //     var ctx = canvas.node().getContext('2d');
+            //     //how do we grab the record we're interested in?
+            //     // eslint-disable-next-line
+            //     var element = this.custom('custom.record');
+            //     // eslint-disable-next-line
+            //     var node = d3.select(element);
+            //     // eslint-disable-next-line
+            //     ctx.fillstyle ="#06a600";
+            //     // eslint-disable-next-line
+            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+            //     //or just use
+            //     //d3.select(this).style("fill","#06a600");
+                fillstyle ="#f0cc00"
+                break;
           }
         }
         //saving current selected to store
+
+        // set selected record's fill style and re-draw the main canvas
+        selectedRecord.attr('fillStyle', fillstyle)
+        const mainCanvas = d3.select('.mainCanvas')
+        this.draw(mainCanvas, false)
       }
     },
 
@@ -1826,9 +1861,11 @@ updatePage: function(modelName, modelPage, orderBy, direction){
         this.shouldHideTooltip = false
         // eslint-disable-next-line
         // this.hoveredModel = nodeData.details
-        this.hoveredModel = {
-          displayName: nodeData.parent.name,
-          properties: nodeData.details.values ? nodeData.details.values : []
+        if (nodeData.details && nodeData.details.values) {
+          this.hoveredModel = {
+            displayName: nodeData.parent.name,
+            properties: nodeData.details.values ? nodeData.details.values : []
+          }
         }
 
         tooltip.style('transform', `translate(${x}px, ${y + 20}px)`)
@@ -1983,7 +2020,7 @@ updatePage: function(modelName, modelPage, orderBy, direction){
         .attr('height', function(d) { // eslint-disable-line no-unused-vars
           return vm.recordSize
         })
-        .attr('fillStyle', '#C8C7C7 ')
+        .attr('fillStyle', '#C8C7C7')
         .attr('fillStyleHidden', function(d) {
           d.hiddenCol = vm.genColor();
           vm.colorToNode[d.hiddenCol] = d;
@@ -1991,7 +2028,7 @@ updatePage: function(modelName, modelPage, orderBy, direction){
         })
         //will be the click counter for a given record and will be initialized to 0 for every record
         // eslint-disable-next-line
-        .attr('click_count',0)
+        .attr('clickcount',0)
         .attr('modelName', function(d) {return d.displayName})
 
     },
