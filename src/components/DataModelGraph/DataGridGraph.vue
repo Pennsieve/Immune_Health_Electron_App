@@ -385,12 +385,13 @@ export default {
       console.log('mouseClickModel() nodeData:')
       console.log(nodeData)
       const vm = this
-      var models = vm.custom.selectAll('custom.model');
-      var xCoord = ''
-      var yCoord = ''
+      const models = vm.custom.selectAll('custom.model');
+      // const colKey = nodeData.hiddenCol
+      let xCoord = ''
+      let yCoord = ''
       // eslint-disable-next-line
       models.each(function(d,i) { //iterate through models, find model x and y coords
-        var node = d3.select(this);
+        let node = d3.select(this);
         //console.log(node.attr('modelName'))
         if (node.attr('modelName') == nodeData.displayName){
           // eslint-disable-next-line
@@ -406,10 +407,10 @@ export default {
       var  xStopPrev = xCoord +140
       var  xStopNext = xCoord +250
       */
-      console.log(nodeData.displayName,mouseX,xCoord, yCoord)
+      console.log(`mouseClickModel() displayName: ${nodeData.displayName} (mouseX: ${mouseX}, mouseY: ${mouseY}) (xCoord: ${xCoord}, yCoord: ${yCoord})`)
       if (mouseX >= 115 && mouseX <= 215){
         // eslint-disable-next-line
-        console.log(`CLICKED: PREVIOUS for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`);
+        console.log(`mouseClickModel() CLICKED PREVIOUS for: ${nodeData.displayName}`);
         //if currently clicking prev model attr
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'prev');
@@ -417,7 +418,7 @@ export default {
       // eslint-disable-next-line
       else if (mouseX >= 215){
         // eslint-disable-next-line
-        console.log(`CLICKED: NEXT for: ${nodeData.displayName} mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData: ${nodeData}`)
+        console.log(`mouseClickModel() CLICKED NEXT for: ${nodeData.displayName}`);
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'next');
       }
@@ -1236,6 +1237,10 @@ export default {
       }
     },
 
+    // updateShadedList(id, list, storeFunction) {
+    //
+    // },
+
   /*
 //DEPRECATED with new API endpoint
     setAllRelatedFilter: function(modelname, startrecord, targetmodel, pagenumber){
@@ -1622,136 +1627,120 @@ export default {
         if (elapsed > 600) vm.drawTimer.stop();
       })
     },
-// eslint-disable-next-line
-updatePageHelper: async function(modelName,pagenum,orderBy){
-          //var vm = this;
-          console.log('entering update page helper')
-          //filtered is false and we just grab the next page of records
-        // eslint-disable-next-line
-        var offset = 100*pagenum;
-        console.log('offset is:', offset)
-        /*
-        const options = {
-          method: 'GET',
-          url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
-          params: {
-              limit: '100',
-              // eslint-disable-next-line
-              offset: `${offset}`,
-              orderBy: `${orderBy}`,
-              ascending: 'true'
-            },
-            headers: {
-              Accept: 'application/json',
-              Authorization: `Bearer ${vm.userToken()}`
-            }
-          };
-          */
-          switch (modelName){
-              case 'patient':
-              //error with filter array. Must address
-              if (this.searchModalSearch.filters == undefined){
-                var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy.id, [], this.userToken(), 100, offset)
-              }else{
-              // eslint-disable-next-line
-              var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy.id, this.searchModalSearch.filters, this.userToken(), 100, offset)
-              }
-              var p_record_results = pmetadata.records
-              //ORDERBY TODO
-               console.log("updating patient data")
-                  //verify data is in a list, if not, put it in one before sending off
-                  this.updatePatients(p_record_results);
-                  break;
-              case 'visits':
-              if (this.searchModalSearch.filters == undefined){
-                var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy.id, [], this.userToken(), 100, offset)
-              }else{
-              // eslint-disable-next-line
-              var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy.id, this.searchModalSearch.filters, this.userToken(), 100, offset)
-              }
-                  var v_record_results = vmetadata.records
-                  this.updateVisits(v_record_results);
-                  break;
-              case 'samples':
-              if (this.searchModalSearch.filters == undefined){
-                var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy.id, [], this.userToken(), 100, offset)
-              }else{
-              // eslint-disable-next-line
-              var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy.id, this.searchModalSearch.filters, this.userToken(), 100, offset)
-              }
-                var s_record_results = smetadata.records
-                  this.updateSamples(s_record_results);
-                  break;
-              case 'files':
-                  console.log('nothing for files yet');
-            }
-      },
 
-updatePage: function(modelName, modelPage, orderBy, direction){
-    //can't go back before the first page
-    console.log('update page executing')
-      var vm = this;
+    // eslint-disable-next-line
+    updatePageHelper: async function(modelName,pagenum,orderBy){
+      //var vm = this;
+      console.log(`updatePageHelper() modelName: ${modelName} pagenum: ${pagenum} orderBy: ${orderBy}`)
+      //filtered is false and we just grab the next page of records
       // eslint-disable-next-line
-        // eslint-disable-next-line
-        var pagenum = ''
-          //if this model has been filtered, we want to get its page from the backlog and set it to selected
-          switch (modelName){
-              case 'patient':
-              if (this.participantsPage >= 0) {
-                if (direction == 'next') {
-                  console.log('participant page is incrementing by 1')
-                  this.participantsPage++;
-                  pagenum = this.participantsPage;
-                  console.log(this.participantsPage)
-                  }
-                  else if(direction == 'prev'){
-                    console.log('participant page is decrementing by 1')
-                    this.participantsPage--;
-                    pagenum = this.participantsPage;
-                    console.log(this.participantsPage)
-                  }
-                  vm.updatePageHelper('patient',pagenum,orderBy)
-                }
-                  break;
-              case 'visits':
-              // eslint-disable-next-line
-              if (this.visitsPage >= 0) {
-                if (direction == 'next') {
-                  console.log('visits page is incrementing by 1')
-                  this.visitsPage++;
-                  pagenum = this.visitsPage;
-                  console.log(this.visitsPage)
-                  }
-                  else if(direction == 'prev'){
-                    console.log('visits page is decrementing by 1')
-                    this.visitsPage--;
-                    pagenum = this.visitsPage;
-                    console.log(this.visitsPage)
-                  }
-                  vm.updatePageHelper('visits',pagenum,orderBy)
-                }
-                  break;
-              case 'samples':
-              if (this.samplesPage >= 0) {
-                if (direction == 'next') {
-                  console.log('samples page is incrementing by 1')
-                  this.samplesPage++;
-                  pagenum = this.samplesPage;
-                  console.log(this.samplesPage)
-                  }
-                  else if(direction == 'prev'){
-                    console.log('samples page is decrementing by 1')
-                    this.samplesPage--;
-                    pagenum = this.samplesPage;
-                    console.log(this.samplesPage)
-                  }
-                  vm.updatePageHelper('samples',pagenum,orderBy)
-                }
-                  break;
-              case 'files':
-                  console.log('nothing for files yet');
+      var offset = 100*pagenum;
+      console.log(`updatePageHelper() offset: ${offset}`)
+      /*
+      const options = {
+        method: 'GET',
+        url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
+        params: {
+            limit: '100',
+            // eslint-disable-next-line
+            offset: `${offset}`,
+            orderBy: `${orderBy}`,
+            ascending: 'true'
+          },
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${vm.userToken()}`
           }
-},
+        };
+        */
+      switch (modelName){
+        case 'patient':
+          console.log('updatePageHelper() updating patient')
+          //error with filter array. Must address
+          if (this.searchModalSearch.filters == undefined){
+            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken(), 100, offset)
+          }else{
+            // eslint-disable-next-line
+            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, offset)
+          }
+          var p_record_results = pmetadata.records
+          //ORDERBY TODO
+          console.log("updating patient data")
+          //verify data is in a list, if not, put it in one before sending off
+          this.updatePatients(p_record_results);
+          break;
+        case 'visits':
+          console.log('updatePageHelper() updating visits')
+          console.log('updatePageHelper() this.selectedStudy:')
+          console.log(this.selectedStudy)
+          if (this.searchModalSearch.filters == undefined){
+            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken(), 100, offset)
+          }else{
+            // eslint-disable-next-line
+            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, offset)
+          }
+          var v_record_results = vmetadata.records
+          console.log('updatePageHelper() v_record_results:')
+          console.log(v_record_results)
+          this.updateVisits(v_record_results);
+          break;
+        case 'samples':
+          if (this.searchModalSearch.filters == undefined){
+            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, [], this.userToken(), 100, offset)
+          }else{
+            // eslint-disable-next-line
+            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, offset)
+          }
+          var s_record_results = smetadata.records
+          this.updateSamples(s_record_results);
+          break;
+        case 'files':
+          console.log('nothing for files yet');
+      }
+    },
+
+    updatePage: function(modelName, modelPage, orderBy, direction){
+      //can't go back before the first page
+      console.log(`updatePage() modelName: ${modelName} modelPage: ${modelPage} orderBy: (${orderBy}) direction: ${direction}`)
+      const vm = this;
+      let pagenum = -1
+      //if this model has been filtered, we want to get its page from the backlog and set it to selected
+      switch (modelName){
+        case 'patient':
+          if (direction == 'next') {
+            this.participantsPage++;
+          }
+          else if ((direction == 'prev') && (this.participantsPage > 0)) {
+            this.participantsPage--;
+          }
+          pagenum = this.participantsPage;
+          break;
+        case 'visits':
+          if (direction == 'next') {
+            this.visitsPage++;
+          }
+          else if ((direction == 'prev') && (this.visitsPage > 0)) {
+            this.visitsPage--;
+          }
+          pagenum = this.visitsPage;
+          break;
+        case 'samples':
+          if (direction == 'next') {
+            this.samplesPage++;
+          }
+          else if ((direction == 'prev') && (this.samplesPage > 0)) {
+            this.samplesPage--;
+          }
+          pagenum = this.samplesPage;
+          break;
+        case 'files':
+          console.log('updatePage(): nothing for files yet');
+      }
+      if (pagenum != -1) {
+        console.log(`updatePage() ${direction} -> get ${modelName} pagenum: ${pagenum}`)
+        vm.updatePageHelper(modelName, pagenum, orderBy)
+      }
+    },
 
     async updateVisitsFiles() {
       this.selectedVisitsFiles = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, 0)
@@ -1761,38 +1750,36 @@ updatePage: function(modelName, modelPage, orderBy, direction){
       this.selectedSamplesFiles = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, 0)
     },
 
-  //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
-  //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
-  //NOTE: NEED TO ACCOUNT FOR THE CASE WHERE THIS IS FILTERED. MUST MAKE A MODIFIED CALL TO renderAfterFilter()
-  //NOTE: when filter is applied, we can grab next element of backlog rather than make an api call
-  // eslint-disable-next-line
-  advancePage: function(modelName, direction) {
-    console.log('advancepage executing')
-    var orderBy = ''
-    var modelPage = ''
-    console.log("modelname is", modelName)
-    switch (modelName) {
-      //console.log(modelName)
-      case 'patient':
-      console.log('case patient')
-      orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
-      modelPage = this.participantsPage;
-      this.selectedPatientRecords = [];
-      this.selectedRecordCount['patient'] = 0;
-      //if there are any filters applied to the model
-      /*
-      if (this.patientsBacklog.length > 0){
-        console.log('something in patients backlog. backlog is:', this.patientsBacklog)
-        //grab next page from the backlog array and assign that to selected__...must do for each of them
-        // eslint-disable-next-line
-        this.updatePage('patient', modelPage, orderBy, direction,true);
-      }
-      */
+    //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
+    //Should have forward and advance page as one function by setting forward or advance to the attrs of the arrows bounding box
+    //NOTE: NEED TO ACCOUNT FOR THE CASE WHERE THIS IS FILTERED. MUST MAKE A MODIFIED CALL TO renderAfterFilter()
+    //NOTE: when filter is applied, we can grab next element of backlog rather than make an api call
+    // eslint-disable-next-line
+    advancePage: function(modelName, direction) {
+      console.log(`advancePage() modelName: ${modelName} direction: ${direction}`)
+      var orderBy = ''
+      var modelPage = ''
+      switch (modelName) {
+          //console.log(modelName)
+        case 'patient':
+          console.log('case patient')
+          orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
+          modelPage = this.participantsPage;
+          this.selectedPatientRecords = [];
+          this.selectedRecordCount['patient'] = 0;
+          //if there are any filters applied to the model
+          /*
+          if (this.patientsBacklog.length > 0){
+            console.log('something in patients backlog. backlog is:', this.patientsBacklog)
+            //grab next page from the backlog array and assign that to selected__...must do for each of them
+            // eslint-disable-next-line
+            this.updatePage('patient', modelPage, orderBy, direction,true);
+          }
+          */
           // eslint-disable-next-line
           this.updatePage('patient', modelPage, orderBy, direction);
-
           break;
-      case 'visits':
+        case 'visits':
           orderBy = 'event date and time';
           modelPage = this.visitsPage;
           this.selectedVisitRecords = [];
@@ -1805,11 +1792,11 @@ updatePage: function(modelName, modelPage, orderBy, direction){
             this.updatePage('visits', modelPage, orderBy, direction,true);
           }
           */
-              // eslint-disable-next-line
-              this.updatePage('visits', modelPage, orderBy, direction);
 
+          // eslint-disable-next-line
+          this.updatePage('visits', modelPage, orderBy, direction);
           break;
-      case 'samples':
+        case 'samples':
           orderBy = 'study sample ID';
           modelPage = this.samplesPage;
           this.selectedSampleRecords  = [];
@@ -1819,16 +1806,17 @@ updatePage: function(modelName, modelPage, orderBy, direction){
           if (this.samplesBacklog.length > 0){
             // eslint-disable-next-line
           this.updatePage('samples', modelPage, orderBy, direction,true);
-        }
-        */
-            // eslint-disable-next-line
-            this.updatePage('samples', modelPage, orderBy, direction);
+          }
+          */
+          // eslint-disable-next-line
+          this.updatePage('samples', modelPage, orderBy, direction);
           break;
-      case 'files':
+        case 'files':
           modelPage = this.filesPage;
           console.log('nothing for files');
-    }
-  },
+      }
+    },
+
     // eslint-disable-next-line
     onHoverElement: function(nodeData, x, y) {
       // console.log(`onHoverElement() x: ${x} y: ${y} nodeData:`)
