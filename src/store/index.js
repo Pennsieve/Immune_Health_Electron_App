@@ -92,6 +92,9 @@ shadedParticipants: [],
     },
     triggerForClearing (state){
       return state.triggerForClearing
+    },
+    linkingTarget (state){
+      return state.linkingTarget
     }
   },
   mutations: {

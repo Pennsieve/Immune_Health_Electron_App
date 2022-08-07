@@ -331,8 +331,8 @@ export default {
 
   methods: {
     //will not use these map actions since all data will be within component
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
-    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch','triggerForClearing']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles','setLinkingTarget']), //include set all files potentially
+    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch','triggerForClearing','linkingTarget']),
 
     setupMouseOver: function() {
       const vm = this
@@ -1120,11 +1120,21 @@ export default {
                 // ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
                 // //or just use
                 // //d3.select(this).style("fill","#0049d1");
+
                 /*
+                LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
                 var vis_arr = this.shadedVisits
                 var payload1 = [nodeData,selectedRecord, true]
                 this.shadedVisits = vis_arr.push(payload1)
                 this.setShadedVisits(this.shadedVisits)
+
+                //logic for setting linking target
+                var vis_arr_len = this.shadedVisits;
+                var samp_arr_len - this.shadedVisits;
+                if (vis_arr_len.length == 1 && (samp_arr_len == 0 || samp_arr_len > 1)){
+                  var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
+                  this.setLinkingTarget(to_be_linked)
+                }
                 */
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
@@ -1154,11 +1164,21 @@ export default {
             //     //or just use
             //     //d3.select(this).style("fill","#f0cc00");
             /*
+              LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
                 var samp_arr = this.shadedSamples
                 var payload2 = [nodeData,selectedRecord, true]
                 this.shadedSamples = samp_arr.push(payload2)
                 this.setShadedSamples(this.shadedSamples)
-            */
+              
+                //logic for setting linking target
+                var vis_arr_len = this.shadedVisits;
+                var samp_arr_len - this.shadedVisits;
+                if (samp_arr_len.length == 1 && (vis_arr_len == 0 || vis_arr_len > 1)){
+                  var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
+                  this.setLinkingTarget(to_be_linked)
+                }
+                */
+
                 fillstyle ="#f0cc00"
                 // eslint-disable-next-line
                 handleFilterChangeClick(nodeData, unclick);
