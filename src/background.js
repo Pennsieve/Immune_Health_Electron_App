@@ -3,6 +3,8 @@
 import { app, protocol, BrowserWindow, shell } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import PennsieveAgent from '@/utils/pennsieve/agent.js'
+const path = require('path');
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Scheme must be registered before the app is ready
@@ -22,7 +24,9 @@ async function createWindow() {
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      webSecurity: false
+      webSecurity: false,
+
+      preload: path.join(__dirname, 'preload.js')
     }
   })
 
@@ -71,6 +75,8 @@ app.on('ready', async () => {
   }
   createWindow()
 })
+
+const pennsieveAgent = new PennsieveAgent()
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

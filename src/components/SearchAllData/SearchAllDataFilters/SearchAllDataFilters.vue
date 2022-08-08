@@ -25,7 +25,6 @@
         class="mb-16"
         :targets="targets"
         :is-loading-targets="isLoadingTargets"
-        :lock-target="filter.lockTarget"
         :disabled="disabled"
         @delete="$emit('delete-filter', idx)"
         @enter="$emit('enter')"

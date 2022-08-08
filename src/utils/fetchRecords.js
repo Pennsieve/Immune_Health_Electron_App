@@ -7,7 +7,11 @@ const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc
 // pennsieve endpoint for retrieving a list of filtered records or files
 export const GET_FILTERED_METADATA_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search'
 
+<<<<<<< HEAD
 export const REQUEST_HEADER = (token) => {
+=======
+const REQUEST_HEADER = (token) => {
+>>>>>>> integrate-uploads-page
   return {
     headers: { Authorization: `Bearer ${token}`}
   }

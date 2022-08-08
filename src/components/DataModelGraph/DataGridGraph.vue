@@ -1,4 +1,3 @@
- /* eslint-disable no-use-before-define, no-undef */
 <template>
 <!-- TODO: bring this back in for 'click outside' behavior
   <div
@@ -1441,7 +1440,7 @@ export default {
         //d
         .attr('width', function(d) {
           //d.numRows
-          return d.numRows * vm.cellSize + (d.numRows - 1) * vm.groupSpacing
+          return d.numCols * vm.cellSize + (d.numCols - 1) * vm.groupSpacing
         })
         //d
         .attr('height', function(d) {

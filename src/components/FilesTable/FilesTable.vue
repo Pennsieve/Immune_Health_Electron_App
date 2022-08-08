@@ -33,7 +33,7 @@
         </li>
         <li class="mr-24">
           <button
-            v-if="!searchAllDataMenu"
+            v-if="enableFileMove && !searchAllDataMenu"
             class="linked btn-selection-action"
             :disabled="datasetLocked"
             @click="$emit('move')"
@@ -49,6 +49,7 @@
         </li>
         <li>
           <button
+            v-if="enableDownload"
             class="linked btn-selection-action"
             @click="onDownloadClick"
           >
@@ -149,7 +150,7 @@
         <template slot-scope="scope">
           <div class="file-actions-wrap">
             <table-menu
-              v-if="getPermission('editor') || searchAllDataMenu"
+              v-if="searchAllDataMenu"
               :file="scope.row"
               :multiple-selected="multipleSelected"
               :search-all-data-menu="searchAllDataMenu"
@@ -173,7 +174,8 @@ import {
 } from 'ramda'
 import {
   mapGetters,
-  mapState
+  mapState,
+  //mapActions
 } from 'vuex'
 import EventBus from '@/utils/event-bus'
 
@@ -181,7 +183,7 @@ import BfFileLabel from '../datasets/files/bf-file/BfFileLabel.vue'
 import TableMenu from '@/components/TableMenu/TableMenu.vue'
 
 import BfStorageMetrics from '@/mixins/bf-storage-metrics'
-import FileIcon from '@/mixins/file-icon/index'
+import FileIcon from '../../mixins/file-icon/index.js'
 import FormatDate from '@/mixins/format-date'
 import TableFunctions from '@/mixins/table-functions'
 import Sorter from '@/mixins/sorter'
@@ -222,6 +224,18 @@ export default {
     nonSortableColumns: {
       type: Array,
       default: () => []
+    },
+    datasetLocked: {
+      type: Boolean,
+      default: false
+    },
+    enableFileMove: {
+      type: Boolean,
+      default: true
+    },
+    enableDownload: {
+      type: Boolean,
+      default: true
     }
   },
 
@@ -235,10 +249,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters([
-      'getPermission',
-      'datasetLocked',
-    ]),
+    ...mapGetters([]),
 
     ...mapState([
       'dataset',
