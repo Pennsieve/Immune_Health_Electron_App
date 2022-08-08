@@ -1131,7 +1131,7 @@ export default {
                 //logic for setting linking target
                 var vis_arr_len = this.shadedVisits;
                 var samp_arr_len - this.shadedVisits;
-                if (vis_arr_len.length == 1 && (samp_arr_len == 0 || samp_arr_len > 1)){
+                if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   this.setLinkingTarget(to_be_linked)
                 }
@@ -1169,11 +1169,11 @@ export default {
                 var payload2 = [nodeData,selectedRecord, true]
                 this.shadedSamples = samp_arr.push(payload2)
                 this.setShadedSamples(this.shadedSamples)
-              
+
                 //logic for setting linking target
                 var vis_arr_len = this.shadedVisits;
                 var samp_arr_len - this.shadedVisits;
-                if (samp_arr_len.length == 1 && (vis_arr_len == 0 || vis_arr_len > 1)){
+                if (samp_arr_len.length == 1 && (vis_arr_len.length == 0 || vis_arr_len.length > 1)){
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   this.setLinkingTarget(to_be_linked)
                 }

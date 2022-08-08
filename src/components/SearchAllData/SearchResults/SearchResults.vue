@@ -80,9 +80,9 @@ import FormatDate from '@/mixins/format-date'
 
 import { mergeRight } from 'ramda'
 
-import { 
-  fetchFilteredVisitsMetadataRelatedToStudy, 
-  fetchFilteredSamplesMetadataRelatedToStudy 
+import {
+  fetchFilteredVisitsMetadataRelatedToStudy,
+  fetchFilteredSamplesMetadataRelatedToStudy
 } from '@/utils/fetchRecords'
 
 export default {
@@ -222,8 +222,8 @@ export default {
     fetchRecords: async function() {
       this.isLoadingRecords = true
 
-      const metadata = this.selectedButton === 'Visits' ? 
-        await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset) : 
+      const metadata = this.selectedButton === 'Visits' ?
+        await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset) :
         await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
 
       this.tableResultsTotalCount = metadata.totalCount
@@ -258,7 +258,16 @@ export default {
      * @param {Object} record
      */
     navigateToRecord: function(record) {
+      /*
       // Set the target when record is clicked
+      var vis_arr_len = this.shadedVisits;
+      var samp_arr_len - this.shadedVisits;
+      //if a single selection has been made for sample or visit via user click, then they need to unselect it before proceeding
+      if (vis_arr_len.length == 1 || samp_arr_len.length == 1){
+        var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
+        this.setLinkingTarget(to_be_linked)
+      }
+      */
       this.setLinkingTarget(record)
       this.updateSearchModalVisible(false)
     },
