@@ -24,18 +24,6 @@
 </template>
 
 <script>
-
-// TODO List
-// 1. try out API call to get records in context of selected study
-// 2. put returned records in store
-// 3. add watch on store values, on change render grid graph
-// 4. refactor mounted(): don't call getModelData()
-// 5. refactor getModelData(): ??? ~ remove? ~ repurpose?
-// 6. don't render until a study is selected
-// 7. wait to render until "all changes" are complete
-
-// CONSIDER:
-// 1. performance and efficiency, esp. when iterating over a lot of records
 import {
   // eslint-disable-next-line
   fetchFilteredPatientsMetadataRelatedToStudy,
@@ -50,22 +38,11 @@ import {
 import axios from 'axios'
 import * as d3 from 'd3'
 import { select } from 'd3-selection';
-// eslint-disable-next-line
-import { v1 } from 'uuid'
-// eslint-disable-next-line
-import { pathOr, propOr, clone, mergeRight} from 'ramda'
+import { pathOr, propOr } from 'ramda'
 import debounce from 'lodash/debounce'
 import { mapState, mapActions, mapGetters } from 'vuex'
-
-// import ModelTooltip from './ModelTooltip/ModelTooltip.vue'
-
 import Request from '@/mixins/request'
 import RecordTooltip from "@/components/DataModelGraph/RecordTooltip/RecordTooltip";
-
-// NOTE: Defining simulation variable in global scope becuase we need to initiate d3 force simulation
-// within the context onf the renderChart function but we also need access to simulation in update chart function
-
-// let simulation
 let zoom
 
 // Vue Component
@@ -73,8 +50,7 @@ export default {
   name: 'DataGridGraph',
 
   components: {
-    RecordTooltip,
-    //ModelTooltip
+    RecordTooltip
   },
 
   mixins: [
@@ -151,7 +127,7 @@ export default {
       startIndex: 0,  //used to map colors to nodes
       selectedNode: null,
       datasetId: 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc',
-      interestedModels: [/*'study',*/ 'patient', 'visits', 'samples'],
+      interestedModels: ['patient', 'visits', 'samples' /*'files'*/],
       selectedRecordCount: {
         'patient': 0,
         'visits': 0,
@@ -177,20 +153,6 @@ export default {
     ...mapState([
       'relationshipTypes',
       'config',
-      /*
-      'allSamples',
-      'allVisits',
-      'allParticipants',
-      'allStudies',
-      'currParticipants',
-      'currVisits',
-      'currSamples',
-      'currFiles',
-      'selectedCurrFile',
-      'selectedCurrVisit',
-      'selectedCurrParticipants',
-      'selectedCurrSample',
-      */
       'selectedStudy'
     ]),
     /*
@@ -245,35 +207,13 @@ export default {
         }
       }
     },
-    // userToken: {
-    //   handler: function() {
-    //     this.getModelData()
-    //   }
-    // },
-    //whenever selected study changes, we want to get all of the related data and set them to the store
-    //selectedStudy: {
-    //  handler: function() {
-    //    this.setAllRelatedPage1(this, this.selectedStudy,0);
-    //  }
-    //}
-
     selectedStudy: function() {
       console.log(`selectedStudy: ${this.selectedStudy.values[0].value}`)
-      this.updateStudyData()
-    },
-    selectedPatientRecords: function() {
-      console.log('updating view')
-      this.updateView()
-    },
-    selectedVisitRecords: function() {
-      console.log('updating view')
-      this.updateView()
-      this.updateVisitsFiles()
-    },
-    selectedSampleRecords: function() {
-      console.log('updating view')
-      this.updateView()
-      this.updateSamplesFiles()
+      this.updateStudyDataV2().then((result) => {
+        console.log('updateStudyDataV2() ~ Promise(s) completed - result:')
+        console.log(result)
+        this.updateView()
+      })
     },
     searchModalSearch: function(){
       //whenever a filter is added or subtracted from list
@@ -297,7 +237,8 @@ export default {
     const customBase = document.createElement('custom');
     this.custom = d3.select(customBase);
 
-    this.drawTimer= d3.timer(function(elapsed) {
+    vm.draw(hiddenCanvas, true)
+    this.drawTimer = d3.timer(function(elapsed) {
       vm.draw(mainCanvas, false);
       if (elapsed > 300) vm.drawTimer.stop();
     }); // Timer running the draw function repeatedly for 300 ms.
@@ -1031,8 +972,6 @@ export default {
     */
 
 
-    //called when a record is clicked
-    // eslint-disable-next-line
     onClickElement(nodeData, selectedRecord){
       //checking that its a record and not a model
       // console.log('onClickElement() nodeData:')
@@ -1040,368 +979,43 @@ export default {
       // console.log('onClickElement() selectedRecord:')
       // console.log(selectedRecord)
       if (nodeData.parent) {
-        //parentname will determine what color we change the square to
+        // parentname will determine what color we change the square to
         var parent = nodeData.parent;
         var parentName = parent.displayName
         let clickCount = +selectedRecord.attr("clickcount") + 1
         selectedRecord.attr("clickcount", clickCount)
 
-        // set default fill style (when record is 'unclicked')
+        // set default fill style (when record is unselected)
         let fillstyle = '#C8C7C7'
 
+        // unselected (an even number of clicks)
         if (clickCount%2 == 0){
           // TODO: add selectedNode to a "selected nodes" list (based on record type -> `parentName`)
-
-          //will fill with grey default (or do nothing) if it is first click or a 'clear' click
-          // eslint-disable-next-line
-          // var ctx = canvas.node().getContext('2d');
-          //how do we grab the record we're interested in?
-          // eslint-disable-next-line
-          // ctx.fillstyle ="#afb3b0";
-          //ACTUALLY:
-            //ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-            //vm.draw(mainCanvas,false); //or this.draw(mainCanvas,false);
-          // switch (parentName){
-          //   case 'patient':
-          //   //we want to remove this record from our list of shaded records
-          //   // eslint-disable-next-line
-          //     var curr_p = this.shadedParticipants;
-          //     // eslint-disable-next-line
-          //     var removed_p = curr_p.filter(function(value, index, curr_p){
-          //       return value != nodeData.details.id;
-          //     });
-          //     // eslint-disable-next-line
-          //     this.setShadedParticipants(removed_p);
-          //     // eslint-disable-next-line
-          //     //handleFilterChangeClick(nodeData, unclick);
-          //     break;
-          //   case 'visits':
-          //   // eslint-disable-next-line
-          //     var curr_v = this.shadedVisits;
-          //     // eslint-disable-next-line
-          //     var removed_v = curr_v.filter(function(value, index, curr_v){
-          //       return value != nodeData.details.id;
-          //     });
-          //     // eslint-disable-next-line
-          //     setShadedVisits(removed_v);
-          //     // eslint-disable-next-line
-          //     //handleFilterChangeClick(nodeData, unclick);
-          //     break;
-          //   case 'samples':
-          //   // eslint-disable-next-line
-          //     var curr_s = this.shadedSamples;
-          //     // eslint-disable-next-line
-          //     var removed_s = curr_s.filter(function(value, index, curr_s){
-          //       return value != nodeData.details.id;
-          //     });
-          //     // eslint-disable-next-line
-          //     setShadedSamples(removed_s);
-          //     // eslint-disable-next-line
-          //     //handleFilterChangeClick(nodeData, unclick);
-          //     break;
-          //   case 'files':
-          //     var curr_selected_files = this.shadedFiles;
-          //     // eslint-disable-next-line
-          //     var removed_f = curr_f.filter(function(value, index, curr_f){
-          //       return value != nodeData.details.id;
-          //     });
-          //     // eslint-disable-next-line
-          //     setShadedFiles(removed_f);
-          //     // eslint-disable-next-line
-          //     //handleFilterChangeClick(nodeData, unclick);
-          // }
         }
-        //clicks that shade the records depending on model
-        // eslint-disable-next-line
+        // selected (an odd number of clicks)
         else if (clickCount%2 == 1 ){
           // TODO: remove selectedNode from a "selected nodes" list (based on record type -> `parentName`)
-          //what they've selected vs what is related to their selection
           switch (parentName) {
             case 'patient':
-            // // eslint-disable-next-line
-            //     var curr_shaded_participants = this.shadedParticipants;
-            //     //before doing this, check to see if selectedCurr particpants is recordID or record object. If the latter, need to get
-            //     //proper data from the current clicked node.
-            //     //here, we want to get the current list of 'selected' records (can be empty), add our new selectoin to it,
-            //     // and (optionally) filter duplicates. Then set new list to store.
-            //     // eslint-disable-next-line
-            //     var prelist = curr_selected_participants.concat(nodeData.details.id);
-            //     /*
-            //     let filteredlist = prelist.filter((c, index) => {
-            //         return prelist.indexOf(c) === index;
-            //     });
-            //     */
-            //     // eslint-disable-next-line
-            //     setShadedParticipants(prelist);
-            //     // eslint-disable-next-line
-            //     //handleFilterChangeClick(nodeData, click);
-            //     //red square
-            //     //NOTE: use the same process as in the section above
-            //     // eslint-disable-next-line
-            //     // eslint-disable-next-line
-            //     var ctx = canvas.node().getContext('2d');
-            //     //how do we grab the record we're interested in?
-            //     // eslint-disable-next-line
-            //     var element = this.custom('custom.record');
-            //     // eslint-disable-next-line
-            //     var node = d3.select(element);
-            //     // eslint-disable-next-line
-            //     ctx.fillstyle ="#d10a00";
-            //     // eslint-disable-next-line
-            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-            //     //or just use d3.select(this).style("fill","#d10a00");
-            //     //get related record data and set to store... see how Eric's filter gets related first
                 fillstyle ="#d10a00"
                 break;
             case 'visits':
-                // var curr_selected_visits = this.shadedVisits;
-                // // eslint-disable-next-line
-                // var prelist = curr_selected_visits.concat(nodeData.details.id);
-                // // eslint-disable-next-line
-                // setShadedVisits(prelist);
-                // // eslint-disable-next-line
-                // //handleFilterChangeClick(nodeData, click);
-                // //blue
-                // // eslint-disable-next-line
-                // var ctx = canvas.node().getContext('2d');
-                // //how do we grab the record we're interested in?
-                // // eslint-disable-next-line
-                // var element = this.custom('custom.record');
-                // // eslint-disable-next-line
-                // var node = d3.select(element);
-                // ctx.fillstyle ="#0049d1";
-                // // eslint-disable-next-line
-                // ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-                // //or just use
-                // //d3.select(this).style("fill","#0049d1");
                 fillstyle ="#0049d1"
                 break;
             case 'samples':
-            // // eslint-disable-next-line
-            //     var curr_selected_samples = this.shadedSamples;
-            //     // eslint-disable-next-line
-            //     var prelist = curr_selected_samples.concat(nodeData.details.id);
-            //     // eslint-disable-next-line
-            //     setShadedSamples(prelist);
-            //     // eslint-disable-next-line
-            //     //handleFilterChangeClick(nodeData, click);
-            //     //yellow
-            //     // eslint-disable-next-line
-            //     var ctx = canvas.node().getContext('2d');
-            //     //how do we grab the record we're interested in?
-            //     // eslint-disable-next-line
-            //     var element = this.custom('custom.record');
-            //     // eslint-disable-next-line
-            //     var node = d3.select(element);
-            //     // eslint-disable-next-line
-            //     ctx.fillstyle ="#f0cc00";
-            //     // eslint-disable-next-line
-            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-            //     //or just use
-            //     //d3.select(this).style("fill","#f0cc00");
                 fillstyle ="#f0cc00"
                 break;
             case 'files':
-            // // eslint-disable-next-line
-            //     var curr_selected_files = this.shadedFiles;
-            //     // eslint-disable-next-line
-            //     var prelist = curr_selected_files.concat(nodeData.details.id);
-            //     // eslint-disable-next-line
-            //     setShadedFiles(prelist);
-            //     // eslint-disable-next-line
-            //     //handleFilterChangeClick(nodeData, click);
-            //     //green
-            //     // eslint-disable-next-line
-            //     var ctx = canvas.node().getContext('2d');
-            //     //how do we grab the record we're interested in?
-            //     // eslint-disable-next-line
-            //     var element = this.custom('custom.record');
-            //     // eslint-disable-next-line
-            //     var node = d3.select(element);
-            //     // eslint-disable-next-line
-            //     ctx.fillstyle ="#06a600";
-            //     // eslint-disable-next-line
-            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-            //     //or just use
-            //     //d3.select(this).style("fill","#06a600");
-                fillstyle ="#f0cc00"
+                fillstyle ="#f0cc00" // TODO: should be a different color
                 break;
           }
         }
-        //saving current selected to store
-
         // set selected record's fill style and re-draw the main canvas
         selectedRecord.attr('fillStyle', fillstyle)
         const mainCanvas = d3.select('.mainCanvas')
         this.draw(mainCanvas, false)
       }
     },
-
-    // updateShadedList(id, list, storeFunction) {
-    //
-    // },
-
-  /*
-//DEPRECATED with new API endpoint
-    setAllRelatedFilter: function(modelname, startrecord, targetmodel, pagenumber){
-        //need to reset the pages for all models
-        this.participantsPage = pagenumber;
-        this.visitsPage = pagenumber;
-        this.samplesPage = pagenumber;
-        this.filesPage =  pagenumber;
-        // eslint-disable-next-line
-        var pagenum = pagenumber;
-        // eslint-disable-next-line
-        var offset = 0;
-        var orderBy = '';
-          switch (targetmodel) {
-            case 'patient':
-                orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
-                break;
-            case 'visits':
-                orderBy = 'event date and time'
-                break;
-            case 'samples':
-                orderBy = 'study sample ID';
-                break;
-            case 'files':
-                console.log('nothing for files yet');
-          }
-          const options = {
-              method: 'GET',
-              url: `https://api.pennsieve.io/models/v1/datasets/%2FN%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${modelname}/instances/${startrecord}/relations/${targetmodel}`,
-              params: {
-                  limit: '100',
-                  // eslint-disable-next-line
-                  offset: `${offset}`,
-                  recordOrderBy: `${orderBy}`,
-                  ascending: 'true',
-                  includeIncomingLinkedProperties: 'false'
-                },
-                headers: {
-                  Accept: 'application/json',
-                  Authorization: `${this.userToken}`
-                }
-              };
-              // eslint-disable-next-line
-          axios.request(options).then(function (response) {
-            // eslint-disable-next-line
-              console.log(response.data);
-              }).catch(function (error) {
-              console.error(error);
-              });
-          //return should be an array of record objects
-          // eslint-disable-next-line
-          return Object.values(response.data);
-
-      },
-    */
-    /*
-    //DEPRECATED with new API endpoint
-    renderAfterFilter: function(model,filter_results){
-
-      //...first, get all of the records from the first backlog into a flat array, then
-      //for each element, call the get related api and put into backlog, order entire thing by property according to
-      //model type, then break up into sublists 100 elements each...
-      //sets the model that was filtered
-      switch(model){
-        case 'patient':
-          var flat_arr = this.patientsBacklog.flat();
-          var other_models = ['visits','samples','files']
-          for (model in other_models){
-          for (x in flat_arr){
-            //get the related records for each model, and put into backlog for model
-
-          }
-        }
-        break;
-        case 'visits':
-          var other_models = ['patient','samples','files']
-          var flat_arr = this.visitsBacklog.flat();
-          for (model in other_models){
-            for (x in flat_arr){
-
-            }
-          }
-        break;
-        case 'samples':
-          var other_models = ['patient','visits','files']
-          var flat_arr = this.samplesBacklog.flat();
-          for (model in other_models){
-            for (x in flat_arr){
-
-            }
-          }
-        break;
-        case 'files':
-          var other_models = ['patient','visits','samples']
-          var flat_arr = this.filesBacklog.flat();
-          for (model in other_models){
-            for (x in flat_arr){
-
-            }
-          }
-
-          //this.selectedFileRecords = filter_results
-          //this.selectedRecordCount['files'] = filter_results.length
-
-      }
-      //array of records that will be set in the store after iteration
-      var temp_p_arr = [];
-      var temp_v_arr = [];
-      var temp_s_arr = [];
-      var temp_f_arr = [];
-      //need to look at objects returned in list (id'd by either name or displayname)...
-      //we are assuming that the model name is heterogeneous here
-      var ex_list = ['patient','visits','samples','files'];
-      let ex_list2 = ex_list.filter(function(value) {
-        return value != model; });
-        //for each element of the filtered result list, get the related records of each other model type
-        for (var y = 0; y <filter_results.length; y++){
-          ex_list2.forEach((x, i) =>
-          switch(x){
-            case 'patient':
-              temp_p_arr.push(setAllRelatedFilter(model,filter_results[y],'patient',0);)
-            break;
-            case 'vist':
-              temp_v_arr.push(setAllRelatedFilter(model,filter_results[y],'visits',0);)
-            break;
-            case 'sample':
-              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'samples',0);)
-            break;
-            case 'file':
-              temp_s_arr.push(setAllRelatedFilter(model,filter_results[y],'files',0);)
-          }
-          );
-        }
-      }
-      }
-      //eliminating duplicates in each array and setting variables
-      //here we don't want to overwrite the model that we're filtering by. Check this
-      if(model != 'patient'){
-        let filtered_p_arr = temp_p_arr.filter((c, index) => {return temp_p_arr.indexOf(c) === index;});
-        //NOTE:beforte doing this, check what type of date this setter expects
-        this.selectedPatientRecords = filtered_p_arr
-        this.selectedRecordCount['patient'] = filtered_p_arr.length
-      }
-      if (model != 'visit'){
-        let filtered_v_arr = temp_v_arr.filter((c, index) => {return temp_v_arr.indexOf(c) === index;});
-        this.selectedVisitRecords = filtered_v_arr
-        this.selectedRecordCount['visits'] = filtered_v_arr.length
-      }
-      if (model != 'sample'){
-        let filtered_s_arr = temp_s_arr.filter((c, index) => {return temp_s_arr.indexOf(c) === index;});
-        this.selectedSampleRecords = filtered_s_arr
-        this.selectedRecordCount['samples'] = filtered_s_arr.length
-      }
-      if (model != 'file'){
-        let filtered_f_arr = temp_f_arr.filter((c, index) => {return temp_f_arr.indexOf(c) === index;});
-        //this.selectedFileRecords = filtered_f_arr
-        //this.selectedRecordCount['files'] = filtered_f_arr.length
-
-      }
-    },
-    */
 
     loadModelData: function() {
       if (!this.userToken()) {
@@ -1455,118 +1069,125 @@ export default {
           return d.numRows *  vm.cellSize + (d.numRows - 1) * (vm.groupSpacing + vm.modelHeaderHeight)
         })
         .attr('strokeStyle', '#34259F')
-        .attr('fillStyle', 'white') //'#34259F')
+        .attr('fillStyle', '#ffffff')
         .attr('fillStyleHidden', function(d) {
           d.hiddenCol = vm.genColor();
           vm.colorToNode[d.hiddenCol] = d;
           return d.hiddenCol;
         })
-
-
     },
 
-    //clears record data for each model each time a new study is chosen (hopefully gets rid of residual record issue)
-    // eslint-disable-next-line
     clearRecordData: function() {
-      this.selectedPatientRecords = []
+      this.clearSelectedRecordData()
+      this.clearSelectedRecordDataCounts()
+      this.clearSelectedPageNumbers()
+    },
+    clearSelectedRecordDataCounts: function() {
       this.selectedRecordCount['patient'] = 0
-      this.selectedVisitRecords = []
       this.selectedRecordCount['visits'] = 0
+      this.selectedRecordCount['samples'] = 0
+    },
+    clearSelectedRecordData: function() {
+      this.selectedPatientRecords = []
+      this.selectedVisitRecords = []
       this.selectedSampleRecords  = []
-      this.selectedSampleRecords['samples'] = 0
     },
-    clearBacklogData: function(){
-      this.patientsBacklog = []
-      this.visitsBacklog = []
-      this.samplesBacklog = []
-      this.filesBacklog = []
+    clearSelectedPageNumbers: function() {
+      this.participantsPage = 0
+      this.visitsPage = 0
+      this.samplesPage = 0
+      this.filesPage = 0
     },
-    updateStudyData: function() {
-      // eslint-disable-next-line
+
+    updateStudyDataV2: function() {
+      console.log('updateStudyDataV2() - starting')
       this.clearRecordData()
-      this.clearBacklogData()
       var modelList = ['patient','visits','samples'/*,'files'*/];
-      // TODO: figure out pagenum
-      // eslint-disable-next-line
       var pagenum = 0;
-      // eslint-disable-next-line
       var offset = 100*pagenum;
-      // eslint-disable-next-line no-unused-vars
-      var orderBy = '';
+      // let orderBy = '';
+      let promisedEvents = [];
 
       var vm = this
       modelList.forEach(function (modelName){
         switch (modelName) {
           case 'patient':
-              orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
-              break;
+            // orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
+            break;
           case 'visits':
-              orderBy = 'event date and time'
-              //this.setAllVisits(response.data);
-              break;
+            // orderBy = 'event date and time'
+            //this.setAllVisits(response.data);
+            break;
           case 'samples':
-              orderBy = 'study sample ID';
-              break;
+            // orderBy = 'study sample ID';
+            break;
           case 'files':
-              console.log('nothing for files yet');
+            console.log('nothing for files yet');
         }
         const options = {
-            method: 'GET',
-            url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
-            params: {
-                limit: '100',
-                // eslint-disable-next-line
-                offset: `${offset}`
-              },
-              headers: {
-                Accept: 'application/json',
-                Authorization: `Bearer ${vm.userToken()}`
-              }
-            };
-        axios.request(options).then(function (response) {
-          switch (modelName){
-              case 'patient':
+          method: 'GET',
+          url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
+          params: {
+            limit: '100',
+            // eslint-disable-next-line
+            offset: `${offset}`
+          },
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${vm.userToken()}`
+          }
+        };
+        promisedEvents.push(
+            axios.request(options).then(function (response) {
+              switch (modelName){
+                case 'patient':
                   //verify data is in a list, if not, put it in one before sending off
                   vm.updatePatients(response.data);
                   break;
-              case 'visits':
+                case 'visits':
                   vm.updateVisits(response.data);
                   break;
-              case 'samples':
+                case 'samples':
                   vm.updateSamples(response.data);
                   break;
-              case 'files':
+                case 'files':
                   console.log('nothing for files yet');
-            }
-        }).catch(function (error) {
-          console.error(error);
-        });
+              }
+            }).catch(function (error) {
+              console.error(error);
+            })
+        )
       })
+
+      console.log('updateStudyDataV2() promisedEvents:')
+      console.log(promisedEvents)
+      return Promise.all(promisedEvents)
     },
 
     updatePatients: function(data) {
-      console.log('updatePatients() data:')
+      console.log(`updatePatients() length: ${data.length} data:`)
       console.log(data)
       this.selectedPatientRecords = data
       this.selectedRecordCount['patient'] = data.length
     },
 
     updateVisits: function(data) {
-      console.log('updateVisits() data:')
+      console.log(`updateVisits() length: ${data.length} data:`)
       console.log(data)
       this.selectedVisitRecords = data
       this.selectedRecordCount['visits'] = data.length
     },
 
     updateSamples: function(data) {
-      console.log('updateSamples() data:')
+      console.log(`updateSamples() length: ${data.length} data:`)
       console.log(data)
       this.selectedSampleRecords  = data
       this.selectedSampleRecords['samples'] = data.length
     },
 
     updateView: function() {
-      console.log(`updateView()`)
+      console.log(`updateView() selectedRecordCount:`)
+      console.log(this.selectedRecordCount)
 
       this.nextCol = 1 //reset hidden Canvas color scheme
       this.colorToNode = {}
@@ -1574,19 +1195,19 @@ export default {
       this.recordData = {}
       this.recordPool = {}
 
-      var vm = this
+      let vm = this
       vm.modelData.map(x => {
         console.log(`updateView() x: ${x.name}`)
         //some fixed width that we will decide on
         // TODO: clean up recordCount and x.count (use just one)
         let recordCount = vm.selectedRecordCount[x.name]
-        console.log(`number of (1) '${x.name}' records: ${recordCount}`)
         x.count = recordCount
-        console.log(`number of (2) '${x.name}' records: ${x.count}`)
+        console.log(`updateView() number of '${x.name}' records: ${x.count}`)
         let numElem = recordCount < 100 ? recordCount : 100
         let recs = d3.range(vm.startIndex, vm.startIndex + numElem ).map(function(el) {
             return {
               id: el,
+              study: vm.selectedStudy,
               recordIndex: el-vm.startIndex,
               parent: x,
               recordId: null,
@@ -1594,38 +1215,33 @@ export default {
             }
           })
 
-          vm.startIndex += numElem
+        vm.startIndex += numElem
 
-          // Record data is mapped to objects on the canvas
-          vm.recordData[x.id] = {
-            showRecords: false,
-            nodes: recs,
-          }
-
-          // RecordPool is caching all records returned from API.
-          vm.recordPool[x.id] = {
-            isPending: false,
-            nextPage: 0,
-            unMapped: [],
-            records: [],
-          }
+        // Record data is mapped to objects on the canvas
+        vm.recordData[x.id] = {
+          model: x.displayName,
+          showRecords: false,
+          nodes: recs,
         }
-      )
+
+        // RecordPool is caching all records returned from API.
+        vm.recordPool[x.id] = {
+          model: x.displayName,
+          isPending: false,
+          nextPage: 0,
+          unMapped: [],
+          records: [],
+        }
+      })
 
       vm.binRegistry = Array(vm.binRegistrySize).fill(0)
       vm.modelData.forEach( x => {
         [x.bins, x.numRows, x.numCols] = this.findBins(x.id, x.count)
       })
 
-      this.bindModelData()
-      this.recordbind()
-      var mainCanvas = d3.select('.mainCanvas')
-      var hiddenCanvas = d3.select('.hiddenCanvas')
-      vm.draw(hiddenCanvas, true)
-      this.drawTimer.restart(function(elapsed) {
-        vm.draw(mainCanvas, false);
-        if (elapsed > 600) vm.drawTimer.stop();
-      })
+      vm.bindModelData()
+      vm.recordbind()
+      vm.drawCanvases()
     },
 
     // eslint-disable-next-line
@@ -1738,7 +1354,10 @@ export default {
       }
       if (pagenum != -1) {
         console.log(`updatePage() ${direction} -> get ${modelName} pagenum: ${pagenum}`)
-        vm.updatePageHelper(modelName, pagenum, orderBy)
+        // eslint-disable-next-line
+        vm.updatePageHelper(modelName, pagenum, orderBy).then(value => {
+          vm.updateView()
+        })
       }
     },
 
@@ -1975,14 +1594,24 @@ export default {
     },
 
     recordbind: function() {
+      console.log('recordbind()')
+      let recordData = this.getRecordData()
+      console.log('recordData:')
+      console.log(recordData)
+
       var join = this.custom.selectAll('custom.record')
         .data(this.getRecordData);
+
+      console.log('recordbind() join:')
+      console.log(join)
 
       let vm = this
       var enterSel = join.enter()
         .append('custom')
         .attr('class', 'record')
 
+      console.log('recordbind() enterSel:')
+      console.log(enterSel)
 
       join
         .merge(enterSel)
@@ -2018,7 +1647,9 @@ export default {
         //will be the click counter for a given record and will be initialized to 0 for every record
         // eslint-disable-next-line
         .attr('clickcount',0)
-        .attr('modelName', function(d) {return d.displayName})
+        .attr('study', vm.selectedStudy.values[0].value)
+        .attr('modelName', function(d) {return d.parent.displayName})
+        .attr('record', function(d) {return d})
 
     },
 
@@ -2062,13 +1693,24 @@ export default {
 
     },
 */
+    drawCanvases: function() {
+      let vm = this
+      let mainCanvas = d3.select('.mainCanvas')
+      let hiddenCanvas = d3.select('.hiddenCanvas')
+      vm.drawTimer.restart(function(elapsed) {
+        vm.draw(hiddenCanvas, true)
+        vm.draw(mainCanvas, false);
+        if (elapsed > 600) vm.drawTimer.stop();
+      })
+    },
+
     draw: function(canvas, hidden) {
       //console.log(`draw() hidden: ${hidden}`)
 
       // MODEL-AREAS)
       var ctx = canvas.node().getContext('2d');
       ctx.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height); // Clear the canvas.
-      var models = this.custom.selectAll('custom.model');// Grab all elements you bound data to in the databind() function.
+      var models = this.custom.selectAll('custom.model')
 
       let vm = this
       // eslint-disable-next-line no-unused-vars
