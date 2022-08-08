@@ -1,26 +1,26 @@
 
 <template>
   <div class="search-results">
-    <div v-loading="isLoadingRecords">
-      <div
-        v-if="showControls"
-        class="results-toggle"
+    <div
+      v-if="showControls"
+      class="results-toggle"
+    >
+      <p class="mr-16">View</p>
+      <el-radio-group
+        v-model="selectedButton"
+        size="medium"
       >
-        <p>View</p>
-        <el-radio-group
-          v-model="selectedButton"
-          size="medium"
-        >
-          <el-radio-button
-            class="records-radio-button"
-            label="Samples"
-          />
-          <el-radio-button
-            class="files-radio-button"
-            label="Visits"
-          />
-        </el-radio-group>
-      </div>
+        <el-radio-button
+          class="records-radio-button"
+          label="Samples"
+        />
+        <el-radio-button
+          class="files-radio-button"
+          label="Visits"
+        />
+      </el-radio-group>
+    </div>
+    <div v-loading="isLoadingRecords">
       <div
         v-if="showNoResultsState"
         class="no-results-container"
@@ -188,13 +188,16 @@ export default {
      * to reset pagination
      */
     selectedButton: {
-      handler: function(val) {
-        if (val) {
-          this.$emit('reset-search-params', val)
-        }
+      handler: async function() {
+        this.$emit('reset-search-params')
       },
       immediate: true
-    }
+    },
+    selectedStudy: {
+      handler: async function() {
+        this.$emit('reset-search-params')
+      }
+    },
   },
   methods: {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setLinkingTarget']),
@@ -209,6 +212,8 @@ export default {
       this.tableResultsTotalCount = metadata.totalCount
       this.recordHeadings = metadata.headings
       this.recordResults = metadata.records
+
+      this.isLoadingRecords = false
     },
     /**
      * Updates file search limit based on pagination selection
@@ -275,7 +280,7 @@ h3 {
 }
 .results-toggle {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   flex-direction: row;
   margin-bottom: 21px;
 }

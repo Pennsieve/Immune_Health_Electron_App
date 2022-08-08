@@ -7,7 +7,8 @@
       <ih-subheader previousRoute="/studies">
         <template slot="text">
           <template v-if="!isLinkingTargetSet">No Linking Target Selected</template>
-          <template v-else-if="linkingTarget.modelId === 'visits'">
+           <!--if visit is selected-->
+          <template v-else-if="linkingTarget.modelId === '9c579bef-6ce0-4632-be1c-a95aadc982c4'">
             Linking Target:
             <div class="ml-16">
               <div class="property-text">
@@ -26,15 +27,15 @@
               </div>
             </div>
           </template>
-          <template v-else>
+           <!--if sample is selected-->
+          <template v-else-if="linkingTarget.modelId === 'e1ada387-5401-4409-b9d6-748f3aaddf23'">
             Linking Target:
             <div class="ml-16">
               <div class="property-text">
                 Sample Type ID
               </div>
               <div>
-                <!--Figure out the name of the sample type id property that is set on the linking target-->
-                <!--{{linkingTarget.sample_type_id}}-->
+                {{linkingTarget.sample_type_id}}
               </div>
             </div>
             <div class="ml-16">
@@ -42,8 +43,7 @@
                 Study Sample ID
               </div>
               <div>
-                <!--Figure out the name of the study sample id property that is set on the linking target-->
-                <!--{{linkingTarget.study_sample_id}}-->
+                {{linkingTarget.study_sample_id}}
               </div>
             </div>
           </template>
