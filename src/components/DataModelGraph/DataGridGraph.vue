@@ -2074,7 +2074,10 @@ export default {
 @import '@/assets/css/_variables.scss';
 
 .hiddenCanvas {
-  //display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
 }
 
 .data-model-graph {
