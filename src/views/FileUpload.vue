@@ -282,7 +282,7 @@ export default {
       }
       const queues = Array.from(selecteditemids).map(itemId => {
         const recordId = itemId
-        const packageId = this.linkingTarget.visit_event //the record we are linking to
+        const packageId = this.linkingTarget.recordId //the record we are linking to
         //pathOr('', ['params', 'instanceId'], this.$route)
         const linkTarget = {
           'ConceptInstance': {
@@ -319,6 +319,7 @@ export default {
 
     // eslint-disable-next-line no-unused-vars
     createRelationshipsSuccess: function() {
+      console.log('createRElationshipsSuccess called')
       //const conceptName = propOr('', 'name', this.concept)
       //const displayName = propOr('', 'displayName', this.concept)
       //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
@@ -409,6 +410,7 @@ export default {
      * @param {Array} items
      */
     moveItems: function (destination, items) {
+      console.log("moveitems called. moving linked files out of staging and into linked")
       if (destination) {
         const things = items.map(item => item.content.id)
         this.sendXhr(destination, {
@@ -433,6 +435,7 @@ export default {
      */
      // eslint-disable-next-line no-unused-vars
     onMoveItems: function (response) {
+      console.log("onMoveItems called. We are removing the files that we linked from the staging file")
       // Remove successful items from the files list
       //
       //const successItems = propOr([], 'success', response)
@@ -466,7 +469,6 @@ export default {
       console.log('createrelationships called')
         //this.checkBelongsToExists()
         //Below is for debugging
-        this.createFileRelationshipRequests()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
         .finally(() => this.isLoading === false)

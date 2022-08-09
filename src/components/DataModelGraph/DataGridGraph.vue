@@ -149,6 +149,7 @@ export default {
       visitsPage: 0,
       samplesPage: 0,
       filesPage: 0,
+      selectedStudyTrigger: false,
 
       //filters: this.searchModalSearch.filters
     }
@@ -214,12 +215,29 @@ export default {
       }
     },
     selectedStudy: function() {
+      this.selectedStudyTrigger = true;
       console.log(`selectedStudy: ${this.selectedStudy.values[0].value}`)
       this.updateStudyDataV2().then((result) => {
         console.log('updateStudyDataV2() ~ Promise(s) completed - result:')
         console.log(result)
         this.updateView()
+        this.selectedStudyTrigger = false;
       })
+    },
+    selectedPatientRecords: function(){
+    if (this.selectedStudyTrigger == false){
+        this.update.view()
+      }
+    },
+    selectedVisitRecords: function(){
+    if (this.selectedStudyTrigger == false){
+        this.update.view()
+      }
+    },
+    selectedSampleRecords: function(){
+    if (this.selectedStudyTrigger == false){
+        this.update.view()
+      }
     },
     searchModalSearch: function(){
       //whenever a filter is added or subtracted from list it will update the downstream elements
