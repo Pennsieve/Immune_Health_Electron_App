@@ -19,10 +19,6 @@
             class="mr-24"
             :options="datasetCategoryOptions"
             :selected-option="datasetActivityParams.category"
-<<<<<<< HEAD
-            //will just get all
-=======
->>>>>>> integrate-uploads-page
             @select="updateDatasetActivityCategory"
           />
 
@@ -78,17 +74,10 @@
 
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex'
-<<<<<<< HEAD
-import Cookies from 'js-cookie'
-import { DATASET_ACTIVITY_ALL_CATEGORIES, DATASET_ACTIVITY_ALL_CONTRIBUTORS, DATASET_ACTIVITY_DATE_RANGE_30 } from '../../utils/constants.js'
-import DatasetActivityPanel from '../shared/DatasetActivityPanel/DatasetActivityPanel.vue'
-import BfButton from '../shared/BfButton/BfButton.vue'
-=======
 //import Cookies from 'js-cookie'
 import { DATASET_ACTIVITY_ALL_CATEGORIES, DATASET_ACTIVITY_ALL_CONTRIBUTORS, DATASET_ACTIVITY_DATE_RANGE_30 } from '../../utils/constants.js'
 import DatasetActivityPanel from '../shared/DatasetActivityPanel/DatasetActivityPanel.vue'
 import BfButton from '@/components/shared/BfButton.vue'
->>>>>>> integrate-uploads-page
 import BfEmptyPageState from '../shared/bf-empty-page-state/BfEmptyPageState.vue'
 //import BfRafter from '../shared/bf-rafter/BfRafter.vue'
 //import BfStage from '@/components/layout/BfStage/BfStage.vue'
@@ -169,13 +158,9 @@ export default {
     ]),
 
     ...mapGetters([
-<<<<<<< HEAD
-      'getOrgMembersById'
-=======
       'getOrgMembersById',
       'datasetId',
       'userToken'
->>>>>>> integrate-uploads-page
     ]),
 
     /**
@@ -200,11 +185,7 @@ export default {
      */
     getDatasetUsersUrl: function() {
       const datasetId = this.datasetId
-<<<<<<< HEAD
-      const apiKey = this.userToken
-=======
       const apiKey = this.userToken()
->>>>>>> integrate-uploads-page
       return  `https//:api.pennsieve.io/datasets/${datasetId}/collaborators/users?api_key=${apiKey}`
     },
 
@@ -246,11 +227,7 @@ export default {
 
   mounted () {
     this.clearDatasetActivityState()
-<<<<<<< HEAD
-    this.fetchDatasetActivity(),
-=======
     this.fetchDatasetActivity()
->>>>>>> integrate-uploads-page
      /*
      used in BfPage
      function() {
@@ -272,29 +249,17 @@ export default {
     this.$el.removeEventListener('scroll', this.onScroll)
   },
   */
-<<<<<<< HEAD
-
-  methods: {
-    //can likely omit datset module
-    ...mapActions('datasetModule',[
-=======
   },
 
   methods: {
     //can likely omit datset module
     ...mapActions(
->>>>>>> integrate-uploads-page
       'updateDatasetActivityCategory',
       'updateDatasetActivityUserId',
       'updateDatasetActivityDateRange',
       'updateDatasetActivityOrderDirection',
       'fetchDatasetActivity',
-<<<<<<< HEAD
-      'clearDatasetActivityState'
-    ]),
-=======
       'clearDatasetActivityState'),
->>>>>>> integrate-uploads-page
 
     /**
      * Set sort direction
@@ -316,11 +281,7 @@ export default {
       this.sendXhr(this.getDatasetUsersUrl)
         .then(datasetUsers => {
           this.datasetUsers = datasetUsers
-<<<<<<< HEAD
-        }
-=======
         })
->>>>>>> integrate-uploads-page
         .catch(() => {
           this.datasetUsers = []
         })

@@ -9,10 +9,6 @@ Vue.use(Vuex);
 
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
-<<<<<<< HEAD
-// HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
-const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzk5NjhiOTUyLTFlY2EtNDk2Yi1hOTEwLTMzODA5MzlmZDQxMSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjEwNWYxMjViLTczM2MtNGRjOS1iOTVkLTZmNDdjZGEzYmQ4OCIsImV2ZW50X2lkIjoiYWYyMDBjNTYtZmIyZS00NDQ5LWE0ZTctYjgyYjFhNmVkZDE0IiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1OTcyNjM1OSwiZXhwIjoxNjU5NzI5OTU5LCJpYXQiOjE2NTk3MjYzNTksImp0aSI6IjNlNGFhOTNiLWE5ZGMtNDcxOC1iODQzLTc5NDcxZWE0YWQ0YSIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.AWNDktaFIJ5iZvXA2rRmD5gRtyEljkKQNZD9Ov2gadhoHZU958IsrYsuPOSBBKcfxiY2kUe7gI1CuzFlw16TPxzklAm-7eHB6SfTH0KrSYfSwVmkTImgTurVyxIU73kD_NyHJIdfggeZdP4M0fBS8WbjC9Tz7JxhfaL-t51RA0OwG-Ix2DYFqcwZZUVY9u3BAU9sfOdIpPuHhsPmiB5VO8cNp7rYWN3cfcA39uhepvmGC6yF05KxAWiQRKu8pkOzwVB9YwRQ_oClKcRyXJjv1XujxGMjqNJxFTwdllYdFh93Dup1tpVGU6rhQuTsPkHaTUCvSEU1K1hNpvqcIUZNeg'
-=======
 const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
 
 const DATASET_ACTIVITY_ALL_CATEGORIES = {
@@ -88,7 +84,6 @@ const initialState = () => ({
   isLoadingDatasetActivity: false,
   datasetActivity: []
 })
->>>>>>> integrate-uploads-page
 
 //const uploadDestination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:fda8d13c-658f-475a-b90a-cd7a79ef7b87'
 const store = new Vuex.Store({
@@ -123,16 +118,12 @@ const store = new Vuex.Store({
       userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
     },
     linkingTarget: {},
-<<<<<<< HEAD
     searchPage: '',
 shadedParticipants: [],
     shadedVisits: [],
     shadedSamples: [],
     shadedFiles: [],
     triggerForClearing: false
-=======
-    searchPage: ''
->>>>>>> integrate-uploads-page
   },
   getters: {
     orgMembers: state => state.orgMembers,
@@ -177,7 +168,9 @@ shadedParticipants: [],
     datasetId (state) {
       return state.datasetId
     },
-<<<<<<< HEAD
+    datasetNodeId(state) {
+      return state.datasetNodeId
+    },
     shadedParticipants (state){
       return state.shadedParticipants
     },
@@ -195,10 +188,6 @@ shadedParticipants: [],
     },
     linkingTarget (state){
       return state.linkingTarget
-=======
-    datasetNodeId(state) {
-      return state.datasetNodeId
->>>>>>> integrate-uploads-page
     }
   },
   mutations: {
@@ -328,7 +317,7 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
     }
   },
   actions: {
-<<<<<<< HEAD
+
     clearClickedSelections({commit}){
       commit('CLEAR_CLICKED_SELECTIONS')
     },
@@ -347,13 +336,6 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
     setTriggerForClearing({commit}, data){
       commit('SET_TRIGGER_FOR_CLEARING',data)
     },
-    async login({ dispatch, state }) {
-      // Set a dummy profile for now
-      this.state.profile = {
-        firstName: 'Test',
-        lastName: 'Profile',
-        token: API_KEY
-=======
     setDataset: ({commit}, evt) => commit('SET_DATASET', evt),
     updateOrgMembers: ({ commit }, evt) => commit('UPDATE_ORG_MEMBERS', evt),
     clearDatasetActivityState: ({commit}) => {
@@ -397,7 +379,7 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
       } else {
         commit('UPDATE_DATASET_ACTIVITY', [])
         throw new Error(resp.statusText)
->>>>>>> integrate-uploads-page
+
       }
       commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', false)
     } catch (err) {

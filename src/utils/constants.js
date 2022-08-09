@@ -12,8 +12,6 @@ export const DATASET_ACTIVITY_DATE_RANGE_30 = {
   value: 30,
   label: 'Last 30 Days',
 }
-<<<<<<< HEAD
-=======
 
 export const referenceTypeOptions = Object.freeze([
 {
@@ -273,4 +271,3 @@ export const PublicationStatus = Object.freeze({
   FAILED: 'failed',
   COMPLETED: 'completed',
 })
->>>>>>> integrate-uploads-page

@@ -136,7 +136,7 @@ import DataGridGraph from '@/components/DataModelGraph/DataGridGraph.vue'
        * List for fullscreen event and set fullscreen data
        */
       // eslint-disable-next-line no-unused-vars
-      onFullscreenchange: function(evt) {
+      onFullscreenchangxe: function(evt) {
         this.isFullscreen = document.fullscreenElement
         this.setChartHeight()
       },
@@ -171,11 +171,7 @@ import DataGridGraph from '@/components/DataModelGraph/DataGridGraph.vue'
 
   .graph-browser {
     height: 100%;
-<<<<<<< HEAD
     margin: 0px;
-=======
-    margin: -32px;
->>>>>>> integrate-uploads-page
     height: calc(100vh - 130px);
     overflow: hidden;
     position: relative;

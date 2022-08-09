@@ -8,11 +8,7 @@
   >
     <bf-dialog
       :title="dialogTitle"
-<<<<<<< HEAD
-      :open="isOpen"
-=======
       :open="open"
->>>>>>> integrate-uploads-page
       @close="onClose"
       @overlay-click="onOverlayClick"
     >
@@ -21,13 +17,9 @@
         class="bf-upload-body"
         @dragenter="setIsDragging(true)"
       >
-<<<<<<< HEAD
-        <template v-if="isAddingFiles">
-=======
         <!-- This is the template for when we are adding files -->
         <template v-if="isAddingFiles">
           <!-- This is the file input area: file selector input, and drag-and-drop zone -->
->>>>>>> integrate-uploads-page
           <div
             v-if="!errorPreflight"
             ref="bfUpload"
@@ -75,18 +67,6 @@
                   choose your files
                 </a>.
               </h3>
-<<<<<<< HEAD
-              <p v-if="!hasItems(fileList)">
-                If you're uploading large amounts of data, please use the
-                <a
-                  href="https://docs.pennsieve.io/"
-                  target="_blank"
-                >
-                  Pennsieve API
-                </a>.
-              </p>
-=======
->>>>>>> integrate-uploads-page
             </div>
 
             <input
@@ -98,11 +78,8 @@
             >
           </div>
 
-<<<<<<< HEAD
-=======
           <!-- these "warnings" may be obsolete, or we can repurpose for issues with Agent -->
           <!-- COMMENT OUT TABLE VIEWS OF FILES TO BE UPLOADED
->>>>>>> integrate-uploads-page
           <div
             v-if="showWarnings"
             class="bf-upload-warning-wrap"
@@ -232,10 +209,6 @@
               Need help? Contact Us
             </a>
           </div>
-<<<<<<< HEAD
-        </template>
-
-=======
           -->
 
           <div
@@ -266,7 +239,6 @@
           <!-- TODO: refactor the !isAddingFiles case (done adding files)
                TODO: when upload is started isAddingFiles should be set to false
                TODO: when isAddingFiles is false, we can show the upload progress
->>>>>>> integrate-uploads-page
         <template v-if="!isAddingFiles">
           <div
             ref="uploadWrap"
@@ -285,10 +257,7 @@
             />
           </div>
         </template>
-<<<<<<< HEAD
-=======
         -->
->>>>>>> integrate-uploads-page
       </div>
 
       <template
@@ -297,21 +266,13 @@
       >
         <bf-button
           class="secondary"
-<<<<<<< HEAD
-          @click="cancelQueue"
-=======
           @click="cancelUpload"
->>>>>>> integrate-uploads-page
         >
           Cancel
         </bf-button>
 
         <bf-button
-<<<<<<< HEAD
-          :disabled="packageList.length === 0"
-=======
           :disabled="fileListMap.size === 0"
->>>>>>> integrate-uploads-page
           @click="startUpload"
         >
           Start Upload
@@ -338,41 +299,6 @@
 </template>
 
 <script>
-<<<<<<< HEAD
-  import Vue from 'vue'
-  //WHERE IS THIS??
-  //import qq from 'fine-uploader/lib/core'
-  import { mapActions, mapGetters, mapState } from 'vuex';
-  import BfButton from '../shared/BfButton.vue'
-  import BfDialog from '../shared/bf-dialog/bf-dialog.vue'
-  import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
-  import CheckOverflow from '../../mixins/check-overflow/index'
-  import Sorter from '../../mixins/sorter'
-  import Request from '../../mixins/request';
-  //import FileIcon from '../../mixins/file-icon'
-  import debounce from 'lodash/debounce'
-  //import uuidv1 from 'uuid/v1'
-  import uuidv1 from 'uuid'
-  //import {Pennsieve} from '../../pennsieve-agent-javascript-inapp/pennsieve/pennsieve.js'
-  import {
-    compose,
-    defaultTo,
-    equals,
-    filter,
-    find,
-    findIndex,
-    init,
-    pathOr,
-    pluck,
-    prop,
-    propEq,
-    propOr,
-    split,
-    sum
-  } from 'ramda';
-  import EventBus from '../../utils/event-bus.js';
-  import { fetchRetry } from '../../typescript/lib/fetch-retry';
-=======
 // TODO List
 // 1. import Pennsieve Agent JavaScript (in main.js?)
 // 2a. crate Pennsieve object (keep in Store?) (in login?)
@@ -424,7 +350,6 @@ import {
 import EventBus from '../../utils/event-bus.js';
 import PennsieveClient from '@/utils/pennsieve/client.js'
 import FilesTable from "@/components/FilesTable/FilesTable";
->>>>>>> integrate-uploads-page
 
   const transformPath = compose(
     init,
@@ -436,27 +361,16 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     name: 'BfUpload',
 
     components: {
-<<<<<<< HEAD
-      BfButton,
-      BfDialog,
-      BfUploadPackage
-=======
       FilesTable,
       BfButton,
       BfDialog,
       // BfUploadPackage
->>>>>>> integrate-uploads-page
     },
 
     mixins: [Sorter, CheckOverflow, Request,
     //FileIcon
     ],
 
-<<<<<<< HEAD
-    data: function() {
-      return {
-        isOpen: false,
-=======
     props: {
       open: {
         type: Boolean,
@@ -466,15 +380,11 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
     data: function() {
       return {
->>>>>>> integrate-uploads-page
         isDragging: false,
         showInfo: false,
         droppedFiles: [],
         uploader: {},
-<<<<<<< HEAD
-=======
         fileListMap: {},
->>>>>>> integrate-uploads-page
         fileList: [],
         packageList: [],
         uploadList: [],
@@ -483,22 +393,14 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         isAddingFiles: true,
         packageListBorders: false,
         recordId: '',
-<<<<<<< HEAD
-        uploadListId: -1 // start at -1 because this is incremented for every file added
-=======
         uploadListId: -1, // start at -1 because this is incremented for every file added
         ps: null,
         selectedFiles: null
->>>>>>> integrate-uploads-page
       }
     },
 
     computed: {
-<<<<<<< HEAD
-      ...mapGetters(['config', 'userToken', 'uploadDestination']),
-=======
       ...mapGetters(['config', 'userToken', 'uploadDestination', 'datasetNodeId']),
->>>>>>> integrate-uploads-page
       ...mapState(['onboardingEvents', 'activeOrganization', 'dataset']),
 
       /**
@@ -563,29 +465,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     },
 
     watch: {
-<<<<<<< HEAD
-      fileList: function(newFileList, oldFileList) {
-        // Only get package preview if adding a file to the list
-        if (newFileList.length > oldFileList.length) {
-          // Show onboarding info if first time
-          const hasSeenInfo = localStorage.getItem('seen-upload-info')
-          if (!hasSeenInfo) {
-            this.showInfo = true
-          }
-
-          this.getPackages()
-        }
-
-        this.checkOverflow(this.$refs.packageWrap)
-      },
-
-      packageList: function() {
-        this.checkOverflow(this.$refs.packageWrap)
-      },
-
-      uploadList: function() {
-        this.checkOverflow(this.$refs.uploadWrap)
-=======
       fileList: function() { // function(newFileList, oldFileList) {
         // add items in fileList to fileListMap (that are not already there)
         this.fileList.filter(d => !this.fileListMap.has(d.filePath)).forEach(d => this.fileListMap.set(d.filePath, d));
@@ -602,7 +481,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
       uploadList: function() {
         // this.checkOverflow(this.$refs.uploadWrap)
->>>>>>> integrate-uploads-page
       },
 
       isOpen: function() {
@@ -626,11 +504,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        * Compute if array has items
        */
       hasItems: function(list) {
-<<<<<<< HEAD
-        return list && list.length > 0 ? true : false
-=======
         return list && (list.length > 0 || list.size > 0) ? true : false
->>>>>>> integrate-uploads-page
       },
 
       /**
@@ -655,16 +529,12 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        * Cancel queueing files for upload
        */
       cancelQueue: function() {
-<<<<<<< HEAD
-        this.uploader.clearStoredFiles()
-=======
         // this.uploader.clearStoredFiles()
         this.resetQueue()
         this.onClose()
       },
 
       cancelUpload: function() {
->>>>>>> integrate-uploads-page
         this.resetQueue()
         this.onClose()
       },
@@ -673,25 +543,11 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        * Close dialog callback
        */
       onClose: function() {
-<<<<<<< HEAD
-        this.isOpen = false
-=======
->>>>>>> integrate-uploads-page
         this.errorPreflight = ''
         this.showInfo = false
         this.modelId = ''
         this.recordId = ''
         this.clearUploadedFiles()
-<<<<<<< HEAD
-      },
-
-      onOverlayClick: function() {
-        if (this.isAddingFiles) {
-          this.cancelQueue()
-        } else {
-          this.onClose()
-        }
-=======
         this.$emit('close-upload-dialog')
       },
 
@@ -702,7 +558,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         //   this.onClose()
         // }
         this.onClose()
->>>>>>> integrate-uploads-page
       },
 
       /**
@@ -713,36 +568,22 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       },
 
       /**
-<<<<<<< HEAD
-       * Callback when file input has changed
-=======
        * onInputFileChange(): callback when file input has changed
->>>>>>> integrate-uploads-page
        * @param {Object} Event
        */
       onInputFileChange: function(e) {
         const files = e.target.files || e.dataTransfer.files
-<<<<<<< HEAD
-        if (!files || !files.length) {
-          return
-        }
-
-=======
->>>>>>> integrate-uploads-page
         this.transformFiles(Array.from(files))
 
         // Reset file input
         this.$refs.inputFile.value = ''
       },
       //ON first instance of this, we want to call createManifest(), which will return the newly created manifest ID (for this upload)
-<<<<<<< HEAD
-=======
 
       /**
        * onDrop(): handles the drag-and-drop of a file or folder into the upload area
        * @param e DragEvent
        */
->>>>>>> integrate-uploads-page
       onDrop: function(e) {
         if (this.isAddingFiles) {
           this.handleDataTransfer(e.dataTransfer || e.target).then(() => {
@@ -757,12 +598,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         }
       },
 
-<<<<<<< HEAD
-      transformFiles: function(files) {
-        const fileList = files.map((file, index) => {
-          const uploadId = (this.uploadListId += 1)
-
-=======
       /**
        * transformFiles(): adds files to the fileList
        *
@@ -771,18 +606,13 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       transformFiles: function(files) {
         const fileList = files.map((file, index) => {
           const uploadId = (this.uploadListId += 1)
->>>>>>> integrate-uploads-page
           file.uploadId = uploadId
 
           return {
             uploadId,
             fileName: file.name,
             size: file.size,
-<<<<<<< HEAD
-            filePath: file.filePath,
-=======
             filePath: file.path,
->>>>>>> integrate-uploads-page
             importId: index + uuidv1(),
             processing: true,
             file
@@ -1120,10 +950,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        */
       resetQueue: function() {
         this.fileList = []
-<<<<<<< HEAD
-=======
         this.fileListMap = new Map()
->>>>>>> integrate-uploads-page
         this.packageList = []
         this.errorPreflight = ''
       },
@@ -1230,8 +1057,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
           uploadListPkg.package = item.package
         })
-<<<<<<< HEAD
-=======
       },
 
       uploadFileList: function() {
@@ -1262,309 +1087,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       },
       // eslint-disable-next-line no-unused-vars
       uploadOnClickLabel: function(file) {
->>>>>>> integrate-uploads-page
       }
     },
 
     mounted: function() {
-<<<<<<< HEAD
-      let customheaders = {}
-
-      // Set header if userToken is available
-      if (this.userToken) {
-        customheaders = {
-          Authentication: `bearer ${this.userToken}`
-        }
-      }
-      // eslint-disable-next-line no-undef
-      this.uploader = new qq.FineUploaderBasic({
-        element: this.$refs.bfUpload,
-        button: this.$refs.btnUpload,
-        autoUpload: false,
-
-        request: {
-          customheaders
-        },
-
-        validation: {
-          allowEmpty: true
-        },
-
-        chunking: {
-          enabled: true,
-          /**
-           * Set part size for each file
-           * This is set per file, from data received by the preview endpoint
-           * @param {Integer} id
-           */
-          partSize: id => {
-            const file = this.uploader.getFile(id)
-            const chunkSize = pathOr(200000, ['chunkedUpload', 'chunkSize'], file)
-            return chunkSize
-          },
-          mandatory: true
-        },
-
-        retry: {
-          enableAuto: true,
-          maxAutoAttempts: 5
-        },
-
-        resume: {
-          enabled: false
-        },
-
-        objectProperties: {
-          key: id => {
-            const file = this.uploader.getFile(id)
-            const name = file.name
-            const importId = file.importId
-            // eslint-disable-next-line no-undef
-            return qq.format(
-              '{}/{}',
-              `${this.$store.state.profile.email}/${importId}`,
-              name
-            )
-          },
-          bucket: this.$store.state.config.bucketName
-        },
-
-        callbacks: {
-          onUpload: id => {
-            // Get file to get import ID
-            const file = this.uploader.getFile(id)
-            const importId = file.importId
-            const organizationId = pathOr(
-              '',
-              ['organization', 'id'],
-              this.activeOrganization
-            )
-            const uploadListFile = this.getUploadListFile(id)
-
-            const multipartId = propOr('', 'multipartUploadId', uploadListFile)
-            const endpoint = `${
-              this.config.apiUrl
-            }/upload/fineuploaderchunk/organizations/${organizationId}/id/${importId}?multipartId=${multipartId}`
-
-            // Set endpoint for file
-            this.uploader.setEndpoint(endpoint, id)
-
-            Vue.set(uploadListFile, 'uploading', true)
-          },
-          /*
-          onAllComplete: (succeeded, failed) => {
-            this.$store.dispatch('updateUploadStatus', false)
-          },
-          */
-          /**
-           * Callback when a file has completed uploading
-           * @param {number} id
-           */
-          onComplete: (id, name, response) => {
-            // Check if all files in a package, and let API know
-            const file = this.uploader.getFile(id)
-            const importId = prop('importId', file)
-
-            // Check if all files in package are done
-            const packageIndex = findIndex(
-              propEq('importId', importId),
-              this.uploadList
-            )
-
-            // If the response failed, show an error message for the file
-            if (!response.success) {
-              this._onPackageCompleteError(packageIndex)
-              return
-            }
-
-            // Set uploading and complete properties
-            const uploadListFile = this.getUploadListFile(id)
-            Vue.set(uploadListFile, 'complete', true)
-            Vue.set(uploadListFile, 'uploading', false)
-
-            // Remove files count from state
-            this.$store.dispatch('uploadCountRemove', 1)
-
-            // Remove file size
-            this.$store.dispatch('updateUploadRemainingRemove', file.size)
-
-            if (uploadListFile && importId) {
-              const packageGroup = this.uploadList[packageIndex]
-              const completeFiles = filter(
-                propEq('complete', true),
-                packageGroup.files
-              )
-              const datasetId = propOr(
-                prop('id', this.uploadDestination),
-                'datasetId',
-                this.uploadDestination
-              )
-
-              if (equals(completeFiles, packageGroup.files)) {
-                let dataParams = `datasetId=${datasetId}`
-
-                // If uploading to a collection
-                if (packageGroup.uploadDestination.packageType !== 'DataSet') {
-                  dataParams += `&destinationId=${
-                    packageGroup.uploadDestination.id
-                  }`
-                }
-
-                const options = {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `bearer ${this.userToken}`,
-                    'X-SESSION-ID': this.userToken
-                  },
-                  retries: 3,
-                  retryDelay: 1000,
-                  retryBackoff: 2,
-                  retryOn: [429, 503]
-                }
-
-                // If adding a relationship to a record
-                if (packageGroup.modelId && packageGroup.recordId) {
-                  options.body = {
-                    conceptId: packageGroup.modelId,
-                    instanceId: packageGroup.recordId,
-                    targets: [
-                      {
-                        linkTarget: packageGroup.recordId,
-                        relationshipType: 'belongs_to',
-                        relationshipDirection: 'FromTarget'
-                      }
-                    ]
-                  }
-                }
-
-                // Send info to API
-                const organizationId = pathOr(
-                  '',
-                  ['organization', 'id'],
-                  this.activeOrganization
-                )
-                fetchRetry(
-                  `${this.config.apiUrl}/upload/complete/organizations/${organizationId}/id/${importId}?${dataParams}`,
-                  options
-                )
-                  .then(response => response.json())
-                  .then(response => {
-                    // update relationship table on record page
-                    if (
-                      packageGroup.modelId &&
-                      packageGroup.recordId &&
-                      packageGroup.recordId === this.$route.params.instanceId
-                    ) {
-                      EventBus.$emit('refresh-table-data', {
-                        name: 'package',
-                        displayName: 'Files',
-                        count: 1,
-                        type: 'Add'
-                      })
-                    }
-
-                    this.packageList = this.packageList.map(item => {
-                      if (item.importId === importId) {
-                        item.isUploaded = true
-                      }
-                      return item
-                    })
-
-                    this.uploadList = this.uploadList.map(item => {
-                      if (item.importId === importId) {
-                        item.isUploaded = true
-                      }
-                      return item
-                    })
-
-                    // update files list
-                    response.forEach(item => {
-                      // add package dto to each item in uploadList
-                      const uploadListPkg = find(
-                        propEq('importId', item.manifest.importId),
-                        this.uploadList
-                      )
-
-                      // Add file to files list
-                      const packageDTO =
-                        uploadListPkg.previewPath === null
-                          ? propOr({}, 'package', item)
-                          : pathOr({}, ['package', 'parent'], item)
-
-                      EventBus.$emit('add-uploaded-file', {
-                        packageDTO,
-                        uploadDestination: this.uploadDestination
-                      })
-
-                      this.$set(uploadListPkg, 'package', item.package)
-                    })
-
-                    // check for onboarding event state for uploading a file
-                    if (this.onboardingEvents.indexOf('AddedFile') === -1) {
-                      // make post request
-                      this.sendOnboardingEventsRequest()
-                    }
-
-                    // track file
-                    EventBus.$emit('track-event', {
-                      name: 'File Uploaded'
-                    })
-                  })
-                  /*
-                  .catch((err) => {
-                    this._onPackageCompleteError(packageIndex)
-                  })
-                  */
-              }
-            }
-          },
-          // eslint-disable-next-line no-unused-vars
-          onProgress: (id, name, uploadedBytes, totalBytes) => {
-            const uploadListFile = this.getUploadListFile(id)
-
-            Vue.set(uploadListFile, 'totalUploaded', uploadedBytes)
-          },
-
-          /**
-           * Callback when item has been canceled
-           */
-           // eslint-disable-next-line no-unused-vars
-          onCancel: (id, name) => {
-            if (this.isAddingFiles) {
-              // Remove from fileList
-              const index = findIndex(propEq('uploadId', id), this.fileList)
-              this.fileList.splice(index, 1)
-            } else {
-              const uploadListFile = this.getUploadListFile(id)
-              Vue.set(uploadListFile, 'canceled', true)
-
-              const file = this.uploader.getFile(id)
-              const packageIndex = findIndex(
-                propEq('importId', file.importId),
-                this.uploadList
-              )
-              const packageGroup = this.uploadList[packageIndex]
-
-              const canceledFiles = filter(
-                propEq('canceled', true),
-                packageGroup.files
-              )
-
-              // If all files for the package have been canceled, remove package from uploadList
-              if (equals(canceledFiles, packageGroup.files)) {
-                this.uploadList.splice(packageIndex, 1)
-              }
-            }
-          },
-          // eslint-disable-next-line no-unused-vars
-          onSubmit: (id, name) => {
-            const file = this.uploader.getFile(id)
-            const upload = this.uploader.getUploads({ id })
-            upload.uploadId = file.uploadId
-          }
-        }
-      })
-=======
       this.resetQueue()
       this.ps = new PennsieveClient()
       this.ps.useDatset(this.datasetNodeId, function() {})
@@ -1865,7 +1391,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       //     }
       //   }
       // })
->>>>>>> integrate-uploads-page
     }
   }
 </script>

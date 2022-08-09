@@ -159,9 +159,4 @@ export default {
   font-size: 1rem;
   font-weight: 500;
 }
-<<<<<<< HEAD
-.graph-browser-container {
-}
-=======
->>>>>>> integrate-uploads-page
 </style>
