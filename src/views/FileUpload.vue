@@ -272,7 +272,7 @@ export default {
       const datasetId = this.datasetId;
       //pathOr('', ['params', 'datasetId'], this.$route)
       //CHANGE THIS URL
-      const url = `https://api.pennsieve.io/datasets/${datasetId}/proxy/package/instances`
+      const url = `https://api.pennsieve.io/models/${datasetId}/proxy/package/instances`
       //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
       var iter = this.selectedFiles;
       var selecteditemids = []
@@ -282,7 +282,9 @@ export default {
       }
       const queues = Array.from(selecteditemids).map(itemId => {
         const recordId = itemId
+        console.log(recordId)
         const packageId = this.linkingTarget.recordId //the record we are linking to
+        console.log(packageId)
         //pathOr('', ['params', 'instanceId'], this.$route)
         const linkTarget = {
           'ConceptInstance': {
@@ -469,6 +471,7 @@ export default {
       console.log('createrelationships called')
         //this.checkBelongsToExists()
         //Below is for debugging
+        this.createFileRelationshipRequests()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
         .finally(() => this.isLoading === false)
