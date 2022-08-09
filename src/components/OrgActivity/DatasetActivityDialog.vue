@@ -213,7 +213,7 @@ export default {
 
     }
 
-/deep/ .el-dialog__body {
+::v-deep .el-dialog__body {
   box-sizing: border-box;
   max-height: 540px;
   overflow: scroll;
