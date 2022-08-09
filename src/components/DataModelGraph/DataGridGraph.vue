@@ -998,7 +998,7 @@ export default {
             */
                 fillstyle ="#d10a00"
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData, unclick);
+                this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'visits':
                 // var curr_selected_visits = this.shadedVisits;
@@ -1039,7 +1039,7 @@ export default {
                 */
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData, unclick);
+                this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'samples':
             // // eslint-disable-next-line
@@ -1082,7 +1082,7 @@ export default {
 
                 fillstyle ="#f0cc00"
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData, unclick);
+                this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'files':
                 fillstyle ="#f0cc00" // TODO: should be a different color

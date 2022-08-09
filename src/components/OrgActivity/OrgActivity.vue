@@ -146,7 +146,8 @@ export default {
       'orgMembers',
       'dataset',
       'config',
-      'userToken'
+      'userToken',
+      'datasetActivityParams'
     ]),
 
     ...mapState('datasetModule', [
@@ -158,7 +159,8 @@ export default {
     ...mapGetters([
       'getOrgMembersById',
       'datasetId',
-      'userToken'
+      'userToken',
+      'datasetActivityParams'
     ]),
 
     /**

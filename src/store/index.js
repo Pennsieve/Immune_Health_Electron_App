@@ -187,6 +187,9 @@ const store = new Vuex.Store({
     },
     datasetNodeId(state) {
       return state.datasetNodeId
+    },
+    datasetActivityParams(state) {
+      return state.datasetActivityParams
     }
   },
   mutations: {
