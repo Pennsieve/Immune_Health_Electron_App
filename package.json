@@ -29,6 +29,7 @@
     "moment-range": "^4.0.2",
     "path": "^0.12.7",
     "ramda": "^0.28.0",
+    "striptags": "^3.2.0",
     "tsvert": "^0.0.4",
     "uuid": "^8.3.2",
     "uuidv1": "^1.6.14",
@@ -56,7 +57,9 @@
   },
   "eslintConfig": {
     "root": true,
-    "ignorePatterns": ["index.js"],
+    "ignorePatterns": [
+      "index.js"
+    ],
     "env": {
       "node": true
     },
