@@ -1,4 +1,4 @@
-import EventBus from '../../utils/event-bus'
+import EventBus from '@/utils/event-bus'
 import { compose, defaultTo, prop, propOr, tryCatch } from 'ramda'
 
 const _isString = (x) => Object.prototype.toString.call(x) === '[object String]'
