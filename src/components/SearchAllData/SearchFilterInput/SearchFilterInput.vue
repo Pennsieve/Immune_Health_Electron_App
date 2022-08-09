@@ -485,7 +485,7 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/css/_variables.scss';
 input,
-/deep/ .el-date-editor .el-input__inner {
+::v-deep .el-date-editor .el-input__inner {
   background: none;
   border: 1px solid $app-primary-color;
   border-radius: 0;
@@ -501,17 +501,17 @@ input,
 input {
   max-width: 110px;
 }
-/deep/ .el-date-editor {
+::v-deep .el-date-editor {
   position: static;
 }
-/deep/ .el-picker-panel__body {
+::v-deep .el-picker-panel__body {
   max-width: 307px;
 }
-/deep/ .el-picker-panel {
+::v-deep .el-picker-panel {
   transition: none !important;
 }
-/deep/ .el-date-editor .el-input__prefix,
-/deep/ .el-date-editor .el-input__suffix {
+::v-deep .el-date-editor .el-input__prefix,
+::v-deep .el-date-editor .el-input__suffix {
   display: none;
 }
 .loading-list {

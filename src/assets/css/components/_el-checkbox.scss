@@ -11,7 +11,7 @@
 }
 .long-label {
   display: flex;
-  /deep/ .el-checkbox__input {
+  ::v-deep .el-checkbox__input {
     margin-top: 3px;
   }
 }

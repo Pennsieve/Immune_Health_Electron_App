@@ -87,7 +87,7 @@ export default {
 
 //@import '../../shared/MarkdownEditor/_markdown.scss';
 
-/deep/ .el-dialog__body {
+::v-deep .el-dialog__body {
   max-height: 500px;
   overflow: scroll;
 }

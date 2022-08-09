@@ -197,7 +197,7 @@ import Request from '@/mixins/request'
     margin-right: 8px;
   }
 
-  /deep/ .el-collapse-item {
+  ::v-deep .el-collapse-item {
     &__header {
       background-color: transparent;
       border-bottom: none;

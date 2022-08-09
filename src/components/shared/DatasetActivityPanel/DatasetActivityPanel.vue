@@ -430,7 +430,7 @@ import { ChangelogMessage, PublicationStatus } from '@/utils/constants'
     }
   }
 
-  /deep/ .avatar-circle {
+  ::v-deep .avatar-circle {
     border: solid 2px white;
     font-size: 12.2px;
 

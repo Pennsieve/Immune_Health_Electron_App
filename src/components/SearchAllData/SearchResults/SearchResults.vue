@@ -301,31 +301,31 @@ h3 {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  /deep/ .el-dropdown-text-link:not(:hover, :active) {
+  ::v-deep .el-dropdown-text-link:not(:hover, :active) {
     color: $gray_6;
   }
 }
 .files-radio-button {
-  /deep/ .el-radio-button__inner {
+  ::v-deep .el-radio-button__inner {
     width: 85px !important;
   }
 }
 .el-loading-parent--relative {
   min-height: 52px // Matches the no results state
 }
-/deep/ .el-radio-button__inner {
+::v-deep .el-radio-button__inner {
   height: 32px;
   padding-top: 8px;
   font-size: 14px;
   color: $gray_4;
   font-weight: 500;
 }
-/deep/ .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+::v-deep .el-radio-button__orig-radio:checked + .el-radio-button__inner {
   background-color: $purple_3;
   border-color: $purple_3;
   color: white;
 }
-/deep/ .el-radio-button__orig-radio:disabled + .el-radio-button__inner {
+::v-deep .el-radio-button__orig-radio:disabled + .el-radio-button__inner {
   color: $disabled-radio-button-text-color;
   border-color: $disabled-radio-button-border-color;
   background-color: $disabled-radio-button-background-color;

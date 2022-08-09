@@ -292,7 +292,7 @@ h2 {
   font-weight: 400;
   line-height: 1;
 }
-/deep/ .el-dialog {
+::v-deep .el-dialog {
   height: calc(100vh - 32px);
   border-radius: 3px;
   margin-bottom: 0;
@@ -327,7 +327,7 @@ p {
   letter-spacing: 0px;
   color: $gray_4;
 }
-/deep/ h3 {
+::v-deep h3 {
   font-size: 14px;
   font-weight: bold;
   color: $gray_6;
