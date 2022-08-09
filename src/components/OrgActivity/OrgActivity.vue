@@ -81,10 +81,12 @@ import BfButton from '@/components/shared/BfButton.vue'
 import BfEmptyPageState from '../shared/bf-empty-page-state/BfEmptyPageState.vue'
 //import BfRafter from '../shared/bf-rafter/BfRafter.vue'
 //import BfStage from '@/components/layout/BfStage/BfStage.vue'
+import BfButton from '@/components/shared/BfButton.vue'
 import FilterMenu from '../shared/FilterMenu/FilterMenu.vue'
-
+//import DatasetActivityPanel from '@/components/shared/DatasetActivityPanel/DatasetActivityPanel.vue'
 import Request from '@/mixins/request'
 import Sorter from '@/mixins/sorter'
+//import { DATASET_ACTIVITY_ALL_CATEGORIES, DATASET_ACTIVITY_ALL_CONTRIBUTORS, DATASET_ACTIVITY_DATE_RANGE_30 } from '@/utils/constants'
 
 export default {
   name: 'OrgActivity',

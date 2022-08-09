@@ -40,7 +40,6 @@ const getActivityDateRange = (days) => {
     : {}
 }
 
-
 /**
  * Convert the dataset activity state to query
  * params for the endpoint request
@@ -119,7 +118,7 @@ const store = new Vuex.Store({
     },
     linkingTarget: {},
     searchPage: '',
-shadedParticipants: [],
+    shadedParticipants: [],
     shadedVisits: [],
     shadedSamples: [],
     shadedFiles: [],
@@ -168,9 +167,6 @@ shadedParticipants: [],
     datasetId (state) {
       return state.datasetId
     },
-    datasetNodeId(state) {
-      return state.datasetNodeId
-    },
     shadedParticipants (state){
       return state.shadedParticipants
     },
@@ -186,32 +182,11 @@ shadedParticipants: [],
     triggerForClearing (state){
       return state.triggerForClearing
     },
-    linkingTarget (state){
+    linkingTarget (state) {
       return state.linkingTarget
     }
   },
   mutations: {
-    /*
-    UPLOAD_COUNT_ADD (state, count) {
-      //find another way
-      //const totalCount = propOr(0, 'uploadCount', state) + count;
-      state.uploadCount = totalCount
-    },
-    */
-    /*
-    UPDATE_TOTAL_UPLOAD_SIZE (state, data) {
-      //cant get below from prop
-      //const updatedSize = propOr(0, 'totalUploadSize', state) + data
-      state.totalUploadSize = updatedSize
-    },
-    */
-    /*
-    UPDATE_UPLOAD_REMAINING_ADD (state, size) {
-      //change this
-      //const totalRemaining = propOr(0, 'uploadRemaining', state) + size;
-      state.uploadRemaining = totalRemaining
-    },
-    */
     UPDATE_PROFILE(state, data) {
       state.profile = data
     },
@@ -234,48 +209,47 @@ shadedParticipants: [],
       state.scientificUnits = data
     },
     UPDATE_DATASET_ACTIVITY_CURSOR(state, cursor) {
-    state.datasetActivityParams.cursor = cursor
-  },
-  UPDATE_DATASET_ACTIVITY_CATEGORY(state, category) {
-    state.datasetActivityParams.category = { ...category }
-  },
-UPDATE_DATASET_ACTIVITY_USER_ID(state, userId) {
-  state.datasetActivityParams.userId = { ...userId }
-},
-UPDATE_DATASET_ACTIVITY_DATE_RANGE(state, dateRange) {
-state.datasetActivityParams.dateRange = { ...dateRange }
-},
-UPDATE_DATASET_ACTIVITY_ORDER_DIRECTION(state, orderDirection) {
-  state.datasetActivityParams.orderDirection = orderDirection
-},
-CLEAR_DATASET_ACTIVITY_STATE(state) {
-const _initialState = initialState()
+      state.datasetActivityParams.cursor = cursor
+    },
+    UPDATE_DATASET_ACTIVITY_CATEGORY(state, category) {
+      state.datasetActivityParams.category = { ...category }
+    },
+    UPDATE_DATASET_ACTIVITY_USER_ID(state, userId) {
+      state.datasetActivityParams.userId = { ...userId }
+    },
+    UPDATE_DATASET_ACTIVITY_DATE_RANGE(state, dateRange) {
+    state.datasetActivityParams.dateRange = { ...dateRange }
+    },
+    UPDATE_DATASET_ACTIVITY_ORDER_DIRECTION(state, orderDirection) {
+      state.datasetActivityParams.orderDirection = orderDirection
+    },
+    CLEAR_DATASET_ACTIVITY_STATE(state) {
+      const _initialState = initialState()
 
-const clearedState = {
+      const clearedState = {
+      isLoadingDatasetActivity: _initialState.isLoadingDatasetActivity,
+      //isLoadingDatasetActivity: false,
+      datasetActivity: _initialState.datasetActivity,
+      //datasetActivity: [],
+      datasetActivityParams: _initialState.datasetActivityParams
+      /*
+      datasetActivityParams: {
+        cursor: '',
+        orderDirection: 'Asc',
+        //If we want to use this feature, make these empty by deafult.
+        category: DATASET_ACTIVITY_ALL_CATEGORIES,
+        dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
+        userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
+      }
+      */
+      }
 
-  isLoadingDatasetActivity: _initialState.isLoadingDatasetActivity,
-  //isLoadingDatasetActivity: false,
-  datasetActivity: _initialState.datasetActivity,
-  //datasetActivity: [],
-  datasetActivityParams: _initialState.datasetActivityParams
-  /*
-  datasetActivityParams: {
-    cursor: '',
-    orderDirection: 'Asc',
-    //If we want to use this feature, make these empty by deafult.
-    category: DATASET_ACTIVITY_ALL_CATEGORIES,
-    dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
-    userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
-  }
-  */
-}
-
-Object.keys(clearedState).forEach(key => state[key] = clearedState[key])
-},
-UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
-    state.isLoadingDatasetActivity = isLoading
-  },
-  UPDATE_DATASET_ACTIVITY(state, activity) {
+      Object.keys(clearedState).forEach(key => state[key] = clearedState[key])
+    },
+    UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
+      state.isLoadingDatasetActivity = isLoading
+    },
+    UPDATE_DATASET_ACTIVITY(state, activity) {
       state.datasetActivity = activity
     },
     UPDATE_ORG_MEMBERS(state, members){
@@ -301,17 +275,17 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
       state.shadedFiles = []
     },
     SET_SHADED_PARTICIAPNTS(state, data){
-        state.shadedParticipants = data
-      },
-      SET_SHADED_VISITS(state, data){
-        state.shadedVisits = data
-      },
-      SET_SHADED_SAMPLES(state, data){
-        state.shadedSamples = data
-      },
-      SET_SHADED_FILES(state, data){
-        state.shadedFiles = data
-      },
+      state.shadedParticipants = data
+    },
+    SET_SHADED_VISITS(state, data){
+      state.shadedVisits = data
+    },
+    SET_SHADED_SAMPLES(state, data){
+      state.shadedSamples = data
+    },
+    SET_SHADED_FILES(state, data){
+      state.shadedFiles = data
+    },
     SET_TRIGGER_FOR_CLEARING(state,data){
       state.triggerForClearing = data
     }
@@ -357,37 +331,38 @@ UPDATE_IS_LOADING_DATASET_ACTIVITY(state, isLoading) {
       dispatch('fetchDatasetActivity')
     },
     fetchDatasetActivity: async ({state, commit}) => {
-    commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', true)
+      commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', true)
 
-    const datasetId = datasetId
-    //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
-    const endpoint = `https://api.pennsieve.io/datasets/${datasetId}/changelog/timeline`
-    const apiKey = this.userToken
-    //import below from datasetModule.js in utils and uncomment
-    const queryParams = getQueryParams(state.datasetActivityParams, apiKey)
+      const datasetId = datasetId
+      //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
+      const endpoint = `https://api.pennsieve.io/datasets/${datasetId}/changelog/timeline`
+      const apiKey = this.userToken
+      //import below from datasetModule.js in utils and uncomment
+      const queryParams = getQueryParams(state.datasetActivityParams, apiKey)
 
-    const url = `${endpoint}?${queryParams}`
+      const url = `${endpoint}?${queryParams}`
 
-    try {
-      const resp = await fetch(url)
-      if (resp.ok) {
-        const { eventGroups, cursor } = await resp.json()
-        const datasetActivity = state.datasetActivityParams.cursor ? [ ...state.datasetActivity, ...eventGroups ] : eventGroups
-        commit('UPDATE_DATASET_ACTIVITY', datasetActivity)
+      try {
+        const resp = await fetch(url)
+        if (resp.ok) {
+          const { eventGroups, cursor } = await resp.json()
+          const datasetActivity = state.datasetActivityParams.cursor ? [ ...state.datasetActivity, ...eventGroups ] : eventGroups
+          commit('UPDATE_DATASET_ACTIVITY', datasetActivity)
 
-        commit('UPDATE_DATASET_ACTIVITY_CURSOR', cursor)
-      } else {
+          commit('UPDATE_DATASET_ACTIVITY_CURSOR', cursor)
+        } else {
+          commit('UPDATE_DATASET_ACTIVITY', [])
+          throw new Error(resp.statusText)
+        }
+        commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', false)
+      } catch (err) {
+        //EventBus.$emit('ajaxError', err)
+        commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', false)
         commit('UPDATE_DATASET_ACTIVITY', [])
         throw new Error(resp.statusText)
 
       }
-      commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', false)
-    } catch (err) {
-      //EventBus.$emit('ajaxError', err)
-      commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', false)
-      commit('UPDATE_DATASET_ACTIVITY', [])
-    }
-  },
+    },
     updateDatasetActivityCategory: ({ commit, dispatch }, category) => {
       commit('UPDATE_DATASET_ACTIVITY_CURSOR', '')
       commit('UPDATE_DATASET_ACTIVITY_CATEGORY', category)
