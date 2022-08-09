@@ -183,7 +183,7 @@ export default {
      */
     getDatasetUsersUrl: function() {
       const datasetId = this.datasetId
-      const apiKey = this.userToken()
+      const apiKey = this.userToken
       return  `https//:api.pennsieve.io/datasets/${datasetId}/collaborators/users?api_key=${apiKey}`
     },
 
