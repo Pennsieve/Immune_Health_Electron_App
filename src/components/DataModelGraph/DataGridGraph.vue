@@ -32,10 +32,6 @@ import {
   fetchFilteredSamplesMetadataRelatedToStudy,
   fetchVisitsFilesRelatedToStudy,
   fetchSamplesFilesRelatedToStudy,
-  GET_FILTERED_METADATA_RECORDS_ENDPOINT,
-  REQUEST_HEADER,
-  handleV2RecordsResponse,
-  getQuery
 } from '@/utils/fetchRecords'
 
 import axios from 'axios'
@@ -159,8 +155,10 @@ export default {
     ...mapState([
       'relationshipTypes',
       'config',
-      'selectedStudy'
+      'selectedStudy',
+      'searchModalSearch'
     ]),
+    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','triggerForClearing','linkingTarget']),
     /*
     onFilterAdd: function() {
       this.filterStatus = searchModalSearch.filters;
@@ -275,7 +273,6 @@ export default {
   methods: {
     //will not use these map actions since all data will be within component
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles','setLinkingTarget']), //include set all files potentially
-    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch','triggerForClearing','linkingTarget']),
 
     setupMouseOver: function() {
       const vm = this
@@ -409,235 +406,222 @@ export default {
       const limit = 100
       const model = nodeData.parent.displayName;
       const identifier = nodeData.details.values[0].value
-      const token = this.userToken()
       //get identifier from nodedata (use inspector)
+      // if a user selects a record then filter records by its identifier. 
+      // If the user un-selects a record then remove that filter
       if (clickstatus == 'click'){
-        switch(model){
-        case 'patient':
-        var offset = limit*this.visitsPage
-        var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
-        var newFilters = clone(this.searchModalSearch.filters)
-        newFilters.push({
-          id: v1(),
-          isInvalid: false,
-          lockTarget: true,
-          operation: "=",
-          operationLabel: "equals",
-          operators: [
-            {
-              label: 'equals',
-              value: '='
-            },
-            {
-              label: 'does not equal',
-              value: '<>'
-            },
-            {
-              label: 'starts with',
-              value: 'STARTS WITH'
-            },
-          ],
-          property: "externalparticipantid",
-          propertyLabel: "externalparticipantid",
-          propertyType: {format: null, type: "String"},
-          target: "patient",
-          targetLabel: "patient",
-          type: "model",
-          value: identifier
-        })
-         var  visitsQuery = await getQuery('visits', newFilters, token)
+        var newFilters = []
+        var offset = 0
+        switch(model) {
+          case 'patient':
+            offset = limit*this.visitsPage
+            newFilters = clone(this.searchModalSearch.filters)
+            newFilters.push({
+              id: v1(),
+              isInvalid: false,
+              lockTarget: true,
+              operation: "=",
+              operationLabel: "equals",
+              operators: [
+                {
+                  label: 'equals',
+                  value: '='
+                },
+                {
+                  label: 'does not equal',
+                  value: '<>'
+                },
+                {
+                  label: 'starts with',
+                  value: 'STARTS WITH'
+                },
+              ],
+              property: "externalparticipantid",
+              propertyLabel: "externalparticipantid",
+              propertyType: {format: null, type: "String"},
+              target: "patient",
+              targetLabel: "patient",
+              type: "model",
+              value: identifier
+            })
 
-        var new_vis =  await axios.post(filteredRecordsUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
-           return handleV2RecordsResponse(propOr([], 'data', response))
-         })
-         var visit_recs = new_vis.records;
-         this.selectedVisitRecords = visit_recs;
-        break;
-        case 'visits':
-        // eslint-disable-next-line
-        var offset = limit*this.samplesPage;
-        // eslint-disable-next-line
-        var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
-        // eslint-disable-next-line
-        var newFilters = clone(this.searchModalSearch.filters)
-        newFilters.push({
-          id: v1(),
-          isInvalid: false,
-          lockTarget: true,
-          operation: "=",
-          operationLabel: "equals",
-          operators: [
-            {
-              label: 'equals',
-              value: '='
-            },
-            {
-              label: 'does not equal',
-              value: '<>'
-            },
-            {
-              label: 'starts with',
-              value: 'STARTS WITH'
-            },
-          ],
-          property: "visit_event_id",
-          propertyLabel: "visit_event_id",
-          propertyType: {format: null, type: "String"},
-          target: "visits",
-          targetLabel: "visits",
-          type: "model",
-          value: identifier
-        })
-        var  visitsQuery2 = await getQuery('samples', newFilters, token)
+            var new_vis = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, newFilters, this.userToken, limit, offset)
+            var visit_recs = new_vis.records;
+            this.selectedVisitRecords = visit_recs;
+            break;
+          case 'visits':
+            offset = limit*this.samplesPage;
+            newFilters = clone(this.searchModalSearch.filters)
+            newFilters.push({
+              id: v1(),
+              isInvalid: false,
+              lockTarget: true,
+              operation: "=",
+              operationLabel: "equals",
+              operators: [
+                {
+                  label: 'equals',
+                  value: '='
+                },
+                {
+                  label: 'does not equal',
+                  value: '<>'
+                },
+                {
+                  label: 'starts with',
+                  value: 'STARTS WITH'
+                },
+              ],
+              property: "visit_event_id",
+              propertyLabel: "visit_event_id",
+              propertyType: {format: null, type: "String"},
+              target: "visits",
+              targetLabel: "visits",
+              type: "model",
+              value: identifier
+            })
 
-       var new_samp =  await axios.post(filteredRecordsUrl, visitsQuery2, REQUEST_HEADER(token)).then(response => {
-          return handleV2RecordsResponse(propOr([], 'data', response))
-        })
-        var sample_recs = new_samp.records;
-        this.selectedSampleRecords = sample_recs;
-        break;
-        case 'samples':
-        //NOTE: need to figure out how to use selection to limit or highlight the relevant files
-        // eslint-disable-next-line
-        var newFilters = clone(this.searchModalSearch.filters)
-        newFilters.push({
-          id: v1(),
-          isInvalid: false,
-          lockTarget: true,
-          operation: "=",
-          operationLabel: "equals",
-          operators: [
-            {
-              label: 'equals',
-              value: '='
-            },
-            {
-              label: 'does not equal',
-              value: '<>'
-            },
-            {
-              label: 'starts with',
-              value: 'STARTS WITH'
-            },
-          ],
-          property: "study_sample_id", //CHECK THIS
-          propertyLabel: "study_sample_id",
-          propertyType: {format: null, type: "String"},
-          target: "samples",
-          targetLabel: "samples",
-          type: "model",
-          value: identifier
-        })
-        break;
-      }
-    }
-    else {
-    switch(model){
-      case 'patient':
-      // eslint-disable-next-line
-      var offset = limit*this.visitsPage
-      // eslint-disable-next-line
-      var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
-      // eslint-disable-next-line
-      var newFilters = clone(this.searchModalSearch.filters)
-      var remove1 = {
-        id: v1(),
-        isInvalid: false,
-        lockTarget: true,
-        operation: "=",
-        operationLabel: "equals",
-        operators: [
-          {
-            label: 'equals',
-            value: '='
-          },
-          {
-            label: 'does not equal',
-            value: '<>'
-          },
-          {
-            label: 'starts with',
-            value: 'STARTS WITH'
-          },
-        ],
-        property: "externalparticipantid",
-        propertyLabel: "externalparticipantid",
-        propertyType: {format: null, type: "String"},
-        target: "patient",
-        targetLabel: "patient",
-        type: "model",
-        value: identifier
-      }
-      // eslint-disable-next-line
-      var newFilters = newFilters.filter(function(entry) {
-        return entry != remove1;
-      });
-      // eslint-disable-next-line
-       var  visitsQuery = await getQuery('visits', newFilters, token)
-       // eslint-disable-next-line
-      var new_vis =  await axios.post(filteredRecordsUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
-         return handleV2RecordsResponse(propOr([], 'data', response))
-       })
-       // eslint-disable-next-line
-       var visit_recs = new_vis.records;
-       this.selectedVisitRecords = visit_recs;
-      break;
-      case 'visits':
-      // eslint-disable-next-line
-      var offset = limit*this.samplesPage;
-      // eslint-disable-next-line
-      var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
-      // eslint-disable-next-line
-      var newFilters = clone(this.searchModalSearch.filters)
-      var remove2 = {
-        id: v1(),
-        isInvalid: false,
-        lockTarget: true,
-        operation: "=",
-        operationLabel: "equals",
-        operators: [
-          {
-            label: 'equals',
-            value: '='
-          },
-          {
-            label: 'does not equal',
-            value: '<>'
-          },
-          {
-            label: 'starts with',
-            value: 'STARTS WITH'
-          },
-        ],
-        property: "visit_event_id",
-        propertyLabel: "visit_event_id",
-        propertyType: {format: null, type: "String"},
-        target: "visits",
-        targetLabel: "visits",
-        type: "model",
-        value: identifier
-      }
-      // eslint-disable-next-line
-      var newFilters = newFilters.filter(function(entry) {
-        return entry != remove2;
-      });
-      // eslint-disable-next-line
-      var  visitsQuery2 = await getQuery('samples', newFilters, token)
-      // eslint-disable-next-line
-     var new_samp =  await axios.post(filteredRecordsUrl, visitsQuery2, REQUEST_HEADER(token)).then(response => {
-        return handleV2RecordsResponse(propOr([], 'data', response))
-      })
-      // eslint-disable-next-line
-      var sample_recs = new_samp.records;
-      this.selectedSampleRecords = sample_recs;
-      break;
-      //TO DO: for samples, we want to have the selection influence files that are returned.
-      case 'samples':
-      //NOTE: need to figure out how to use selection to limit or highlight the relevant files
-      // eslint-disable-next-line
-      var newFilters = clone(this.searchModalSearch.filters)
-      break;
-    }
+            var new_samp =  await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, newFilters, this.userToken, limit, offset)
+            var sample_recs = new_samp.records;
+            this.selectedSampleRecords = sample_recs;
+            break;
+          case 'samples':
+            //NOTE: need to figure out how to use selection to limit or highlight the relevant files
+            // eslint-disable-next-line
+            newFilters = clone(this.searchModalSearch.filters)
+            newFilters.push({
+              id: v1(),
+              isInvalid: false,
+              lockTarget: true,
+              operation: "=",
+              operationLabel: "equals",
+              operators: [
+                {
+                  label: 'equals',
+                  value: '='
+                },
+                {
+                  label: 'does not equal',
+                  value: '<>'
+                },
+                {
+                  label: 'starts with',
+                  value: 'STARTS WITH'
+                },
+              ],
+              property: "study_sample_id", //CHECK THIS
+              propertyLabel: "study_sample_id",
+              propertyType: {format: null, type: "String"},
+              target: "samples",
+              targetLabel: "samples",
+              type: "model",
+              value: identifier
+            })
+            break;
+        }
+      } else {
+        // TODO: This code needs to be updated to remove filters that were created bc a record was clicked. 
+        // This can happen once we have a local copy of records that have been clicked. Right now we are just looking at searchModalSearch.filters
+        /*switch(model) {
+          case 'patient':
+            // eslint-disable-next-line
+            var offset = limit*this.visitsPage
+            // eslint-disable-next-line
+            var newFilters = clone(this.searchModalSearch.filters)
+            var remove1 = {
+              id: v1(),
+              isInvalid: false,
+              lockTarget: true,
+              operation: "=",
+              operationLabel: "equals",
+              operators: [
+                {
+                  label: 'equals',
+                  value: '='
+                },
+                {
+                  label: 'does not equal',
+                  value: '<>'
+                },
+                {
+                  label: 'starts with',
+                  value: 'STARTS WITH'
+                },
+              ],
+              property: "externalparticipantid",
+              propertyLabel: "externalparticipantid",
+              propertyType: {format: null, type: "String"},
+              target: "patient",
+              targetLabel: "patient",
+              type: "model",
+              value: identifier
+            }
+            // eslint-disable-next-line
+            var newFilters = newFilters.filter(function(entry) {
+              return entry != remove1;
+            });
+            var new_vis =  await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, newFilters, this.userToken, limit, offset)
+            // eslint-disable-next-line
+            var visit_recs = new_vis.records;
+            this.selectedVisitRecords = visit_recs;
+            break;
+          case 'visits':
+            // eslint-disable-next-line
+            var offset = limit*this.samplesPage;
+            // eslint-disable-next-line
+            var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+            // eslint-disable-next-line
+            var newFilters = clone(this.searchModalSearch.filters)
+            var remove2 = {
+              id: v1(),
+              isInvalid: false,
+              lockTarget: true,
+              operation: "=",
+              operationLabel: "equals",
+              operators: [
+                {
+                  label: 'equals',
+                  value: '='
+                },
+                {
+                  label: 'does not equal',
+                  value: '<>'
+                },
+                {
+                  label: 'starts with',
+                  value: 'STARTS WITH'
+                },
+              ],
+              property: "visit_event_id",
+              propertyLabel: "visit_event_id",
+              propertyType: {format: null, type: "String"},
+              target: "visits",
+              targetLabel: "visits",
+              type: "model",
+              value: identifier
+            }
+            // eslint-disable-next-line
+            var newFilters = newFilters.filter(function(entry) {
+              return entry != remove2;
+            });
+            // eslint-disable-next-line
+            var  visitsQuery2 = await getQuery('samples', newFilters, token)
+            // eslint-disable-next-line
+          var new_samp =  await axios.post(filteredRecordsUrl, visitsQuery2, REQUEST_HEADER(token)).then(response => {
+              return handleV2RecordsResponse(propOr([], 'data', response))
+            })
+            // eslint-disable-next-line
+            var sample_recs = new_samp.records;
+            this.selectedSampleRecords = sample_recs;
+            break;
+          //TO DO: for samples, we want to have the selection influence files that are returned.
+          case 'samples':
+          //NOTE: need to figure out how to use selection to limit or highlight the relevant files
+          // eslint-disable-next-line
+          var newFilters = clone(this.searchModalSearch.filters)
+          break;
+        }
+      */
   }
 },
 /*
@@ -1091,14 +1075,14 @@ export default {
     },
 
     loadModelData: function() {
-      if (!this.userToken()) {
+      if (!this.userToken) {
         return
       }
 
       let vm = this
       this.sendXhr(this.graphUrl, {
         header: {
-          'Authorization': `Bearer ${this.userToken()}`
+          'Authorization': `Bearer ${this.userToken}`
         }
       })
         .then(response => {
@@ -1207,7 +1191,7 @@ export default {
           },
           headers: {
             Accept: 'application/json',
-            Authorization: `Bearer ${vm.userToken()}`
+            Authorization: `Bearer ${vm.userToken}`
           }
         };
         promisedEvents.push(
@@ -1338,7 +1322,7 @@ export default {
           },
           headers: {
             Accept: 'application/json',
-            Authorization: `Bearer ${vm.userToken()}`
+            Authorization: `Bearer ${vm.userToken}`
           }
         };
         */
@@ -1347,10 +1331,10 @@ export default {
           console.log('updatePageHelper() updating patient')
           //error with filter array. Must address
           if (this.searchModalSearch.filters == undefined){
-            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken(), 100, offset)
+            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
           }else{
             // eslint-disable-next-line
-            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, offset)
+            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
           }
           var p_record_results = pmetadata.records
           //ORDERBY TODO
@@ -1363,10 +1347,10 @@ export default {
           console.log('updatePageHelper() this.selectedStudy:')
           console.log(this.selectedStudy)
           if (this.searchModalSearch.filters == undefined){
-            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken(), 100, offset)
+            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
           }else{
             // eslint-disable-next-line
-            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, offset)
+            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
           }
           var v_record_results = vmetadata.records
           console.log('updatePageHelper() v_record_results:')
@@ -1375,10 +1359,10 @@ export default {
           break;
         case 'samples':
           if (this.searchModalSearch.filters == undefined){
-            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, [], this.userToken(), 100, offset)
+            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
           }else{
             // eslint-disable-next-line
-            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, offset)
+            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
           }
           var s_record_results = smetadata.records
           this.updateSamples(s_record_results);
@@ -1435,11 +1419,11 @@ export default {
     },
 
     async updateVisitsFiles() {
-      this.selectedVisitsFiles = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, 0)
+      this.selectedVisitsFiles = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
     },
 
     async updateSamplesFiles() {
-      this.selectedSamplesFiles = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken(), 100, 0)
+      this.selectedSamplesFiles = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
     },
 
     //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
@@ -1638,7 +1622,7 @@ export default {
       // eslint-disable-next-line
       this.sendXhr(`${this.recordsUrl}/${modelId}/instances?limit=${numberOfRecords}&offset=${offset1}`, {
         header: {
-          'Authorization': `bearer ${this.userToken()}`
+          'Authorization': `bearer ${this.userToken}`
         }
       })
         .then(response => {
@@ -1837,14 +1821,14 @@ export default {
 
 /*
     getModelData: function() {
-      if (!this.userToken()) {
+      if (!this.userToken) {
         return
       }
 
       let vm = this
       this.sendXhr(this.graphUrl, {
         header: {
-          'Authorization': `Bearer ${this.userToken()}`
+          'Authorization': `Bearer ${this.userToken}`
         }
       })
         .then(response => {

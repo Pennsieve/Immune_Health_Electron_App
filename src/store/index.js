@@ -403,21 +403,6 @@ const store = new Vuex.Store({
       })
       await commit('SET_ALL_STUDIES',responseData)
     },
-    /*
-    async fetchSelectedStudyPatientsMetadata({ commit, state }) {
-      const selectedStudyId = propOr('', 'id', state.selectedStudy)
-      const patientsStudyMetadataUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances/${selectedStudyId}/relations/patient?includeIncomingLinkedProperties=true`
-      const apiKey = this.state.profile.token
-      const header = {
-        headers: { Authorization: `Bearer ${apiKey}`}
-      }
-      let responseData = []
-      await axios.get(patientsStudyMetadataUrl, header).then(response => {
-        responseData = response.data
-      })
-      await commit('SET_SELECTED_STUDY_PATIENTS_METADATA', responseData)
-    },
-    */
     updateSearchModalVisible({ commit }, data) {
       commit('UPDATE_SEARCH_MODAL_VISIBLE', data)
     },
