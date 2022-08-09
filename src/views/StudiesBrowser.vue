@@ -73,7 +73,6 @@ import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
 import { mapActions, mapGetters, mapState } from 'vuex'
 import { clone, mergeRight } from 'ramda'
 import { v1 } from 'uuid'
-
 export default {
   name: 'StudiesBrowser',
   components: {
@@ -100,8 +99,9 @@ export default {
 
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections','setTriggerForClearing']),
     clearAllSelections: function() {
+      this.setTriggerForClearing(true)
       this.clearClickedSelections()
       this.clearFilters()
       this.SearchStep = 0;
@@ -159,6 +159,9 @@ export default {
   font-size: 1rem;
   font-weight: 500;
 }
+<<<<<<< HEAD
 .graph-browser-container {
 }
+=======
+>>>>>>> integrate-uploads-page
 </style>

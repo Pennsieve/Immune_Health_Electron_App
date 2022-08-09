@@ -1,4 +1,3 @@
- /* eslint-disable no-use-before-define, no-undef */
 <template>
 <!-- TODO: bring this back in for 'click outside' behavior
   <div
@@ -32,13 +31,20 @@ import {
   // eslint-disable-next-line
   fetchFilteredSamplesMetadataRelatedToStudy,
   fetchVisitsFilesRelatedToStudy,
-  fetchSamplesFilesRelatedToStudy
+  fetchSamplesFilesRelatedToStudy,
+  GET_FILTERED_METADATA_RECORDS_ENDPOINT,
+  REQUEST_HEADER,
+  handleV2RecordsResponse,
+  getQuery
 } from '@/utils/fetchRecords'
 
 import axios from 'axios'
 import * as d3 from 'd3'
 import { select } from 'd3-selection';
-import { pathOr, propOr } from 'ramda'
+// eslint-disable-next-line
+import { v1 } from 'uuid'
+// eslint-disable-next-line
+import { pathOr, propOr, clone, mergeRight} from 'ramda'
 import debounce from 'lodash/debounce'
 import { mapState, mapActions, mapGetters } from 'vuex'
 import Request from '@/mixins/request'
@@ -216,9 +222,20 @@ export default {
       })
     },
     searchModalSearch: function(){
-      //whenever a filter is added or subtracted from list
+      //whenever a filter is added or subtracted from list it will update the downstream elements
       this.handleFilterChangeSequential();
 
+    },
+    triggerForClearing: function(){
+      var shadedarr = []
+      shadedarr = shadedarr.push(this.shadedParticipants)
+      shadedarr = shadedarr.push(this.shadedVisits)
+      shadedarr = shadedarr.push(this.shadedSamples)
+      for (const x of shadedarr){
+        for (const y of x){
+          this.onClickElement(y) //will trigger branch of code that sets click to 0
+        }
+      }
     }
   },
 
@@ -257,8 +274,8 @@ export default {
 
   methods: {
     //will not use these map actions since all data will be within component
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles']), //include set all files potentially
-    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles','setLinkingTarget']), //include set all files potentially
+    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','searchModalSearch','triggerForClearing','linkingTarget']),
 
     setupMouseOver: function() {
       const vm = this
@@ -382,16 +399,16 @@ export default {
       });
 
       if (selectedRecord) {
-        vm.onClickElement(nodeData, selectedRecord)// , d.click, mouseX, mouseY)
+        vm.onClickElement(nodeData, selectedRecord,false)// , d.click, mouseX, mouseY)
       }
     },
 
-/*
+
   //When a record is clicked, we want to add that as a filter and get the related records. We dont want to update the view for the current model (apart from coloring the selected record)
-    async handleFilterChangeClick(nodeData, clickstatus) {
+    handleFilterChangeClick: async function(nodeData, clickstatus) {
       const limit = 100
       const model = nodeData.parent.displayName;
-      const identifier = nodeData.details.id
+      const identifier = nodeData.details.values[0].value
       const token = this.userToken()
       //get identifier from nodedata (use inspector)
       if (clickstatus == 'click'){
@@ -430,15 +447,18 @@ export default {
         })
          var  visitsQuery = await getQuery('visits', newFilters, token)
 
-        var new_vis =  await axios.post(filteredRecordsUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
+        var new_vis =  await axios.post(filteredRecordsUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
            return handleV2RecordsResponse(propOr([], 'data', response))
          })
          var visit_recs = new_vis.records;
          this.selectedVisitRecords = visit_recs;
         break;
         case 'visits':
+        // eslint-disable-next-line
         var offset = limit*this.samplesPage;
+        // eslint-disable-next-line
         var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+        // eslint-disable-next-line
         var newFilters = clone(this.searchModalSearch.filters)
         newFilters.push({
           id: v1(),
@@ -476,8 +496,9 @@ export default {
         var sample_recs = new_samp.records;
         this.selectedSampleRecords = sample_recs;
         break;
-        //TO DO: for samples, we want to have the selection influence files that are returned.
-        case 'samples'
+        case 'samples':
+        //NOTE: need to figure out how to use selection to limit or highlight the relevant files
+        // eslint-disable-next-line
         var newFilters = clone(this.searchModalSearch.filters)
         newFilters.push({
           id: v1(),
@@ -510,11 +531,14 @@ export default {
         break;
       }
     }
-    else if (clickstatus == 'unclick'){
+    else {
     switch(model){
       case 'patient':
+      // eslint-disable-next-line
       var offset = limit*this.visitsPage
+      // eslint-disable-next-line
       var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+      // eslint-disable-next-line
       var newFilters = clone(this.searchModalSearch.filters)
       var remove1 = {
         id: v1(),
@@ -544,20 +568,26 @@ export default {
         type: "model",
         value: identifier
       }
+      // eslint-disable-next-line
       var newFilters = newFilters.filter(function(entry) {
         return entry != remove1;
       });
+      // eslint-disable-next-line
        var  visitsQuery = await getQuery('visits', newFilters, token)
-
-      var new_vis =  await axios.post(filteredRecordsUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
+       // eslint-disable-next-line
+      var new_vis =  await axios.post(filteredRecordsUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
          return handleV2RecordsResponse(propOr([], 'data', response))
        })
+       // eslint-disable-next-line
        var visit_recs = new_vis.records;
        this.selectedVisitRecords = visit_recs;
       break;
       case 'visits':
+      // eslint-disable-next-line
       var offset = limit*this.samplesPage;
+      // eslint-disable-next-line
       var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
+      // eslint-disable-next-line
       var newFilters = clone(this.searchModalSearch.filters)
       var remove2 = {
         id: v1(),
@@ -587,25 +617,29 @@ export default {
         type: "model",
         value: identifier
       }
+      // eslint-disable-next-line
       var newFilters = newFilters.filter(function(entry) {
         return entry != remove2;
       });
+      // eslint-disable-next-line
       var  visitsQuery2 = await getQuery('samples', newFilters, token)
-
+      // eslint-disable-next-line
      var new_samp =  await axios.post(filteredRecordsUrl, visitsQuery2, REQUEST_HEADER(token)).then(response => {
         return handleV2RecordsResponse(propOr([], 'data', response))
       })
+      // eslint-disable-next-line
       var sample_recs = new_samp.records;
       this.selectedSampleRecords = sample_recs;
       break;
       //TO DO: for samples, we want to have the selection influence files that are returned.
-      case 'samples'
+      case 'samples':
+      //NOTE: need to figure out how to use selection to limit or highlight the relevant files
+      // eslint-disable-next-line
       var newFilters = clone(this.searchModalSearch.filters)
       break;
     }
   }
-    },
-*/
+},
 /*
     splitArrIntoPages(arr){
       const chunkSize = 100;
@@ -875,6 +909,9 @@ export default {
       }
     },
 
+    //called when a record is clicked
+    // eslint-disable-next-line
+    onClickElement(nodeData, selectedRecord, clearing){
     /*
     //filters the page for the model the filters are applied to and sets the backlog for that model
     // eslint-disable-next-line
@@ -978,8 +1015,8 @@ export default {
       // console.log(nodeData)
       // console.log('onClickElement() selectedRecord:')
       // console.log(selectedRecord)
-      if (nodeData.parent) {
-        // parentname will determine what color we change the square to
+      if (nodeData.parent && clearing == false) {
+        //parentname will determine what color we change the square to
         var parent = nodeData.parent;
         var parentName = parent.displayName
         let clickCount = +selectedRecord.attr("clickcount") + 1
@@ -991,19 +1028,141 @@ export default {
         // unselected (an even number of clicks)
         if (clickCount%2 == 0){
           // TODO: add selectedNode to a "selected nodes" list (based on record type -> `parentName`)
+
+          handleFilterChangeClick(nodeData, unclick);
         }
         // selected (an odd number of clicks)
         else if (clickCount%2 == 1 ){
           // TODO: remove selectedNode from a "selected nodes" list (based on record type -> `parentName`)
           switch (parentName) {
             case 'patient':
+            // // eslint-disable-next-line
+            //     var curr_shaded_participants = this.shadedParticipants;
+            //     //before doing this, check to see if selectedCurr particpants is recordID or record object. If the latter, need to get
+            //     //proper data from the current clicked node.
+            //     //here, we want to get the current list of 'selected' records (can be empty), add our new selectoin to it,
+            //     // and (optionally) filter duplicates. Then set new list to store.
+            //     // eslint-disable-next-line
+            //     var prelist = curr_selected_participants.concat(nodeData.details.id);
+            //     /*
+            //     let filteredlist = prelist.filter((c, index) => {
+            //         return prelist.indexOf(c) === index;
+            //     });
+            //     */
+            //     // eslint-disable-next-line
+            //     setShadedParticipants(prelist);
+            //     // eslint-disable-next-line
+            //     //handleFilterChangeClick(nodeData, click);
+            //     //red square
+            //     //NOTE: use the same process as in the section above
+            //     // eslint-disable-next-line
+            //     // eslint-disable-next-line
+            //     var ctx = canvas.node().getContext('2d');
+            //     //how do we grab the record we're interested in?
+            //     // eslint-disable-next-line
+            //     var element = this.custom('custom.record');
+            //     // eslint-disable-next-line
+            //     var node = d3.select(element);
+            //     // eslint-disable-next-line
+            //     ctx.fillstyle ="#d10a00";
+            //     // eslint-disable-next-line
+            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+            //     //or just use d3.select(this).style("fill","#d10a00");
+            //     //get related record data and set to store... see how Eric's filter gets related first
+            /*
+                var part_arr = this.shadedParticipants
+                console.log(part_arr)
+                var payload = [nodeData,selectedRecord, true]
+                this.shadedParticipants = part_arr.push(payload)
+                this.setShadedParticipants(this.shadedParticipants)
+            */
                 fillstyle ="#d10a00"
+                // eslint-disable-next-line
+                handleFilterChangeClick(nodeData, unclick);
                 break;
             case 'visits':
+                // var curr_selected_visits = this.shadedVisits;
+                // // eslint-disable-next-line
+                // var prelist = curr_selected_visits.concat(nodeData.details.id);
+                // // eslint-disable-next-line
+                // setShadedVisits(prelist);
+                // // eslint-disable-next-line
+                // //handleFilterChangeClick(nodeData, click);
+                // //blue
+                // // eslint-disable-next-line
+                // var ctx = canvas.node().getContext('2d');
+                // //how do we grab the record we're interested in?
+                // // eslint-disable-next-line
+                // var element = this.custom('custom.record');
+                // // eslint-disable-next-line
+                // var node = d3.select(element);
+                // ctx.fillstyle ="#0049d1";
+                // // eslint-disable-next-line
+                // ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+                // //or just use
+                // //d3.select(this).style("fill","#0049d1");
+
+                /*
+                LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
+                var vis_arr = this.shadedVisits
+                var payload1 = [nodeData,selectedRecord, true]
+                this.shadedVisits = vis_arr.push(payload1)
+                this.setShadedVisits(this.shadedVisits)
+
+                //logic for setting linking target
+                var vis_arr_len = this.shadedVisits;
+                var samp_arr_len - this.shadedVisits;
+                if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
+                  var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
+                  this.setLinkingTarget(to_be_linked)
+                }
+                */
                 fillstyle ="#0049d1"
+                // eslint-disable-next-line
+                handleFilterChangeClick(nodeData, unclick);
                 break;
             case 'samples':
+            // // eslint-disable-next-line
+            //     var curr_selected_samples = this.shadedSamples;
+            //     // eslint-disable-next-line
+            //     var prelist = curr_selected_samples.concat(nodeData.details.id);
+            //     // eslint-disable-next-line
+            //     setShadedSamples(prelist);
+            //     // eslint-disable-next-line
+            //     //handleFilterChangeClick(nodeData, click);
+            //     //yellow
+            //     // eslint-disable-next-line
+            //     var ctx = canvas.node().getContext('2d');
+            //     //how do we grab the record we're interested in?
+            //     // eslint-disable-next-line
+            //     var element = this.custom('custom.record');
+            //     // eslint-disable-next-line
+            //     var node = d3.select(element);
+            //     // eslint-disable-next-line
+            //     ctx.fillstyle ="#f0cc00";
+            //     // eslint-disable-next-line
+            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
+            //     //or just use
+            //     //d3.select(this).style("fill","#f0cc00");
+            /*
+              LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
+                var samp_arr = this.shadedSamples
+                var payload2 = [nodeData,selectedRecord, true]
+                this.shadedSamples = samp_arr.push(payload2)
+                this.setShadedSamples(this.shadedSamples)
+
+                //logic for setting linking target
+                var vis_arr_len = this.shadedVisits;
+                var samp_arr_len - this.shadedVisits;
+                if (samp_arr_len.length == 1 && (vis_arr_len.length == 0 || vis_arr_len.length > 1)){
+                  var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
+                  this.setLinkingTarget(to_be_linked)
+                }
+                */
+
                 fillstyle ="#f0cc00"
+                // eslint-disable-next-line
+                handleFilterChangeClick(nodeData, unclick);
                 break;
             case 'files':
                 fillstyle ="#f0cc00" // TODO: should be a different color
@@ -1014,6 +1173,18 @@ export default {
         selectedRecord.attr('fillStyle', fillstyle)
         const mainCanvas = d3.select('.mainCanvas')
         this.draw(mainCanvas, false)
+      }
+      else {
+        //we are in the case where clearing == true
+        //var parent_clear = nodeData.parent;
+        //var parentName_clear = parent_clear.displayName
+        let clickCount_clear = 0
+        selectedRecord.attr("clickcount", clickCount_clear)
+        // set default fill style (when record is 'unclicked')
+        let fillstyle_clear = '#C8C7C7'
+        selectedRecord.attr('fillStyle', fillstyle_clear)
+        const mainCanvas_clear = d3.select('.mainCanvas')
+        this.draw(mainCanvas_clear, false)
       }
     },
 
@@ -1061,7 +1232,7 @@ export default {
         //d
         .attr('width', function(d) {
           //d.numRows
-          return d.numRows * vm.cellSize + (d.numRows - 1) * vm.groupSpacing
+          return d.numCols * vm.cellSize + (d.numCols - 1) * vm.groupSpacing
         })
         //d
         .attr('height', function(d) {
@@ -1069,7 +1240,7 @@ export default {
           return d.numRows *  vm.cellSize + (d.numRows - 1) * (vm.groupSpacing + vm.modelHeaderHeight)
         })
         .attr('strokeStyle', '#34259F')
-        .attr('fillStyle', '#ffffff')
+        .attr('fillStyle', 'white') //'#34259F')
         .attr('fillStyleHidden', function(d) {
           d.hiddenCol = vm.genColor();
           vm.colorToNode[d.hiddenCol] = d;
