@@ -122,7 +122,8 @@ const store = new Vuex.Store({
     shadedVisits: [],
     shadedSamples: [],
     shadedFiles: [],
-    triggerForClearing: false
+    triggerForClearing: false,
+    filterApplicationCount: 0
   },
   getters: {
     orgMembers: state => state.orgMembers,
@@ -190,9 +191,15 @@ const store = new Vuex.Store({
     },
     datasetActivityParams(state) {
       return state.datasetActivityParams
+    },
+    filterApplicationCount(state){
+      return state.filterApplicationCount
     }
   },
   mutations: {
+    UPDATE_FILTER_APPLICATION_COUNT(state, data){
+      state.filterApplicationCount = data
+    },
     UPDATE_PROFILE(state, data) {
       state.profile = data
     },
@@ -297,6 +304,9 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    updatefilterApplicationCount({commit}, data){
+      commit('UPDATE_FILTER_APPLICATION_COUNT', data)
+    },
     clearClickedSelections({commit}){
       commit('CLEAR_CLICKED_SELECTIONS')
     },

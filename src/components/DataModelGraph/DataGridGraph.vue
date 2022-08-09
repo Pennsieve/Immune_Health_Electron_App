@@ -159,7 +159,7 @@ export default {
       'selectedStudy',
       'searchModalSearch'
     ]),
-    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','triggerForClearing','linkingTarget']),
+    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','triggerForClearing','linkingTarget','filterApplicationCount']),
     /*
     onFilterAdd: function() {
       this.filterStatus = searchModalSearch.filters;
@@ -237,10 +237,15 @@ export default {
         this.update.view()
       }
     },
-    searchModalSearch: function(){
+    /*
+    'searchModalSearch.filters': function(){
       //whenever a filter is added or subtracted from list it will update the downstream elements
       this.handleFilterChangeSequential();
 
+    },
+    */
+    filterApplicationCount: function(){
+      this.handleFilterChangeSequential()
     },
     triggerForClearing: function(){
       var shadedarr = []
@@ -425,7 +430,7 @@ export default {
       const model = nodeData.parent.displayName;
       const identifier = nodeData.details.values[0].value
       //get identifier from nodedata (use inspector)
-      // if a user selects a record then filter records by its identifier. 
+      // if a user selects a record then filter records by its identifier.
       // If the user un-selects a record then remove that filter
       if (clickstatus == 'click'){
         var newFilters = []
@@ -538,7 +543,7 @@ export default {
             break;
         }
       } else {
-        // TODO: This code needs to be updated to remove filters that were created bc a record was clicked. 
+        // TODO: This code needs to be updated to remove filters that were created bc a record was clicked.
         // This can happen once we have a local copy of records that have been clicked. Right now we are just looking at searchModalSearch.filters
         /*switch(model) {
           case 'patient':
