@@ -909,108 +909,10 @@ export default {
       }
     },
 
+
     //called when a record is clicked
     // eslint-disable-next-line
-    onClickElement(nodeData, selectedRecord, clearing){
-    /*
-    //filters the page for the model the filters are applied to and sets the backlog for that model
-    // eslint-disable-next-line
-    handleFilterChange: async function(){
-      // eslint-disable-next-line
-      model = this.searchModalSearch.model;
-      // eslint-disable-next-line
-      switch(model){
-        case 'patient':
-          //getting the first page of filtered records for the model
-          var page_1_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-          //set these to the correct vars
-          var results_total_count = page_1_metadata.totalCount
-          //this.recordHeadings = page_1_metadata.headings
-          var to_be_sorted = page_1_metadata.records
-          sorted = to_be_sorted.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
-          this.selectedPatientRecords = sorted
-          this.selectedRecordCount['patient'] = sorted.length
-          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-          for (let i = 0; i < results_total_count; i += 100){
-            // eslint-disable-next-line
-            backlog_metadata = []
-            var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-            // eslint-disable-next-line
-            backlog_metadata.push(element);
-            // eslint-disable-next-line
-            this.patientsBacklog.push(backlog_metadata);
-            //var flat_arr = this.patientsBacklog.flat();
-
-            var other_models = ['visits','samples','files']
-            for (model in other_models){
-            for (x in flat_arr){
-              //make request to NEW API ENDPOINT. get the related records for each model, and put into respective backlogs
-              //for response, call a helper that sets the backlog for each of the returned models just like the intended one that sets the backlog from filter
-              //i.e. switch case if model is vists, set visits backlog, etc
-
-            }
-          break;
-          case 'visits':
-            //getting the first page of filtered records for the model
-            var page_1_metadata1 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-            //set these to the correct vars
-            var results_total_count1 = page_1_metadata1.totalCount
-            //this.recordHeadings = page_1_metadata.headings
-            this.selectedVisitRecords = page_1_metadata1.records
-            //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-            for (let i = 0; i < results_total_count1; i += 100){
-              // eslint-disable-next-line
-              backlog_metadata = []
-              var element1 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-              // eslint-disable-next-line
-              backlog_metadata.push(element1);
-              // eslint-disable-next-line
-              this.visitsBacklog.push(backlog_metadata);
-            }
-            break;
-        case 'samples':
-          //getting the first page of filtered records for the model
-          var page_1_metadata2 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-          //set these to the correct vars
-          var results_total_count2 = page_1_metadata2.totalCount
-          //this.recordHeadings = page_1_metadata.headings
-          this.selectedSampleRecords = page_1_metadata2.records
-          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-          for (let i = 0; i < results_total_count2; i += 100){
-            // eslint-disable-next-line
-            backlog_metadata = []
-            var element2 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-            // eslint-disable-next-line
-            backlog_metadata.push(element2);
-            // eslint-disable-next-line
-            this.samplesBacklog.push(backlog_metadata);
-          }
-          break;
-        case 'files':
-          //getting the first page of filtered records for the model
-          var page_1_metadata3 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-          //set these to the correct vars
-          var results_total_count3 = page_1_metadata3.totalCount
-          //this.recordHeadings = page_1_metadata.headings
-          this.selectedFileRecords = page_1_metadata3.records
-          //getting all of the record data and putting into backlog for model. Each element of the backlog will be a page of filtered results
-          for (let i = 0; i < results_total_count3; i += 100){
-            // eslint-disable-next-line
-            backlog_metadata = []
-            var element3 = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-// eslint-disable-next-line
-            backlog_metadata.push(element3);
-            // eslint-disable-next-line
-            this.filesBacklog.push(backlog_metadata);
-          }
-
-      }
-    },
-    */
-
-
-    onClickElement(nodeData, selectedRecord){
-      //checking that its a record and not a model
+    onClickElement(nodeData, selectedRecord, clearing){      //checking that its a record and not a model
       // console.log('onClickElement() nodeData:')
       // console.log(nodeData)
       // console.log('onClickElement() selectedRecord:')
@@ -1029,7 +931,7 @@ export default {
         if (clickCount%2 == 0){
           // TODO: add selectedNode to a "selected nodes" list (based on record type -> `parentName`)
 
-          handleFilterChangeClick(nodeData, unclick);
+          this.handleFilterChangeClick(nodeData, 'unclick');
         }
         // selected (an odd number of clicks)
         else if (clickCount%2 == 1 ){
