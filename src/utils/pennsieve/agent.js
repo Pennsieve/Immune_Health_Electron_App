@@ -38,6 +38,33 @@ class PennsieveAgent {
             })
         })
 
+        ipcMain.on("pennsieveCreateManifestRequest", (event, args) => {
+            this.ps.createManifest('TBD', async function (err, response) {
+                event.sender.send("pennsieveCreateManifestResponse", this.answer(err, response));
+            })
+        })
+
+        ipcMain.on("pennsieveAddToManifestRequest", (event, args) => {
+            this.ps.addToManifest(args.manifestId, args.filePath, '.', async function(err, response) {
+                event.sender.send("pennsieveAddToManifestResponse", this.answer(err, response))
+            })
+        })
+
+        ipcMain.on("pennsieveUploadManifestRequest", (event, args) => {
+            this.ps.uploadManifest(args.manifestId, async function(err, response) {
+                event.sender.send("pennsieveUploadManifestResponse", this.answer(err, response))
+            })
+        })
+
+    }
+
+    answer(err, response) {
+        if (err) {
+            return {status: 'error', error: err}
+        }
+        else {
+            return {status: 'success', result: response}
+        }
     }
 }
 

@@ -300,35 +300,20 @@
 
 <script>
 // TODO List
-// 1. import Pennsieve Agent JavaScript (in main.js?)
-// 2a. crate Pennsieve object (keep in Store?) (in login?)
-// 2b. switch profile and re-authenticate (in login?)
-// 3. use dataset (in login?)
 // 4. create manifest (with initial upload offering)
 // 5. add/remove files
 // 6. initiate upload
 
-// TODO how to handle adding files
-// 1. Input:
-// 2. drag and drop:
-// Note: may need to keep track of files here, and prevent duplicates
-// when user presses "Upload" then create the manifest from the file list
-// and initiate upload. The Agent does not prevent duplicates.
-
 // TODO Figure out / Questions
 // 1. how do we specify target path for uploads? (by name? with leading slash? by collection nodeId?)
 
-
-//  import Vue from 'vue'
 import qq from 'fine-uploader/lib/core'
 import { mapActions, mapGetters, mapState } from 'vuex';
 import BfButton from '../shared/BfButton.vue'
 import BfDialog from '../shared/bf-dialog/bf-dialog.vue'
-// import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
 import CheckOverflow from '../../mixins/check-overflow/index'
 import Sorter from '../../mixins/sorter'
 import Request from '../../mixins/request';
-//import FileIcon from '../../mixins/file-icon'
 import debounce from 'lodash/debounce'
 import {v1 as uuidv1} from 'uuid'
 import {
@@ -340,12 +325,10 @@ import {
   findIndex,
   init,
   pathOr,
-  pluck,
   prop,
   propEq,
   propOr,
-  split,
-  sum
+  split
 } from 'ramda';
 import EventBus from '../../utils/event-bus.js';
 import PennsieveClient from '@/utils/pennsieve/client.js'
@@ -380,6 +363,9 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
     data: function() {
       return {
+        isDragging: false,
+        showInfo: false,
+        droppedFiles: [],
         fileListMap: {},
         fileList: [],
         packageList: [],
@@ -525,7 +511,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        * Cancel queueing files for upload
        */
       cancelQueue: function() {
-        // this.uploader.clearStoredFiles()
         this.resetQueue()
         this.onClose()
       },
@@ -544,14 +529,15 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         this.modelId = ''
         this.recordId = ''
         this.clearUploadedFiles()
+        this.$emit('close-upload-dialog')
       },
 
       onOverlayClick: function() {
-        if (this.isAddingFiles) {
-          this.cancelQueue()
-        } else {
-          this.onClose()
-        }
+        // if (this.isAddingFiles) {
+        //   this.cancelQueue()
+        // } else {
+        //   this.onClose()
+        // }
         this.$emit('close-upload-dialog')
       },
 
@@ -770,19 +756,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         )(list),
 
       /**
-       * Cancel package upload
-       * @param {Object} item
-       */
-      cancelPackageUpload: function(item) {
-        const uploads = this.uploader.getUploads()
-        const files = propOr([], 'files', item)
-        files.forEach(file => {
-          const uploadId = this.getFineUploaderId(file, uploads)
-          this.uploader.cancel(uploadId)
-        })
-      },
-
-      /**
        * Retry get packages
        */
       retryGetPackages: function() {
@@ -882,63 +855,15 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        * Start uploading stored files
        */
       startUpload: function() {
-        //Here, we subscribe to the channel (NEED ARGS) by calling p.subscribe({}). Check function return, this should provide us with the upload progress for each file.
-        //
-        //uploadManifest(manifest_id, callback)
+        console.log(`startUpload() fileListMap.size: ${this.fileListMap.size}`)
 
-
-        // Add files to fine uploader... for each of these, must create manifest
-        this.uploader.addFiles(pluck('file', this.fileList))
-
-        // Add to uploadList
-        const packageList = this.packageList.slice()
-        packageList.forEach(thePackage => {
-          thePackage.uploadDestination = this.uploadDestination
-          // Set recordId and modelId properties on the package
-          if (this.modelId && this.recordId) {
-            thePackage.recordId = this.recordId
-            thePackage.modelId = this.modelId
-          }
-        })
-
-        this.uploadList.push(...packageList)
-
-        this.uploader.setCustomHeaders({
-          Authorization: `bearer ${this.API_KEY}`
-        })
-
-        // Get credentials to upload for queued files
-        // this.getCreds()
-
-        // Set shouldUpload flag to start upload when credentials are received
-        // this.shouldUpload = true
-
-        this.uploader.uploadStoredFiles()
-
-        // Set uploading state
-        this.$store.dispatch('updateUploadStatus', true)
-
-        // Add file size
-        const totalSize = sum(pluck('groupSize', packageList))
-        this.$store.dispatch('updateUploadRemainingAdd', totalSize)
-        this.$store.dispatch('updateTotalUploadSize', totalSize)
-
-        // Add file count
-        this.$store.dispatch('uploadCountAdd', this.fileList.length)
-
-        // Reset the queue
-        this.resetQueue()
-
-        // Change view to upload status
-        this.isAddingFiles = false
-
-        // Clear recordId state
-        this.recordId = ''
-
-        //WHEN done, we want to unsubscribe w/ p.unsubscribe()
+        // check that there are files in the fileListMap
+        if (this.fileListMap.size > 0) {
+          // create a manifest with the first file on fileListMap
+          // iterate over the remaining files on fileListMap, adding each file to the manifest
+          // start upload
+        }
       },
-
-
 
       /**
        * Reset upload queue

@@ -23,6 +23,27 @@ class PennsieveClient {
         // send use dataset request message via IPC channel
         window.api.pennsieveUseDatasetRequest(datasetNodeId)
     }
+
+    createManifest(callback) {
+        // set callback for IPC response
+        window.api.pennsieveCreateManifestResponse(callback)
+        // send create manifest request message via IPC channel
+        window.api.pennsieveCreateManifestRequest()
+    }
+
+    addToManifest(manifestId, filePath, callback) {
+        // set callback for IPC response
+        window.api.pennsieveAddToManifestResponse(callback)
+        // send add to manifest request message via IPC channel
+        window.api.pennsieveAddToManifestRequest(manifestId, filePath)
+    }
+
+    uploadManifest(manifestId, callback) {
+        // set callback for IPC response
+        window.api.pennsieveUploadManifestResponse(callback)
+        // send upload manifest request message via IPC channel
+        window.api.pennsieveUploadManifestRequest(manifestId)
+    }
 }
 
 export default PennsieveClient
