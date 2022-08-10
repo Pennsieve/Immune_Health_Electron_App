@@ -11,11 +11,9 @@
         size="medium"
       >
         <el-radio-button
-          class="records-radio-button"
           label="Samples"
         />
         <el-radio-button
-          class="files-radio-button"
           label="Visits"
         />
       </el-radio-group>
