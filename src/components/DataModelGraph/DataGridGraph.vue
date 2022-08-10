@@ -24,11 +24,8 @@
 
 <script>
 import {
-  // eslint-disable-next-line
   fetchFilteredPatientsMetadataRelatedToStudy,
-  // eslint-disable-next-line
   fetchFilteredVisitsMetadataRelatedToStudy,
-  // eslint-disable-next-line
   fetchFilteredSamplesMetadataRelatedToStudy,
   fetchVisitsFilesRelatedToStudy,
   fetchSamplesFilesRelatedToStudy,
@@ -37,10 +34,8 @@ import {
 import axios from 'axios'
 import * as d3 from 'd3'
 import { select } from 'd3-selection';
-// eslint-disable-next-line
 import { v1 } from 'uuid'
-// eslint-disable-next-line
-import { pathOr, propOr, clone, mergeRight} from 'ramda'
+import { pathOr, propOr } from 'ramda'
 import debounce from 'lodash/debounce'
 import { mapState, mapActions, mapGetters } from 'vuex'
 import Request from '@/mixins/request'
@@ -101,7 +96,7 @@ export default {
     return {
       data: [],
       active: false,
-      activeNode: String,
+      activeNode: '',
       hoveredModel: {},
       graphInit: true,
       modelData: {},
@@ -130,24 +125,25 @@ export default {
       selectedNode: null,
       datasetId: 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc',
       interestedModels: ['patient', 'visits', 'samples' /*'files'*/],
-      selectedRecordCount: {
+      visibleRecordCount: {
         'patient': 0,
         'visits': 0,
         'samples': 0,
         'files': 0
       },
-      selectedPatientRecords: [],
-      selectedVisitRecords: [],
-      selectedSampleRecords: [],
-      selectedVisitsFiles: [],
-      selectedSamplesFiles: [],
+      visiblePatientRecords: [],
+      visibleVisitsRecords: [],
+      visibleSamplesRecords: [],
+      visibleVisitsFiles: [],
+      visibleSamplesFiles: [],
       participantsPage: 0,
       visitsPage: 0,
       samplesPage: 0,
       filesPage: 0,
       selectedStudyTrigger: false,
-
-      //filters: this.searchModalSearch.filters
+      // These are the local filters that get applied when a user clicks on a record in the grid. These filters are used in conjunction with
+      // searchModalSearch.filters to create the grid of filtered record results along with their associated files
+      clickedFilters: []
     }
   },
 
@@ -205,36 +201,26 @@ export default {
   },
 
   watch: {
-    selectedNode: {
-      handler: function() {
-        if (this.selectedNode && this.selectedNode.details){
-          console.log(`selectedNode: ${this.selectedNode.details.id}`)
-        }
-      }
-    },
     selectedStudy: function() {
       this.selectedStudyTrigger = true;
-      console.log(`selectedStudy: ${this.selectedStudy.values[0].value}`)
-      this.updateStudyDataV2().then((result) => {
-        console.log('updateStudyDataV2() ~ Promise(s) completed - result:')
-        console.log(result)
+      this.updateStudyDataV2().then(() => {
         this.updateView()
         this.selectedStudyTrigger = false;
       })
     },
-    selectedPatientRecords: function(){
+    visiblePatientRecords: function(){
     if (this.selectedStudyTrigger == false){
-        this.update.view()
+        this.updateView()
       }
     },
-    selectedVisitRecords: function(){
+    visibleVisitsRecords: function(){
     if (this.selectedStudyTrigger == false){
-        this.update.view()
+        this.updateView()
       }
     },
-    selectedSampleRecords: function(){
+    visibleSamplesRecords: function(){
     if (this.selectedStudyTrigger == false){
-        this.update.view()
+        this.updateView()
       }
     },
     searchModalSearch: function(){
@@ -308,8 +294,6 @@ export default {
         var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
         var nodeData = vm.colorToNode[colKey];
         if (nodeData){
-          // console.log(`mousemove() mouseX: ${mouseX} mouseY: ${mouseY} colKey: ${colKey} nodeData:`)
-          // console.log(nodeData)
           // eslint-disable-next-line
           vm.onHoverElement(nodeData, d.clientX, d.clientY)
 
@@ -341,37 +325,33 @@ export default {
         // eslint-disable-next-line
 
         if (nodeData) {
-          console.log("mouseClick() nodeData:")
-          console.log(nodeData)
           if (nodeData.parent) {
             // it is a record
             vm.mouseClickRecord(nodeData)
           } else {
             // it is a model
-            vm.mouseClickModel(nodeData, mouseX, mouseY)
+            vm.mouseClickModel(nodeData, mouseX)
           }
         }
       })
     },
 
-    mouseClickModel: function(nodeData, mouseX, mouseY) {
-      console.log('mouseClickModel() nodeData:')
-      console.log(nodeData)
+    mouseClickModel: function(nodeData, mouseX) {
       const vm = this
       const models = vm.custom.selectAll('custom.model');
       // const colKey = nodeData.hiddenCol
+      // eslint-disable-next-line
       let xCoord = ''
+      // eslint-disable-next-line
       let yCoord = ''
       // eslint-disable-next-line
       models.each(function(d,i) { //iterate through models, find model x and y coords
         let node = d3.select(this);
-        //console.log(node.attr('modelName'))
         if (node.attr('modelName') == nodeData.displayName){
           // eslint-disable-next-line
           xCoord = node.attr('x')
           // eslint-disable-next-line
           yCoord = node.attr('y')
-          //console.log(nodeData.displayName)
         }
       });
       /*
@@ -380,18 +360,13 @@ export default {
       var  xStopPrev = xCoord +140
       var  xStopNext = xCoord +250
       */
-      console.log(`mouseClickModel() displayName: ${nodeData.displayName} (mouseX: ${mouseX}, mouseY: ${mouseY}) (xCoord: ${xCoord}, yCoord: ${yCoord})`)
       if (mouseX >= 115 && mouseX <= 215){
-        // eslint-disable-next-line
-        console.log(`mouseClickModel() CLICKED PREVIOUS for: ${nodeData.displayName}`);
         //if currently clicking prev model attr
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'prev');
       }
       // eslint-disable-next-line
       else if (mouseX >= 215){
-        // eslint-disable-next-line
-        console.log(`mouseClickModel() CLICKED NEXT for: ${nodeData.displayName}`);
         // eslint-disable-next-line
         vm.advancePage(nodeData.displayName, 'next');
       }
@@ -418,228 +393,121 @@ export default {
       }
     },
 
+    removeClickedFiltersWithTarget(target) {
+      this.clickedFilters = this.clickedFilters.filter(clickedFilter => {
+        return clickedFilter.target != target
+      })
+    },
 
-  //When a record is clicked, we want to add that as a filter and get the related records. We dont want to update the view for the current model (apart from coloring the selected record)
+    removeClickedFilterWithValue(target, value) {
+      this.clickedFilters = this.clickedFilters.filter(clickedFilter => {
+        return !(clickedFilter.target == target && clickedFilter.value == value)
+      })
+    },
+    // clicked filters can only be the equals operation for now i.e. filter by the clicked records identifier
+    addClickedFilter(property, target, value) {
+      this.clickedFilters.push({
+        id: v1(),
+        isInvalid: false,
+        lockTarget: true,
+        operation: "=",
+        operationLabel: "equals",
+        operators: [
+          {
+            label: 'equals',
+            value: '='
+          },
+          {
+            label: 'does not equal',
+            value: '<>'
+          },
+          {
+            label: 'starts with',
+            value: 'STARTS WITH'
+          },
+        ],
+        property: property,
+        propertyLabel: property,
+        propertyType: {format: null, type: "String"},
+        target: target,
+        targetLabel: target,
+        type: "model",
+        value: value
+      })
+    },
+
+    //When a record is clicked, we want to add that as a local filter and get the related records. 
+    // We dont want to update the view for the current model (apart from coloring the selected record)
     handleFilterChangeClick: async function(nodeData, clickstatus) {
       const limit = 100
       const model = nodeData.parent.displayName;
-      const identifier = nodeData.details.values[0].value
-      //get identifier from nodedata (use inspector)
+      const identifier = nodeData.details.values[0].value      
+      const visitsOffset = limit*this.visitsPage;
+      const samplesOffset = limit*this.samplesPage;
+      var filters = []
+      var filteredVisitsRecordsResponse = {}
+      var filteredSamplesRecordsResponse = {}
+
+      // get identifier from nodedata (use inspector)
       // if a user selects a record then filter records by its identifier. 
       // If the user un-selects a record then remove that filter
       if (clickstatus == 'click'){
-        var newFilters = []
-        var offset = 0
         switch(model) {
           case 'patient':
-            offset = limit*this.visitsPage
-            newFilters = clone(this.searchModalSearch.filters)
-            newFilters.push({
-              id: v1(),
-              isInvalid: false,
-              lockTarget: true,
-              operation: "=",
-              operationLabel: "equals",
-              operators: [
-                {
-                  label: 'equals',
-                  value: '='
-                },
-                {
-                  label: 'does not equal',
-                  value: '<>'
-                },
-                {
-                  label: 'starts with',
-                  value: 'STARTS WITH'
-                },
-              ],
-              property: "externalparticipantid",
-              propertyLabel: "externalparticipantid",
-              propertyType: {format: null, type: "String"},
-              target: "patient",
-              targetLabel: "patient",
-              type: "model",
-              value: identifier
-            })
+            // We will first remove any previous filters that might no longer apply 
+            // i.e. the user has already clicked a visit or sample record and then clicked a patient record after
+            this.removeClickedFiltersWithTarget('visits')
+            this.removeClickedFiltersWithTarget('samples')
+            // add the clicked patient record as a filter
+            this.addClickedFilter("externalparticipantid", model, identifier)
+            filters = this.searchModalSearch.filters.concat(this.clickedFilters)
 
-            var new_vis = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, newFilters, this.userToken, limit, offset)
-            var visit_recs = new_vis.records;
-            this.selectedVisitRecords = visit_recs;
+            filteredVisitsRecordsResponse = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, visitsOffset)
+            filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
+
+            // update the visits and samples records with the new filter being applied
+            this.visibleVisitsRecords = filteredVisitsRecordsResponse.records
+            this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'visits':
-            offset = limit*this.samplesPage;
-            newFilters = clone(this.searchModalSearch.filters)
-            newFilters.push({
-              id: v1(),
-              isInvalid: false,
-              lockTarget: true,
-              operation: "=",
-              operationLabel: "equals",
-              operators: [
-                {
-                  label: 'equals',
-                  value: '='
-                },
-                {
-                  label: 'does not equal',
-                  value: '<>'
-                },
-                {
-                  label: 'starts with',
-                  value: 'STARTS WITH'
-                },
-              ],
-              property: "visit_event_id",
-              propertyLabel: "visit_event_id",
-              propertyType: {format: null, type: "String"},
-              target: "visits",
-              targetLabel: "visits",
-              type: "model",
-              value: identifier
-            })
+            // We will first remove any previous filters that might no longer apply 
+            // i.e. the user has already clicked a sample record and then clicked a visit record after
+            this.removeClickedFiltersWithTarget('samples')
+            // add the clicked visit record as a filter
+            this.addClickedFilter("visit_event_id", model, identifier)
+            filters = this.searchModalSearch.filters.concat(this.clickedFilters)
 
-            var new_samp =  await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, newFilters, this.userToken, limit, offset)
-            var sample_recs = new_samp.records;
-            this.selectedSampleRecords = sample_recs;
+            filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
+
+            // update the samples records with the new filter being applied
+            this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'samples':
-            //NOTE: need to figure out how to use selection to limit or highlight the relevant files
-            // eslint-disable-next-line
-            newFilters = clone(this.searchModalSearch.filters)
-            newFilters.push({
-              id: v1(),
-              isInvalid: false,
-              lockTarget: true,
-              operation: "=",
-              operationLabel: "equals",
-              operators: [
-                {
-                  label: 'equals',
-                  value: '='
-                },
-                {
-                  label: 'does not equal',
-                  value: '<>'
-                },
-                {
-                  label: 'starts with',
-                  value: 'STARTS WITH'
-                },
-              ],
-              property: "study_sample_id", //CHECK THIS
-              propertyLabel: "study_sample_id",
-              propertyType: {format: null, type: "String"},
-              target: "samples",
-              targetLabel: "samples",
-              type: "model",
-              value: identifier
-            })
+            // add the clicked sample record as a filter
+            this.addClickedFilter("study_sample_id", model, identifier)
             break;
         }
-      } else {
-        // TODO: This code needs to be updated to remove filters that were created bc a record was clicked. 
-        // This can happen once we have a local copy of records that have been clicked. Right now we are just looking at searchModalSearch.filters
-        /*switch(model) {
+      } else if (clickstatus == 'unclick') {
+        // Remove filter that have been unclicked
+        // No need to first remove any previous filters because removing filters can only broaden the search so all filters should still apply
+        this.removeClickedFilterWithValue(model, identifier)
+        filters = this.searchModalSearch.filters.concat(this.clickedFilters)
+
+        switch(model) {
           case 'patient':
-            // eslint-disable-next-line
-            var offset = limit*this.visitsPage
-            // eslint-disable-next-line
-            var newFilters = clone(this.searchModalSearch.filters)
-            var remove1 = {
-              id: v1(),
-              isInvalid: false,
-              lockTarget: true,
-              operation: "=",
-              operationLabel: "equals",
-              operators: [
-                {
-                  label: 'equals',
-                  value: '='
-                },
-                {
-                  label: 'does not equal',
-                  value: '<>'
-                },
-                {
-                  label: 'starts with',
-                  value: 'STARTS WITH'
-                },
-              ],
-              property: "externalparticipantid",
-              propertyLabel: "externalparticipantid",
-              propertyType: {format: null, type: "String"},
-              target: "patient",
-              targetLabel: "patient",
-              type: "model",
-              value: identifier
-            }
-            // eslint-disable-next-line
-            var newFilters = newFilters.filter(function(entry) {
-              return entry != remove1;
-            });
-            var new_vis =  await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, newFilters, this.userToken, limit, offset)
-            // eslint-disable-next-line
-            var visit_recs = new_vis.records;
-            this.selectedVisitRecords = visit_recs;
+            filteredVisitsRecordsResponse = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, visitsOffset)
+            filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
+            this.visibleVisitsRecords = filteredVisitsRecordsResponse.records
+            this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'visits':
-            // eslint-disable-next-line
-            var offset = limit*this.samplesPage;
-            // eslint-disable-next-line
-            var filteredRecordsUrl = `${GET_FILTERED_METADATA_RECORDS_ENDPOINT}?limit=${limit}&offset=${offset}`
-            // eslint-disable-next-line
-            var newFilters = clone(this.searchModalSearch.filters)
-            var remove2 = {
-              id: v1(),
-              isInvalid: false,
-              lockTarget: true,
-              operation: "=",
-              operationLabel: "equals",
-              operators: [
-                {
-                  label: 'equals',
-                  value: '='
-                },
-                {
-                  label: 'does not equal',
-                  value: '<>'
-                },
-                {
-                  label: 'starts with',
-                  value: 'STARTS WITH'
-                },
-              ],
-              property: "visit_event_id",
-              propertyLabel: "visit_event_id",
-              propertyType: {format: null, type: "String"},
-              target: "visits",
-              targetLabel: "visits",
-              type: "model",
-              value: identifier
-            }
-            // eslint-disable-next-line
-            var newFilters = newFilters.filter(function(entry) {
-              return entry != remove2;
-            });
-            // eslint-disable-next-line
-            var  visitsQuery2 = await getQuery('samples', newFilters, token)
-            // eslint-disable-next-line
-          var new_samp =  await axios.post(filteredRecordsUrl, visitsQuery2, REQUEST_HEADER(token)).then(response => {
-              return handleV2RecordsResponse(propOr([], 'data', response))
-            })
-            // eslint-disable-next-line
-            var sample_recs = new_samp.records;
-            this.selectedSampleRecords = sample_recs;
+            filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
+            this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
-          //TO DO: for samples, we want to have the selection influence files that are returned.
           case 'samples':
-          //NOTE: need to figure out how to use selection to limit or highlight the relevant files
-          // eslint-disable-next-line
-          var newFilters = clone(this.searchModalSearch.filters)
-          break;
+            // No need to do anything here because the unclicked sample filter has already been removed
+            break;
         }
-      */
   }
 },
 /*
@@ -690,14 +558,14 @@ export default {
               case 'patient':
               // eslint-disable-next-line
                 var mbacklog = this.patientsBacklog;
-                var view = this.selectedPatientRecords;
+                var view = this.visiblePatientRecords;
                 var orderBy = 'externalparticipantid';
               break;
               case 'visits':
               // eslint-disable-next-line
                 var mbacklog = this.visitsBacklog;
                 // eslint-disable-next-line
-                var view = this.selectedVisitRecords;
+                var view = this.visibleVisitsRecords;
                 // eslint-disable-next-line
                 var orderBy = 'event date and time';
               break;
@@ -705,7 +573,7 @@ export default {
               // eslint-disable-next-line
                 var mbacklog = this.samplesBacklog;
                 // eslint-disable-next-line
-                var view = this.selectedSampleRecords;
+                var view = this.visibleSamplesRecords;
                 // eslint-disable-next-line
                 var orderBy = 'study sample ID';
               break;
@@ -744,21 +612,18 @@ export default {
     */
     //Must put in correct metadata url
     handleFilterChangeSequential: async function(){
-      console.log("handleFilterChangeSequential called")
       var model = this.searchModalSearch.model;
       switch(model){
         case 'patient':
-        console.log("filtering patient")
         var offset_p = 100*this.participantsPage;
         var offset_v = 100*this.visitsPage;
         var patients_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_p)
         var patient_recs = patients_metadata.records;
-        console.log(patient_recs)
-        this.selectedPatientRecords = patient_recs;
+        this.visiblePatientRecords = patient_recs;
         //TO DO ORDERING RESULTS flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)... may need to flatten array
         var visits_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_v)
         var visit_recs = visits_metadata.records;
-        this.selectedVisitRecords = visit_recs;
+        this.visibleVisitsRecords = visit_recs;
         /*
         var results_total_count = page_1_metadata.totalCount
         var patient_res = [];
@@ -772,7 +637,7 @@ export default {
         flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
 // eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(flat_arr);
-        this.selectedPatientRecords = send_to_backlog[0];
+        this.visiblePatientRecords = send_to_backlog[0];
         this.patientsBacklog = send_to_backlog;
         //this.ignoreHandleFilterChange = true;
         var related_visit_recs = [];
@@ -796,7 +661,7 @@ export default {
         flat_arr = flat_arr.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
         // eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(flat_arr);
-        this.selectedVisitRecords = send_to_backlog[0];
+        this.visibleVisitsRecords = send_to_backlog[0];
         this.visitsBacklog = send_to_backlog;
         */
         break;
@@ -809,11 +674,11 @@ export default {
         var visits_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_v)
         // eslint-disable-next-line
         var visit_recs = visits_metadata.records;
-        this.selectedVisitRecords = visit_recs;
+        this.visibleVisitsRecords = visit_recs;
         //TO DO ORDERING RESULTS flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)... may need to flatten array
         var samples_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_s)
         var sample_recs = samples_metadata.records;
-        this.selectedSampleRecords = sample_recs;
+        this.visibleSamplesRecords = sample_recs;
 
         /*
         // eslint-disable-next-line
@@ -838,7 +703,7 @@ export default {
         common = common.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
 // eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(common);
-        this.selectedVisitRecords = send_to_backlog[0];
+        this.visibleVisitsRecords = send_to_backlog[0];
         this.visitsBacklog = send_to_backlog;
         //this.ignoreHandleFilterChange = true;
 // eslint-disable-next-line
@@ -866,7 +731,7 @@ export default {
         flat_arr = flat_arr.sort((a, b) => b.study_sample_id - a.study_sample_id)
 // eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(flat_arr);
-        this.selectedSampleRecords = send_to_backlog[0];
+        this.visibleSamplesRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
         */
         break;
@@ -878,7 +743,7 @@ export default {
         var samples_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_s)
         // eslint-disable-next-line
         var sample_recs = samples_metadata.records;
-        this.selectedSampleRecords = sample_recs;
+        this.visibleSamplesRecords = sample_recs;
 
         /*
         // eslint-disable-next-line
@@ -903,27 +768,21 @@ export default {
         var common1 = samples_to_compare.filter(x => sample_res.indexOf(x) !== -1)
         //if API doesn't take orderby
         common1 = common1.sort((a, b) => b.study_sample_id - a.study_sample_id)
-// eslint-disable-next-line
         var send_to_backlog = splitArrIntoPages(common1);
-        this.selectedSampleRecords = send_to_backlog[0];
+        this.visibleSamplesRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
         */
       }
     },
 
-
     //called when a record is clicked
-    // eslint-disable-next-line
-    onClickElement(nodeData, selectedRecord, clearing){      //checking that its a record and not a model
-      // console.log('onClickElement() nodeData:')
-      // console.log(nodeData)
-      // console.log('onClickElement() selectedRecord:')
-      // console.log(selectedRecord)
+    onClickElement(nodeData, selectedRecord, clearing){      
+      //checking that its a record and not a model
       if (nodeData.parent && clearing == false) {
         //parentname will determine what color we change the square to
         var parent = nodeData.parent;
         var parentName = parent.displayName
-        let clickCount = +selectedRecord.attr("clickcount") + 1
+        let clickCount = selectedRecord.attr("clickcount") + 1
         selectedRecord.attr("clickcount", clickCount)
 
         // set default fill style (when record is unselected)
@@ -982,7 +841,7 @@ export default {
             */
                 fillstyle ="#d10a00"
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData, unclick);
+                this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'visits':
                 // var curr_selected_visits = this.shadedVisits;
@@ -1023,7 +882,7 @@ export default {
                 */
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData, unclick);
+                this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'samples':
             // // eslint-disable-next-line
@@ -1066,7 +925,7 @@ export default {
 
                 fillstyle ="#f0cc00"
                 // eslint-disable-next-line
-                handleFilterChangeClick(nodeData, unclick);
+                this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'files':
                 fillstyle ="#f0cc00" // TODO: should be a different color
@@ -1158,14 +1017,14 @@ export default {
       this.clearSelectedPageNumbers()
     },
     clearSelectedRecordDataCounts: function() {
-      this.selectedRecordCount['patient'] = 0
-      this.selectedRecordCount['visits'] = 0
-      this.selectedRecordCount['samples'] = 0
+      this.visibleRecordCount['patient'] = 0
+      this.visibleRecordCount['visits'] = 0
+      this.visibleRecordCount['samples'] = 0
     },
     clearSelectedRecordData: function() {
-      this.selectedPatientRecords = []
-      this.selectedVisitRecords = []
-      this.selectedSampleRecords  = []
+      this.visiblePatientRecords = []
+      this.visibleVisitsRecords = []
+      this.visibleSamplesRecords  = []
     },
     clearSelectedPageNumbers: function() {
       this.participantsPage = 0
@@ -1175,7 +1034,6 @@ export default {
     },
 
     updateStudyDataV2: function() {
-      console.log('updateStudyDataV2() - starting')
       this.clearRecordData()
       var modelList = ['patient','visits','samples'/*,'files'*/];
       var pagenum = 0;
@@ -1197,7 +1055,7 @@ export default {
             // orderBy = 'study sample ID';
             break;
           case 'files':
-            console.log('nothing for files yet');
+            break;
         }
         const options = {
           method: 'GET',
@@ -1226,7 +1084,7 @@ export default {
                   vm.updateSamples(response.data);
                   break;
                 case 'files':
-                  console.log('nothing for files yet');
+                  break;
               }
             }).catch(function (error) {
               console.error(error);
@@ -1234,36 +1092,25 @@ export default {
         )
       })
 
-      console.log('updateStudyDataV2() promisedEvents:')
-      console.log(promisedEvents)
       return Promise.all(promisedEvents)
     },
 
     updatePatients: function(data) {
-      console.log(`updatePatients() length: ${data.length} data:`)
-      console.log(data)
-      this.selectedPatientRecords = data
-      this.selectedRecordCount['patient'] = data.length
+      this.visiblePatientRecords = data
+      this.visibleRecordCount['patient'] = data.length
     },
 
     updateVisits: function(data) {
-      console.log(`updateVisits() length: ${data.length} data:`)
-      console.log(data)
-      this.selectedVisitRecords = data
-      this.selectedRecordCount['visits'] = data.length
+      this.visibleVisitsRecords = data
+      this.visibleRecordCount['visits'] = data.length
     },
 
     updateSamples: function(data) {
-      console.log(`updateSamples() length: ${data.length} data:`)
-      console.log(data)
-      this.selectedSampleRecords  = data
-      this.selectedSampleRecords['samples'] = data.length
+      this.visibleSamplesRecords  = data
+      this.visibleSamplesRecords['samples'] = data.length
     },
 
     updateView: function() {
-      console.log(`updateView() selectedRecordCount:`)
-      console.log(this.selectedRecordCount)
-
       this.nextCol = 1 //reset hidden Canvas color scheme
       this.colorToNode = {}
       this.startIndex = 0
@@ -1272,12 +1119,10 @@ export default {
 
       let vm = this
       vm.modelData.map(x => {
-        console.log(`updateView() x: ${x.name}`)
-        //some fixed width that we will decide on
+        // some fixed width that we will decide on
         // TODO: clean up recordCount and x.count (use just one)
-        let recordCount = vm.selectedRecordCount[x.name]
+        let recordCount = vm.visibleRecordCount[x.name]
         x.count = recordCount
-        console.log(`updateView() number of '${x.name}' records: ${x.count}`)
         let numElem = recordCount < 100 ? recordCount : 100
         let recs = d3.range(vm.startIndex, vm.startIndex + numElem ).map(function(el) {
             return {
@@ -1322,11 +1167,9 @@ export default {
     // eslint-disable-next-line
     updatePageHelper: async function(modelName,pagenum,orderBy){
       //var vm = this;
-      console.log(`updatePageHelper() modelName: ${modelName} pagenum: ${pagenum} orderBy: ${orderBy}`)
       //filtered is false and we just grab the next page of records
       // eslint-disable-next-line
       var offset = 100*pagenum;
-      console.log(`updatePageHelper() offset: ${offset}`)
       /*
       const options = {
         method: 'GET',
@@ -1346,53 +1189,45 @@ export default {
         */
       switch (modelName){
         case 'patient':
-          console.log('updatePageHelper() updating patient')
-          //error with filter array. Must address
+          // error with filter array. Must address
+          var pmetadata = {}
           if (this.searchModalSearch.filters == undefined){
-            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
+            pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
           }else{
-            // eslint-disable-next-line
-            var pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
+            pmetadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
           }
-          var p_record_results = pmetadata.records
+          var p_record_results = propOr([], 'records', pmetadata)
           //ORDERBY TODO
-          console.log("updating patient data")
           //verify data is in a list, if not, put it in one before sending off
           this.updatePatients(p_record_results);
           break;
         case 'visits':
-          console.log('updatePageHelper() updating visits')
-          console.log('updatePageHelper() this.selectedStudy:')
-          console.log(this.selectedStudy)
+          var vmetadata = {}
           if (this.searchModalSearch.filters == undefined){
-            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
+            vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
           }else{
-            // eslint-disable-next-line
-            var vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
+            vmetadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
           }
-          var v_record_results = vmetadata.records
-          console.log('updatePageHelper() v_record_results:')
-          console.log(v_record_results)
+          var v_record_results = propOr([], 'records', vmetadata)
           this.updateVisits(v_record_results);
           break;
         case 'samples':
+          var smetadata = {}
           if (this.searchModalSearch.filters == undefined){
-            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
+            smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, 100, offset)
           }else{
-            // eslint-disable-next-line
-            var smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
+            smetadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset)
           }
-          var s_record_results = smetadata.records
+          var s_record_results = propOr([], 'records', smetadata)
           this.updateSamples(s_record_results);
           break;
         case 'files':
-          console.log('nothing for files yet');
+          break;
       }
     },
 
     updatePage: function(modelName, modelPage, orderBy, direction){
       //can't go back before the first page
-      console.log(`updatePage() modelName: ${modelName} modelPage: ${modelPage} orderBy: (${orderBy}) direction: ${direction}`)
       const vm = this;
       let pagenum = -1
       //if this model has been filtered, we want to get its page from the backlog and set it to selected
@@ -1425,23 +1260,21 @@ export default {
           pagenum = this.samplesPage;
           break;
         case 'files':
-          console.log('updatePage(): nothing for files yet');
+          break;
       }
       if (pagenum != -1) {
-        console.log(`updatePage() ${direction} -> get ${modelName} pagenum: ${pagenum}`)
-        // eslint-disable-next-line
-        vm.updatePageHelper(modelName, pagenum, orderBy).then(value => {
+        vm.updatePageHelper(modelName, pagenum, orderBy).then(() => {
           vm.updateView()
         })
       }
     },
 
     async updateVisitsFiles() {
-      this.selectedVisitsFiles = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+      this.visibleVisitsFiles = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
     },
 
     async updateSamplesFiles() {
-      this.selectedSamplesFiles = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
+      this.visibleSamplesFiles = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
     },
 
     //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
@@ -1450,17 +1283,14 @@ export default {
     //NOTE: when filter is applied, we can grab next element of backlog rather than make an api call
     // eslint-disable-next-line
     advancePage: function(modelName, direction) {
-      console.log(`advancePage() modelName: ${modelName} direction: ${direction}`)
       var orderBy = ''
       var modelPage = ''
       switch (modelName) {
-          //console.log(modelName)
         case 'patient':
-          console.log('case patient')
-          orderBy = 'externalparticipantid';//verify data is in a list, if not, put it in one before sending off
+          orderBy = 'externalparticipantid'; //verify data is in a list, if not, put it in one before sending off
           modelPage = this.participantsPage;
-          this.selectedPatientRecords = [];
-          this.selectedRecordCount['patient'] = 0;
+          this.visiblePatientRecords = [];
+          this.visibleRecordCount['patient'] = 0;
           //if there are any filters applied to the model
           /*
           if (this.patientsBacklog.length > 0){
@@ -1470,14 +1300,13 @@ export default {
             this.updatePage('patient', modelPage, orderBy, direction,true);
           }
           */
-          // eslint-disable-next-line
           this.updatePage('patient', modelPage, orderBy, direction);
           break;
         case 'visits':
           orderBy = 'event date and time';
           modelPage = this.visitsPage;
-          this.selectedVisitRecords = [];
-          this.selectedRecordCount['visits'] = 0;
+          this.visibleVisitsRecords = [];
+          this.visibleRecordCount['visits'] = 0;
           // eslint-disable-next-line
           /*
           if (this.visitsBacklog.length > 0){
@@ -1493,8 +1322,8 @@ export default {
         case 'samples':
           orderBy = 'study sample ID';
           modelPage = this.samplesPage;
-          this.selectedSampleRecords  = [];
-          this.selectedSampleRecords['samples'] = 0;
+          this.visibleSamplesRecords  = [];
+          this.visibleSamplesRecords['samples'] = 0;
           // eslint-disable-next-line
           /*
           if (this.samplesBacklog.length > 0){
@@ -1507,7 +1336,7 @@ export default {
           break;
         case 'files':
           modelPage = this.filesPage;
-          console.log('nothing for files');
+          break;
       }
     },
 
@@ -1617,6 +1446,7 @@ export default {
 
         if (this.binRegistry[index] == 0) {
           let remainingRows =  this.numberOfRows- (index % this.numberOfRows)
+          // eslint-disable-next-line no-unused-vars
           let allRemainingAvailable = true
           for (let i = 0; i < remainingRows; i++){
             if (this.binRegistry[index + i] != 0){
@@ -1634,7 +1464,7 @@ export default {
     },
 
     fetchRecords: function(modelId, startIndex=0, numberOfRecords=10) {
-// eslint-disable-next-line
+      // eslint-disable-next-line
       const offset1 = startIndex+(this.recordPool[modelId].nextPage * numberOfRecords)
       this.recordPool[modelId].isPending = true
       // eslint-disable-next-line
@@ -1669,24 +1499,13 @@ export default {
     },
 
     recordbind: function() {
-      console.log('recordbind()')
-      let recordData = this.getRecordData()
-      console.log('recordData:')
-      console.log(recordData)
-
       var join = this.custom.selectAll('custom.record')
         .data(this.getRecordData);
-
-      console.log('recordbind() join:')
-      console.log(join)
 
       let vm = this
       var enterSel = join.enter()
         .append('custom')
         .attr('class', 'record')
-
-      console.log('recordbind() enterSel:')
-      console.log(enterSel)
 
       join
         .merge(enterSel)
