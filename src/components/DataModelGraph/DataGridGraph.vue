@@ -447,6 +447,7 @@ export default {
 
     //When a record is clicked, we want to add that as a local filter and get the related records.
     // We dont want to update the view for the current model (apart from coloring the selected record)
+    /*
     handleFilterChangeClick: async function(nodeData, clickstatus) {
       const limit = 100
       const model = nodeData.parent.displayName;
@@ -519,18 +520,7 @@ export default {
         }
   }
 },
-/*
-    splitArrIntoPages(arr){
-      const chunkSize = 100;
-      var return_arr = [];
-      for (let i = 0; i < arr.length; i += chunkSize) {
-        const chunk = arr.slice(i, i + chunkSize);
-        return_arr.push(chunk);
-      }
-      return return_arr;
-    },
 
-*/
     /*
     handleFilterChangeClick(nodeData){
       // eslint-disable-next-line
@@ -667,7 +657,7 @@ export default {
         var send_to_backlog = splitArrIntoPages(flat_arr);
         this.visibleVisitsRecords = send_to_backlog[0];
         this.visitsBacklog = send_to_backlog;
-        */
+
         break;
 
         case 'visits':
@@ -684,7 +674,7 @@ export default {
         var sample_recs = samples_metadata.records;
         this.visibleSamplesRecords = sample_recs;
 
-        /*
+
         // eslint-disable-next-line
         const visits_to_compare = this.visitsBacklog.flat();
         // eslint-disable-next-line
@@ -737,7 +727,7 @@ export default {
         var send_to_backlog = splitArrIntoPages(flat_arr);
         this.visibleSamplesRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
-        */
+
         break;
         case 'samples':
         // eslint-disable-next-line
@@ -749,7 +739,7 @@ export default {
         var sample_recs = samples_metadata.records;
         this.visibleSamplesRecords = sample_recs;
 
-        /*
+
         // eslint-disable-next-line
         const samples_to_compare = this.samplesBacklog.flat();
         // eslint-disable-next-line
@@ -775,9 +765,10 @@ export default {
         var send_to_backlog = splitArrIntoPages(common1);
         this.visibleSamplesRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
-        */
+
       }
     },
+*/
 
     //called when a record is clicked
     onClickElement(nodeData, selectedRecord, clearing){
