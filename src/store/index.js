@@ -304,7 +304,7 @@ const store = new Vuex.Store({
     }
   },
   actions: {
-    updatefilterApplicationCount({commit}, data){
+    updateFilterApplicationCount({commit}, data){
       commit('UPDATE_FILTER_APPLICATION_COUNT', data)
     },
     clearClickedSelections({commit}){

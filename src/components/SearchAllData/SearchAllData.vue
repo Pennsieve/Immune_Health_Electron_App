@@ -134,9 +134,10 @@ export default {
   computed: {
     ...mapState([
       'searchModalSearch',
-      'searchPage'
+      'searchPage',
+      'filterApplicationCount'
     ]),
-    ...mapGetters(['userToken', 'selectedStudyName','filterApplicationCount']),
+    ...mapGetters(['userToken', 'selectedStudyName']),
     title: function() {
       return `Search study: ${this.selectedStudyName}`
     },
@@ -148,7 +149,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'applyFiltersToMetadata','updatefilterApplicationCount']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'applyFiltersToMetadata','updateFilterApplicationCount']),
     /**
      * Resets table search params for pagination
      */
@@ -216,7 +217,8 @@ export default {
      * Closes the Search Across All Datasets dialog
      */
     closeDialog: function() {
-      this.filterApplicationCount = this.filterApplicationCount+1
+      var count = this.filterApplicationCount+1;
+      this.updateFilterApplicationCount(count)
       this.updateSearchModalVisible(false)
     },
     /**

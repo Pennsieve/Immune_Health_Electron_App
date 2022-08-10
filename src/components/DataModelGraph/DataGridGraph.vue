@@ -157,9 +157,13 @@ export default {
       'relationshipTypes',
       'config',
       'selectedStudy',
-      'searchModalSearch'
+      'searchModalSearch',
+      'filterApplicationCount',
+      'shadedVisits',
+      'shadedSamples',
+      'shadedParticipants'
     ]),
-    ...mapGetters(['userToken','shadedParticipants','shadedVisits','shadedSamples','shadedFiles','triggerForClearing','linkingTarget','filterApplicationCount']),
+    ...mapGetters(['userToken','triggerForClearing','linkingTarget']),
     /*
     onFilterAdd: function() {
       this.filterStatus = searchModalSearch.filters;
@@ -224,17 +228,17 @@ export default {
     },
     selectedPatientRecords: function(){
     if (this.selectedStudyTrigger == false){
-        this.update.view()
+        this.updateView()
       }
     },
     selectedVisitRecords: function(){
     if (this.selectedStudyTrigger == false){
-        this.update.view()
+        this.updateView()
       }
     },
     selectedSampleRecords: function(){
     if (this.selectedStudyTrigger == false){
-        this.update.view()
+        this.updateView()
       }
     },
     /*
@@ -295,7 +299,7 @@ export default {
 
   methods: {
     //will not use these map actions since all data will be within component
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles','setLinkingTarget']), //include set all files potentially
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles','setLinkingTarget','updatefilterApplicationCount']), //include set all files potentially
 
     setupMouseOver: function() {
       const vm = this
@@ -647,106 +651,7 @@ export default {
       */
   }
 },
-/*
-    splitArrIntoPages(arr){
-      const chunkSize = 100;
-      var return_arr = [];
-      for (let i = 0; i < arr.length; i += chunkSize) {
-        const chunk = arr.slice(i, i + chunkSize);
-        return_arr.push(chunk);
-      }
-      return return_arr;
-    },
 
-*/
-    /*
-    handleFilterChangeClick(nodeData){
-      // eslint-disable-next-line
-      //Need to get the model from the click (nodeData.details.type, or parent.displayName)
-      // eslint-disable-next-line
-      var model = nodeData.details.type //nodeData.parent.displayName
-      var model_lst = ['patient','visits','samples','files']
-      // eslint-disable-next-line
-      model_lst = model_lst.filter(e => e !== model);
-      switch(model){
-        case 'patient':
-        // eslint-disable-next-line
-          var click_lst = this.shadedParticipants;
-        break;
-        case 'visits':
-        // eslint-disable-next-line
-          var click_lst = this.shadedVisits;
-        break;
-        case 'samples':
-        // eslint-disable-next-line
-          var click_lst = this.shadedSamples;
-        break;
-        case 'files':
-        // eslint-disable-next-line
-          var click_lst = this.shadedFiles;
-
-      }
-        // eslint-disable-next-line
-        for(let record = '';record in click_lst;){
-          // eslint-disable-next-line
-          for(let m = '';m in model_lst;){
-            // eslint-disable-next-line
-            switch(m){
-              case 'patient':
-              // eslint-disable-next-line
-                var mbacklog = this.patientsBacklog;
-                var view = this.selectedPatientRecords;
-                var orderBy = 'externalparticipantid';
-              break;
-              case 'visits':
-              // eslint-disable-next-line
-                var mbacklog = this.visitsBacklog;
-                // eslint-disable-next-line
-                var view = this.selectedVisitRecords;
-                // eslint-disable-next-line
-                var orderBy = 'event date and time';
-              break;
-              case 'samples':
-              // eslint-disable-next-line
-                var mbacklog = this.samplesBacklog;
-                // eslint-disable-next-line
-                var view = this.selectedSampleRecords;
-                // eslint-disable-next-line
-                var orderBy = 'study sample ID';
-              break;
-              case 'files':
-              // eslint-disable-next-line
-                var mbacklog = this.filesBacklog;
-                // eslint-disable-next-line
-                var view = this.selectedFileRecords;
-            }
-            //call to api that gets all of the things related (directly or transitivley) to current record for model type m
-            //for each in response, if recordID is in current instance of mbacklog, then add to temp backlog
-            // eslint-disable-next-line
-            var resp_arr =[];
-            //or put in resp_arr and get intersection
-            var flat_arr = mbacklog.flat();
-            // eslint-disable-next-line
-            var filteredBacklog = array1.filter(value => flat_arr.includes(value));
-            //sort this before breaking it up into
-            // eslint-disable-next-line
-            if (m == 'patient' || 'visits' || 'samples'){
-              // eslint-disable-next-line
-              filteredBacklog = filteredBacklog.sort((a, b) => b.orderBy - a.orderBy)
-            }
-            // eslint-disable-next-line
-            var new_arr = splitArrIntoPages(filteredBacklog);
-            //value or reference here??
-            mbacklog = new_arr
-            //setting the set of selected files that will appear on the page to the first page of the backlog
-            // eslint-disable-next-line
-            view = new_arr[0]
-
-          }
-        }
-      // --> do this for nonclick filters as well
-    },
-    */
     //Must put in correct metadata url
     handleFilterChangeSequential: async function(){
       console.log("handleFilterChangeSequential called")
@@ -759,51 +664,15 @@ export default {
         var patients_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_p)
         var patient_recs = patients_metadata.records;
         console.log(patient_recs)
+        console.log(this.selectedPatientRecords)
         this.selectedPatientRecords = patient_recs;
+        console.log(this.selectedPatientRecords)
+        console.log(this.searchModalSearch.filters)
         //TO DO ORDERING RESULTS flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)... may need to flatten array
         var visits_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_v)
         var visit_recs = visits_metadata.records;
+        console.log(visit_recs)
         this.selectedVisitRecords = visit_recs;
-        /*
-        var results_total_count = page_1_metadata.totalCount
-        var patient_res = [];
-        for (let i = 0; i < results_total_count; i += 100){
-          var element = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-            var recs = element.records
-            patient_res.push(recs)
-        }
-        var flat_arr = patient_res.flat();
-        //if API doesn't take orderby
-        flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)
-// eslint-disable-next-line
-        var send_to_backlog = splitArrIntoPages(flat_arr);
-        this.selectedPatientRecords = send_to_backlog[0];
-        this.patientsBacklog = send_to_backlog;
-        //this.ignoreHandleFilterChange = true;
-        var related_visit_recs = [];
-        for (const x of flat_arr){
-          var id = x.externalparticipantid //reference this correctly
-          //filterSearchAux(model,id); //see if you need anything else. will add extpid == x to filters which will return all related visits
-          //-------------
-            //ASK Eric about pagination for these... get the total count.. hardcoding to 500 for now
-            // eslint-disable-next-line
-            const patientsStudyMetadataUrl = `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${RELEVANT_CONCEPT_ID}/instances/${id}/relations/visits?limit=500&offset=0&includeIncomingLinkedProperties=true`
-            // eslint-disable-next-line
-            var resp =  await axios.get(patientsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
-              return handleV1RecordsResponse(response.data)
-            })
-            var related = resp.records;
-            related_visit_recs.push(related)
-        }
-        // eslint-disable-next-line
-        var flat_arr = related_visit_recs.flat();
-        //if cant specify orderby
-        flat_arr = flat_arr.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
-        // eslint-disable-next-line
-        var send_to_backlog = splitArrIntoPages(flat_arr);
-        this.selectedVisitRecords = send_to_backlog[0];
-        this.visitsBacklog = send_to_backlog;
-        */
         break;
 
         case 'visits':
@@ -819,61 +688,6 @@ export default {
         var samples_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_s)
         var sample_recs = samples_metadata.records;
         this.selectedSampleRecords = sample_recs;
-
-        /*
-        // eslint-disable-next-line
-        const visits_to_compare = this.visitsBacklog.flat();
-        // eslint-disable-next-line
-        var page_1_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-        //set these to the correct vars
-        // eslint-disable-next-line
-        var results_total_count = page_1_metadata.totalCount
-        var visit_res = [];
-        for (let i = 0; i < results_total_count; i += 100){
-          // eslint-disable-next-line
-          var element = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-          // eslint-disable-next-line
-            var recs = element.records
-            visit_res.push(recs)
-        }
-        // eslint-disable-next-line
-        var flat_arr = visit_res.flat();
-        var common = visits_to_compare.filter(x => visit_res.indexOf(x) !== -1)
-        //if API doesn't take orderby
-        common = common.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
-// eslint-disable-next-line
-        var send_to_backlog = splitArrIntoPages(common);
-        this.selectedVisitRecords = send_to_backlog[0];
-        this.visitsBacklog = send_to_backlog;
-        //this.ignoreHandleFilterChange = true;
-// eslint-disable-next-line
-        var related_samples_recs = [];
-        for (const x of common){
-          // eslint-disable-next-line
-          var id = x.study_participant_event_id //reference this correctly
-          //filterSearchAux(model,id); //see if you need anything else. will add extpid == x to filters which will return all related visits
-          //-------------
-            //ASK Eric about pagination for these... get the total count.. hardcoding to 500 for now
-            // eslint-disable-next-line
-            const visitsStudyMetadataUrl = `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${RELEVANT_CONCEPT_ID}/instances/${id}/relations/samples?limit=500&offset=0&includeIncomingLinkedProperties=true`
-// eslint-disable-next-line
-            var resp =  await axios.get(visitsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
-              return handleV1RecordsResponse(response.data)
-            })
-            // eslint-disable-next-line
-            var related = resp.records;
-            // eslint-disable-next-line
-            related_sample_recs.push(related)
-        }
-        // eslint-disable-next-line
-        var flat_arr = related_sample_recs.flat();
-        //if cant specify orderby
-        flat_arr = flat_arr.sort((a, b) => b.study_sample_id - a.study_sample_id)
-// eslint-disable-next-line
-        var send_to_backlog = splitArrIntoPages(flat_arr);
-        this.selectedSampleRecords = send_to_backlog[0];
-        this.samplesBacklog = send_to_backlog;
-        */
         break;
         case 'samples':
         // eslint-disable-next-line
@@ -884,35 +698,6 @@ export default {
         // eslint-disable-next-line
         var sample_recs = samples_metadata.records;
         this.selectedSampleRecords = sample_recs;
-
-        /*
-        // eslint-disable-next-line
-        const samples_to_compare = this.samplesBacklog.flat();
-        // eslint-disable-next-line
-        var page_1_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-        //set these to the correct vars
-        // eslint-disable-next-line
-        var results_total_count = page_1_metadata.totalCount
-// eslint-disable-next-line
-        var sample_res = [];
-        for (let i = 0; i < results_total_count; i += 100){
-          // eslint-disable-next-line
-          var element = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-          // eslint-disable-next-line
-            var recs = element.records
-            sample_res.push(recs)
-        }
-        // eslint-disable-next-line
-        sample_res = sample_res.flat();
-        // eslint-disable-next-line
-        var common1 = samples_to_compare.filter(x => sample_res.indexOf(x) !== -1)
-        //if API doesn't take orderby
-        common1 = common1.sort((a, b) => b.study_sample_id - a.study_sample_id)
-// eslint-disable-next-line
-        var send_to_backlog = splitArrIntoPages(common1);
-        this.selectedSampleRecords = send_to_backlog[0];
-        this.samplesBacklog = send_to_backlog;
-        */
       }
     },
 
@@ -945,74 +730,21 @@ export default {
           // TODO: remove selectedNode from a "selected nodes" list (based on record type -> `parentName`)
           switch (parentName) {
             case 'patient':
-            // // eslint-disable-next-line
-            //     var curr_shaded_participants = this.shadedParticipants;
-            //     //before doing this, check to see if selectedCurr particpants is recordID or record object. If the latter, need to get
-            //     //proper data from the current clicked node.
-            //     //here, we want to get the current list of 'selected' records (can be empty), add our new selectoin to it,
-            //     // and (optionally) filter duplicates. Then set new list to store.
-            //     // eslint-disable-next-line
-            //     var prelist = curr_selected_participants.concat(nodeData.details.id);
-            //     /*
-            //     let filteredlist = prelist.filter((c, index) => {
-            //         return prelist.indexOf(c) === index;
-            //     });
-            //     */
-            //     // eslint-disable-next-line
-            //     setShadedParticipants(prelist);
-            //     // eslint-disable-next-line
-            //     //handleFilterChangeClick(nodeData, click);
-            //     //red square
-            //     //NOTE: use the same process as in the section above
-            //     // eslint-disable-next-line
-            //     // eslint-disable-next-line
-            //     var ctx = canvas.node().getContext('2d');
-            //     //how do we grab the record we're interested in?
-            //     // eslint-disable-next-line
-            //     var element = this.custom('custom.record');
-            //     // eslint-disable-next-line
-            //     var node = d3.select(element);
-            //     // eslint-disable-next-line
-            //     ctx.fillstyle ="#d10a00";
-            //     // eslint-disable-next-line
-            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-            //     //or just use d3.select(this).style("fill","#d10a00");
-            //     //get related record data and set to store... see how Eric's filter gets related first
-            /*
+            //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
                 var part_arr = this.shadedParticipants
                 console.log(part_arr)
                 var payload = [nodeData,selectedRecord, true]
                 this.shadedParticipants = part_arr.push(payload)
                 this.setShadedParticipants(this.shadedParticipants)
-            */
+
                 fillstyle ="#d10a00"
                 // eslint-disable-next-line
                 this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'visits':
-                // var curr_selected_visits = this.shadedVisits;
-                // // eslint-disable-next-line
-                // var prelist = curr_selected_visits.concat(nodeData.details.id);
-                // // eslint-disable-next-line
-                // setShadedVisits(prelist);
-                // // eslint-disable-next-line
-                // //handleFilterChangeClick(nodeData, click);
-                // //blue
-                // // eslint-disable-next-line
-                // var ctx = canvas.node().getContext('2d');
-                // //how do we grab the record we're interested in?
-                // // eslint-disable-next-line
-                // var element = this.custom('custom.record');
-                // // eslint-disable-next-line
-                // var node = d3.select(element);
-                // ctx.fillstyle ="#0049d1";
-                // // eslint-disable-next-line
-                // ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-                // //or just use
-                // //d3.select(this).style("fill","#0049d1");
 
-                /*
-                LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
+
+                //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
                 var vis_arr = this.shadedVisits
                 var payload1 = [nodeData,selectedRecord, true]
                 this.shadedVisits = vis_arr.push(payload1)
@@ -1020,54 +752,33 @@ export default {
 
                 //logic for setting linking target
                 var vis_arr_len = this.shadedVisits;
-                var samp_arr_len - this.shadedVisits;
+                var samp_arr_len = this.shadedVisits;
                 if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   this.setLinkingTarget(to_be_linked)
                 }
-                */
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
                 this.handleFilterChangeClick(nodeData, 'unclick');
                 break;
             case 'samples':
-            // // eslint-disable-next-line
-            //     var curr_selected_samples = this.shadedSamples;
-            //     // eslint-disable-next-line
-            //     var prelist = curr_selected_samples.concat(nodeData.details.id);
-            //     // eslint-disable-next-line
-            //     setShadedSamples(prelist);
-            //     // eslint-disable-next-line
-            //     //handleFilterChangeClick(nodeData, click);
-            //     //yellow
-            //     // eslint-disable-next-line
-            //     var ctx = canvas.node().getContext('2d');
-            //     //how do we grab the record we're interested in?
-            //     // eslint-disable-next-line
-            //     var element = this.custom('custom.record');
-            //     // eslint-disable-next-line
-            //     var node = d3.select(element);
-            //     // eslint-disable-next-line
-            //     ctx.fillstyle ="#f0cc00";
-            //     // eslint-disable-next-line
-            //     ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
-            //     //or just use
-            //     //d3.select(this).style("fill","#f0cc00");
-            /*
-              LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
+
+              //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
                 var samp_arr = this.shadedSamples
                 var payload2 = [nodeData,selectedRecord, true]
                 this.shadedSamples = samp_arr.push(payload2)
                 this.setShadedSamples(this.shadedSamples)
 
                 //logic for setting linking target
+                // eslint-disable-next-line
                 var vis_arr_len = this.shadedVisits;
-                var samp_arr_len - this.shadedVisits;
+                // eslint-disable-next-line
+                var samp_arr_len = this.shadedVisits;
                 if (samp_arr_len.length == 1 && (vis_arr_len.length == 0 || vis_arr_len.length > 1)){
+                  // eslint-disable-next-line
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   this.setLinkingTarget(to_be_linked)
                 }
-                */
 
                 fillstyle ="#f0cc00"
                 // eslint-disable-next-line
