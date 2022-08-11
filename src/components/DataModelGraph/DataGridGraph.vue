@@ -803,7 +803,7 @@ export default {
 
                 fillstyle ="#d10a00"
                 // eslint-disable-next-line
-                this.handleFilterChangeClick(nodeData, 'unclick');
+                this.handleFilterChangeClick(nodeData, 'click');
                 break;
             case 'visits':
 
@@ -823,7 +823,7 @@ export default {
                 }
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
-                this.handleFilterChangeClick(nodeData, 'unclick');
+                this.handleFilterChangeClick(nodeData, 'click');
                 break;
             case 'samples':
 
@@ -846,7 +846,7 @@ export default {
 
                 fillstyle ="#f0cc00"
                 // eslint-disable-next-line
-                this.handleFilterChangeClick(nodeData, 'unclick');
+                this.handleFilterChangeClick(nodeData, 'click');
                 break;
             case 'files':
                 fillstyle ="#f0cc00" // TODO: should be a different color
