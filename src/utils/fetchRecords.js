@@ -266,7 +266,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
   const visitsQuery = await getQuery('visits', modifiedFilters, token)
 
   return await axios.post(filteredFilesUrl, visitsQuery, REQUEST_HEADER(token)).then(response => {
-    return handleV2RecordsResponse(propOr([], 'data', response))
+    return propOr([], 'data', response)
   })
 }
 
@@ -315,7 +315,7 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
   const samplesQuery = await getQuery('samples', modifiedFilters, token)
 
   return await axios.post(filteredFilesUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
-    return handleV2RecordsResponse(propOr([], 'data', response))
+    return propOr([], 'data', response)
   })
 }
 

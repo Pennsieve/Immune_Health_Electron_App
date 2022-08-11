@@ -15,6 +15,7 @@
       :height="chartHeight"
       :show-overlay="false"
       :show-toolbar="true"
+      @record-clicked="recordClicked"
     />
     <!-- don't need models list
     <div
@@ -119,6 +120,9 @@ import DataGridGraph from '@/components/DataModelGraph/DataGridGraph.vue'
     },
 
     methods: {
+      recordClicked(filters) {
+        this.$emit('record-clicked', filters)
+      },
       /**
        * Set chart height based on the height of the window
        */
