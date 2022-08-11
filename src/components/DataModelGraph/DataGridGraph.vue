@@ -157,7 +157,8 @@ export default {
       'filterApplicationCount',
       'shadedVisits',
       'shadedSamples',
-      'shadedParticipants'
+      'shadedParticipants',
+      'selectedStudyName'
     ]),
     ...mapGetters(['userToken','triggerForClearing','linkingTarget']),
     /*
@@ -237,11 +238,15 @@ export default {
     filterApplicationCount: function(){
       this.handleFilterChangeSequential()
     },
+
     triggerForClearing: function(){
       var shadedarr = []
-      shadedarr = shadedarr.push(this.shadedParticipants)
-      shadedarr = shadedarr.push(this.shadedVisits)
-      shadedarr = shadedarr.push(this.shadedSamples)
+      var p = this.shadedParticipants
+      var v = this.shadedVisits
+      var s = this.shadedSamples
+      shadedarr = shadedarr.push(p)
+      shadedarr = shadedarr.push(v)
+      shadedarr = shadedarr.push(s)
       for (const x of shadedarr){
         for (const y of x){
           this.onClickElement(y) //will trigger branch of code that sets click to 0
@@ -276,6 +281,14 @@ export default {
     this.loadModelData()
     this.bindModelData()
     window.addEventListener('resize', this.handleResize.bind(this))
+
+
+      this.selectedStudyTrigger = true;
+      this.updateStudyDataV2().then(() => {
+        this.updateView()
+        this.selectedStudyTrigger = false;
+      })
+
   },
 
   beforeDestroy() {
@@ -398,7 +411,7 @@ export default {
       });
 
       if (selectedRecord) {
-        vm.onClickElement(nodeData, selectedRecord,false)// , d.click, mouseX, mouseY)
+        vm.onClickElement(nodeData, selectedRecord, false)// , d.click, mouseX, mouseY)
       }
     },
 
@@ -447,7 +460,6 @@ export default {
 
     //When a record is clicked, we want to add that as a local filter and get the related records.
     // We dont want to update the view for the current model (apart from coloring the selected record)
-    /*
     handleFilterChangeClick: async function(nodeData, clickstatus) {
       const limit = 100
       const model = nodeData.parent.displayName;
@@ -464,6 +476,8 @@ export default {
       if (clickstatus == 'click'){
         switch(model) {
           case 'patient':
+            //this.clearVisitRecordData()
+            //this.clearSamplesRecordData()
             // We will first remove any previous filters that might no longer apply
             // i.e. the user has already clicked a visit or sample record and then clicked a patient record after
             this.removeClickedFiltersWithTarget('visits')
@@ -480,6 +494,7 @@ export default {
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'visits':
+          //this.clearSamplesRecordData()
             // We will first remove any previous filters that might no longer apply
             // i.e. the user has already clicked a sample record and then clicked a visit record after
             this.removeClickedFiltersWithTarget('samples')
@@ -521,7 +536,7 @@ export default {
   }
 },
 
-    /*
+  /*
     handleFilterChangeClick(nodeData){
       // eslint-disable-next-line
       //Need to get the model from the click (nodeData.details.type, or parent.displayName)
@@ -604,20 +619,26 @@ export default {
             // eslint-disable-next-line
             view = new_arr[0]
 
+*/
     //Must put in correct metadata url
     handleFilterChangeSequential: async function(){
       var model = this.searchModalSearch.model;
       switch(model){
         case 'patient':
+        //this.clearPatientRecordData()
+        //this.clearVisitRecordData()
+        console.log('filtering patient')
         var offset_p = 100*this.participantsPage;
         var offset_v = 100*this.visitsPage;
         var patients_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_p)
         var patient_recs = patients_metadata.records;
+        console.log('setting patient records')
         this.visiblePatientRecords = patient_recs;
         //TO DO ORDERING RESULTS flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)... may need to flatten array
         var visits_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_v)
         var visit_recs = visits_metadata.records;
         this.visibleVisitsRecords = visit_recs;
+        console.log('setting related visit records')
         /*
         var results_total_count = page_1_metadata.totalCount
         var patient_res = [];
@@ -657,10 +678,13 @@ export default {
         var send_to_backlog = splitArrIntoPages(flat_arr);
         this.visibleVisitsRecords = send_to_backlog[0];
         this.visitsBacklog = send_to_backlog;
-
+*/
         break;
 
         case 'visits':
+        //this.clearVisitRecordData()
+        //this.clearSamplesRecordData()
+        console.log('filtering visits')
         // eslint-disable-next-line
         var offset_v = 100*this.visitsPage;
         var offset_s = 100*this.samplesPage;
@@ -669,12 +693,13 @@ export default {
         // eslint-disable-next-line
         var visit_recs = visits_metadata.records;
         this.visibleVisitsRecords = visit_recs;
+        console.log('setting visit records')
         //TO DO ORDERING RESULTS flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)... may need to flatten array
         var samples_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_s)
         var sample_recs = samples_metadata.records;
         this.visibleSamplesRecords = sample_recs;
-
-
+        console.log('setting related samples records')
+        /*
         // eslint-disable-next-line
         const visits_to_compare = this.visitsBacklog.flat();
         // eslint-disable-next-line
@@ -727,9 +752,11 @@ export default {
         var send_to_backlog = splitArrIntoPages(flat_arr);
         this.visibleSamplesRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
-
+        */
         break;
         case 'samples':
+        //this.clearSamplesRecordData()
+        console.log('filtering samples')
         // eslint-disable-next-line
         var offset_s = 100*this.samplesPage;
         //TO DO ORDERING RESULTS flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)... may need to flatten array
@@ -738,8 +765,9 @@ export default {
         // eslint-disable-next-line
         var sample_recs = samples_metadata.records;
         this.visibleSamplesRecords = sample_recs;
+        console.log('setting sample records')
 
-
+        /*
         // eslint-disable-next-line
         const samples_to_compare = this.samplesBacklog.flat();
         // eslint-disable-next-line
@@ -765,10 +793,10 @@ export default {
         var send_to_backlog = splitArrIntoPages(common1);
         this.visibleSamplesRecords = send_to_backlog[0];
         this.samplesBacklog = send_to_backlog;
-
+        */
       }
     },
-*/
+
 
     //called when a record is clicked
     onClickElement(nodeData, selectedRecord, clearing){
@@ -795,11 +823,13 @@ export default {
           switch (parentName) {
             case 'patient':
             //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
+
                 var part_arr = this.shadedParticipants
                 console.log(part_arr)
                 var payload = [nodeData,selectedRecord, true]
                 this.shadedParticipants = part_arr.push(payload)
                 this.setShadedParticipants(this.shadedParticipants)
+
 
                 fillstyle ="#d10a00"
                 // eslint-disable-next-line
@@ -809,14 +839,16 @@ export default {
 
 
                 //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
+
                 var vis_arr = this.shadedVisits
                 var payload1 = [nodeData,selectedRecord, true]
                 this.shadedVisits = vis_arr.push(payload1)
                 this.setShadedVisits(this.shadedVisits)
 
+
                 //logic for setting linking target
                 var vis_arr_len = this.shadedVisits;
-                var samp_arr_len = this.shadedVisits;
+                var samp_arr_len = this.shadedSamples;
                 if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   this.setLinkingTarget(to_be_linked)
@@ -828,16 +860,18 @@ export default {
             case 'samples':
 
               //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
+
                 var samp_arr = this.shadedSamples
                 var payload2 = [nodeData,selectedRecord, true]
                 this.shadedSamples = samp_arr.push(payload2)
                 this.setShadedSamples(this.shadedSamples)
 
+
                 //logic for setting linking target
                 // eslint-disable-next-line
                 var vis_arr_len = this.shadedVisits;
                 // eslint-disable-next-line
-                var samp_arr_len = this.shadedVisits;
+                var samp_arr_len = this.shadedSamples;
                 if (samp_arr_len.length == 1 && (vis_arr_len.length == 0 || vis_arr_len.length > 1)){
                   // eslint-disable-next-line
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
@@ -847,10 +881,6 @@ export default {
                 fillstyle ="#f0cc00"
                 // eslint-disable-next-line
                 this.handleFilterChangeClick(nodeData, 'click');
-                break;
-            case 'files':
-                fillstyle ="#f0cc00" // TODO: should be a different color
-                break;
           }
         }
         // set selected record's fill style and re-draw the main canvas
@@ -936,6 +966,21 @@ export default {
       this.clearSelectedRecordData()
       this.clearSelectedRecordDataCounts()
       this.clearSelectedPageNumbers()
+    },
+    clearPatientRecordData: function() {
+      this.visibleRecordCount['patient'] = 0
+      this.visiblePatientRecords = []
+      //this.participantsPage = 0
+    },
+    clearVisitRecordData: function(){
+      this.visibleRecordCount['visits'] = 0
+      this.visibleVisitsRecords = []
+      //this.visitsPage = 0
+    },
+    clearSamplesRecordData: function(){
+      this.visibleRecordCount['samples'] = 0
+      this.visibleSamplesRecords  = []
+      //this.samplesPage = 0
     },
     clearSelectedRecordDataCounts: function() {
       this.visibleRecordCount['patient'] = 0
@@ -1028,7 +1073,7 @@ export default {
 
     updateSamples: function(data) {
       this.visibleSamplesRecords  = data
-      this.visibleSamplesRecords['samples'] = data.length
+      this.visibleRecordCount['samples'] = data.length
     },
 
     updateView: function() {

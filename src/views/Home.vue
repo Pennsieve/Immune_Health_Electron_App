@@ -60,8 +60,6 @@
         </div>
         <div v-else class="orgtext">
           <h3>Please sign in to view organization activity</h3>
-          <!--get rid of this after testing -->
-          <org-activity/>
         </div>
     </div>
   </div>

@@ -147,12 +147,8 @@ export default {
       'dataset',
       'config',
       'userToken',
-      'datasetActivityParams'
-    ]),
-
-    ...mapState('datasetModule', [
-      'datasetActivity',
       'datasetActivityParams',
+      'datasetActivity',
       'isLoadingDatasetActivity'
     ]),
 

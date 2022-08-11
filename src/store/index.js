@@ -319,7 +319,7 @@ const store = new Vuex.Store({
     setShadedSamples({commit}, data){
       commit('SET_SHADED_SAMPLES',data)
     },
-    setShadedFiles({commit}, data){
+    setShadedFiles({commit}, data) {
       commit('SET_SHADED_FILES',data)
     },
     setTriggerForClearing({commit}, data){
@@ -347,7 +347,7 @@ const store = new Vuex.Store({
     },
     fetchDatasetActivity: async ({state, commit}) => {
       commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', true)
-
+      console.log("attempting to fetch organization activity")
       const datasetId = datasetId
       //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
       const endpoint = `https://api.pennsieve.io/datasets/${datasetId}/changelog/timeline`
@@ -362,6 +362,7 @@ const store = new Vuex.Store({
         if (resp.ok) {
           const { eventGroups, cursor } = await resp.json()
           const datasetActivity = state.datasetActivityParams.cursor ? [ ...state.datasetActivity, ...eventGroups ] : eventGroups
+          console.log("we've got dataset activity")
           commit('UPDATE_DATASET_ACTIVITY', datasetActivity)
 
           commit('UPDATE_DATASET_ACTIVITY_CURSOR', cursor)
