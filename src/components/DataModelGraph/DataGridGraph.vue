@@ -27,8 +27,6 @@ import {
   fetchFilteredPatientsMetadataRelatedToStudy,
   fetchFilteredVisitsMetadataRelatedToStudy,
   fetchFilteredSamplesMetadataRelatedToStudy,
-  fetchVisitsFilesRelatedToStudy,
-  fetchSamplesFilesRelatedToStudy,
 } from '@/utils/fetchRecords'
 
 import axios from 'axios'
@@ -134,8 +132,6 @@ export default {
       visiblePatientRecords: [],
       visibleVisitsRecords: [],
       visibleSamplesRecords: [],
-      visibleVisitsFiles: [],
-      visibleSamplesFiles: [],
       participantsPage: 0,
       visitsPage: 0,
       samplesPage: 0,
@@ -143,7 +139,7 @@ export default {
       selectedStudyTrigger: false,
       // These are the local filters that get applied when a user clicks on a record in the grid. These filters are used in conjunction with
       // searchModalSearch.filters to create the grid of filtered record results along with their associated files
-      clickedFilters: []
+      clickedRecordsFilters: []
     }
   },
 
@@ -206,6 +202,7 @@ export default {
       this.updateStudyDataV2().then(() => {
         this.updateView()
         this.selectedStudyTrigger = false;
+        this.clickedRecordsFilters = []
       })
     },
     visiblePatientRecords: function(){
@@ -238,7 +235,10 @@ export default {
           this.onClickElement(y) //will trigger branch of code that sets click to 0
         }
       }
-    }
+    },
+    clickedRecordsFilters (newFilters) {
+      this.$emit('record-clicked', newFilters)
+    },
   },
 
   mounted() {
@@ -393,20 +393,20 @@ export default {
       }
     },
 
-    removeClickedFiltersWithTarget(target) {
-      this.clickedFilters = this.clickedFilters.filter(clickedFilter => {
+    removeClickedRecordsFiltersWithTarget(target) {
+      this.clickedRecordsFilters = this.clickedRecordsFilters.filter(clickedFilter => {
         return clickedFilter.target != target
       })
     },
 
     removeClickedFilterWithValue(target, value) {
-      this.clickedFilters = this.clickedFilters.filter(clickedFilter => {
+      this.clickedRecordsFilters = this.clickedRecordsFilters.filter(clickedFilter => {
         return !(clickedFilter.target == target && clickedFilter.value == value)
       })
     },
     // clicked filters can only be the equals operation for now i.e. filter by the clicked records identifier
     addClickedFilter(property, target, value) {
-      this.clickedFilters.push({
+      this.clickedRecordsFilters.push({
         id: v1(),
         isInvalid: false,
         lockTarget: true,
@@ -456,11 +456,11 @@ export default {
           case 'patient':
             // We will first remove any previous filters that might no longer apply 
             // i.e. the user has already clicked a visit or sample record and then clicked a patient record after
-            this.removeClickedFiltersWithTarget('visits')
-            this.removeClickedFiltersWithTarget('samples')
+            this.removeClickedRecordsFiltersWithTarget('visits')
+            this.removeClickedRecordsFiltersWithTarget('samples')
             // add the clicked patient record as a filter
             this.addClickedFilter("externalparticipantid", model, identifier)
-            filters = this.searchModalSearch.filters.concat(this.clickedFilters)
+            filters = this.searchModalSearch.filters.concat(this.clickedRecordsFilters)
 
             filteredVisitsRecordsResponse = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, visitsOffset)
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
@@ -472,10 +472,10 @@ export default {
           case 'visits':
             // We will first remove any previous filters that might no longer apply 
             // i.e. the user has already clicked a sample record and then clicked a visit record after
-            this.removeClickedFiltersWithTarget('samples')
+            this.removeClickedRecordsFiltersWithTarget('samples')
             // add the clicked visit record as a filter
             this.addClickedFilter("visit_event_id", model, identifier)
-            filters = this.searchModalSearch.filters.concat(this.clickedFilters)
+            filters = this.searchModalSearch.filters.concat(this.clickedRecordsFilters)
 
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
 
@@ -491,7 +491,7 @@ export default {
         // Remove filter that have been unclicked
         // No need to first remove any previous filters because removing filters can only broaden the search so all filters should still apply
         this.removeClickedFilterWithValue(model, identifier)
-        filters = this.searchModalSearch.filters.concat(this.clickedFilters)
+        filters = this.searchModalSearch.filters.concat(this.clickedRecordsFilters)
 
         switch(model) {
           case 'patient':
@@ -1267,14 +1267,6 @@ export default {
           vm.updateView()
         })
       }
-    },
-
-    async updateVisitsFiles() {
-      this.visibleVisitsFiles = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-    },
-
-    async updateSamplesFiles() {
-      this.visibleSamplesFiles = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
     },
 
     //fetches and sets store to entries on the 'next' page for each model. Will call from the page advance bar bound to each model bin
