@@ -26,14 +26,13 @@ class PennsieveAgent {
         })
 
         ipcMain.on("pennsieveUseDatasetRequest", (event, args) => {
-            this.ps.useDataset(args.datasetId, async function (err, response) {
-                if (err) {
-                    event.sender.send("pennsieveUseDatasetResponse", {status: 'error', error: err});
-                }
-                else {
-                    event.sender.send("pennsieveUseDatasetResponse", {status: 'success', result: response});
-                }
-            })
+            this.ps.useDataset(args.datasetId)
+                .then(response =>
+                    event.sender.send("pennsieveUseDatasetResponse", {status: 'success', result: response})
+                )
+                .catch(err =>
+                    event.sender.send("pennsieveUseDatasetResponse", {status: 'error', error: err})
+                )
         })
 
         ipcMain.on("pennsieveCreateManifestRequest", (event, args) => {

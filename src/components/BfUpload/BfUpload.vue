@@ -377,7 +377,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         recordId: '',
         uploadListId: -1, // start at -1 because this is incremented for every file added
         ps: null,
-        selectedFiles: null
+        selectedFiles: null,
+        datasetIdInUse: ''
       }
     },
 
@@ -1013,7 +1014,15 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     mounted: function() {
       this.resetQueue()
       this.ps = new PennsieveClient()
-      this.ps.useDatset(this.datasetNodeId, function() {})
+      this.ps.useDatset(this.datasetNodeId)
+      .then(response => {
+        this.datasetIdInUse = response.dataset_id
+      })
+      .catch(err => {
+        // TODO: raise a toast notification?
+        console.log('useDatset() success failure:')
+        console.log(err)
+      })
 
       // let customheaders = {}
       //
