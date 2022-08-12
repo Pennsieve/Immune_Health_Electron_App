@@ -10,11 +10,18 @@ class PennsieveClient {
     constructor() {
     }
 
-    login(callback) {
-        // set callback for IPC response
-        window.api.pennsieveLoginResponse(callback)
-        // send login request message via IPC channel
-        window.api.pennsieveLoginRequest()
+    async login() {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveLoginResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveLoginRequest()
+        })
     }
 
     useDatset(datasetNodeId, callback) {
