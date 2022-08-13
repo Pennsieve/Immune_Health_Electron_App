@@ -13,18 +13,18 @@ contextBridge.exposeInMainWorld("api", {
     pennsieveUseDatasetResponse: function(func) {
         ipcRenderer.on("pennsieveUseDatasetResponse", (event, ...args) => func(event, ...args));
     },
-    pennsieveCreateManifestRequest: function() {
-        ipcRenderer.send("pennsieveCreateManifestRequest", {});
+    pennsieveCreateManifestRequest: function(fileList, targetBasePath) {
+        ipcRenderer.send("pennsieveCreateManifestRequest", {fileList: fileList, targetBasePath: targetBasePath});
     },
     pennsieveCreateManifestResponse: function(func) {
         ipcRenderer.on("pennsieveCreateManifestResponse", (event, ...args) => func(event, ...args))
     },
-    pennsieveAddToManifestRequest: function(manifestId, filePath) {
-        ipcRenderer.send("pennsieveAddToManifestRequest", {manifestId: manifestId, filePath: filePath});
-    },
-    pennsieveAddToManifestResponse: function(func) {
-        ipcRenderer.on("pennsieveAddToManifestResponse", (event, ...args) => func(event, ...args))
-    },
+    // pennsieveAddToManifestRequest: function(manifestId, filePath) {
+    //     ipcRenderer.send("pennsieveAddToManifestRequest", {manifestId: manifestId, filePath: filePath});
+    // },
+    // pennsieveAddToManifestResponse: function(func) {
+    //     ipcRenderer.on("pennsieveAddToManifestResponse", (event, ...args) => func(event, ...args))
+    // },
     pennsieveUploadManifestRequest: function(manifestId) {
         ipcRenderer.send("pennsieveUploadManifestRequest", {manifestId: manifestId});
     },

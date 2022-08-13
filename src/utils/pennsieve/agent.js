@@ -36,21 +36,29 @@ class PennsieveAgent {
         })
 
         ipcMain.on("pennsieveCreateManifestRequest", (event, args) => {
-            this.ps.createManifest('TBD', async function (err, response) {
-                event.sender.send("pennsieveCreateManifestResponse", this.answer(err, response));
-            })
+            this.ps.createManifest('', args.targetBasePath, args.fileList)
+                .then(response =>
+                    event.sender.send("pennsieveCreateManifestResponse", {status: 'success', result: response})
+                )
+                .catch(err =>
+                    event.sender.send("pennsieveCreateManifestResponse", {status: 'error', error: err})
+                )
         })
 
-        ipcMain.on("pennsieveAddToManifestRequest", (event, args) => {
-            this.ps.addToManifest(args.manifestId, args.filePath, '.', async function(err, response) {
-                event.sender.send("pennsieveAddToManifestResponse", this.answer(err, response))
-            })
-        })
+        // ipcMain.on("pennsieveAddToManifestRequest", (event, args) => {
+        //     this.ps.addToManifest(args.manifestId, args.filePath, '.', async function(err, response) {
+        //         event.sender.send("pennsieveAddToManifestResponse", this.answer(err, response))
+        //     })
+        // })
 
         ipcMain.on("pennsieveUploadManifestRequest", (event, args) => {
-            this.ps.uploadManifest(args.manifestId, async function(err, response) {
-                event.sender.send("pennsieveUploadManifestResponse", this.answer(err, response))
-            })
+            this.ps.uploadManifest(args.manifestId)
+                .then(response =>
+                    event.sender.send("pennsieveUploadManifestResponse", {status: 'success', result: response})
+                )
+                .catch(err =>
+                    event.sender.send("pennsieveUploadManifestResponse", {status: 'error', error: err})
+                )
         })
 
     }

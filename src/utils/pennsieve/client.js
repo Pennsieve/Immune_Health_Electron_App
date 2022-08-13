@@ -38,25 +38,39 @@ class PennsieveClient {
         })
     }
 
-    createManifest(callback) {
-        // set callback for IPC response
-        window.api.pennsieveCreateManifestResponse(callback)
-        // send create manifest request message via IPC channel
-        window.api.pennsieveCreateManifestRequest()
+    async createManifest(fileList, targetBasePath='.') {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveCreateManifestResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveCreateManifestRequest(fileList, targetBasePath)
+        })
     }
 
-    addToManifest(manifestId, filePath, callback) {
-        // set callback for IPC response
-        window.api.pennsieveAddToManifestResponse(callback)
-        // send add to manifest request message via IPC channel
-        window.api.pennsieveAddToManifestRequest(manifestId, filePath)
-    }
+    // addToManifest(manifestId, filePath, callback) {
+    //     // set callback for IPC response
+    //     window.api.pennsieveAddToManifestResponse(callback)
+    //     // send add to manifest request message via IPC channel
+    //     window.api.pennsieveAddToManifestRequest(manifestId, filePath)
+    // }
 
-    uploadManifest(manifestId, callback) {
-        // set callback for IPC response
-        window.api.pennsieveUploadManifestResponse(callback)
-        // send upload manifest request message via IPC channel
-        window.api.pennsieveUploadManifestRequest(manifestId)
+    uploadManifest(manifestId) {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveUploadManifestResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveUploadManifestRequest(manifestId)
+        })
     }
 }
 

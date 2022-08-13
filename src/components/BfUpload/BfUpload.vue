@@ -859,11 +859,41 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         console.log(`startUpload() fileListMap.size: ${this.fileListMap.size}`)
 
         // check that there are files in the fileListMap
+        let ps = new PennsieveClient()
         if (this.fileListMap.size > 0) {
-          // create a manifest with the first file on fileListMap
-          // iterate over the remaining files on fileListMap, adding each file to the manifest
-          // start upload
+          // generate list of files as an Array
+          let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
+
+          console.log('startUpload() [local] fileList:')
+          console.log(fileList)
+          // create a manifest passing in the list of files
+          ps.createManifest(fileList, 'newUpload')
+            .then(response => {
+              console.log('startUpload() ~ ps.createManifest() response:')
+              console.log(response)
+
+              let manifestId = response.manifest_id
+              console.log(`- manifestId: ${manifestId}`)
+
+              // start upload
+              ps.uploadManifest(manifestId)
+                .then(response => {
+                  console.log('startUpload() ~ ps.uploadManifest() response:')
+                  console.log(response)
+                })
+                .catch(err => {
+                  console.log('error:')
+                  console.log(err)
+                })
+            })
+            .catch(err => {
+              console.log('error:')
+              console.log(err)
+            })
+
         }
+        // TODO: close dialog
+        this.onClose()
       },
 
       /**
