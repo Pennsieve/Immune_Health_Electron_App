@@ -249,13 +249,13 @@ export default {
 
   methods: {
     //can likely omit datset module
-    ...mapActions(
+    ...mapActions([
       'updateDatasetActivityCategory',
       'updateDatasetActivityUserId',
       'updateDatasetActivityDateRange',
       'updateDatasetActivityOrderDirection',
       'fetchDatasetActivity',
-      'clearDatasetActivityState'),
+      'clearDatasetActivityState']),
 
     /**
      * Set sort direction

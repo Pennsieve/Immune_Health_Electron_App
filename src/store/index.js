@@ -171,7 +171,7 @@ const store = new Vuex.Store({
     shadedParticipants (state){
       return state.shadedParticipants
     },
-    shadedVisits (state) {
+    s (state) {
       return state.shadedVisits
     },
     shadedSamples (state) {
@@ -351,7 +351,8 @@ const store = new Vuex.Store({
       const datasetId = datasetId
       //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
       const endpoint = `https://api.pennsieve.io/datasets/${datasetId}/changelog/timeline`
-      const apiKey = this.userToken
+      const apiKey =  propOr('', 'token', state.profile)
+      //const apiKey = this.userToken
       //import below from datasetModule.js in utils and uncomment
       const queryParams = getQueryParams(state.datasetActivityParams, apiKey)
 

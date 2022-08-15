@@ -254,7 +254,7 @@ export default {
       this.updateSearchModalSearch(newSearch)
     },
     /**
-     * @param {Array} clickedFilters The filters added from clicking the record in DataGridGraph get passed in here 
+     * @param {Array} clickedFilters The filters added from clicking the record in DataGridGraph get passed in here
      */
     updateClickedRecordsFilters(clickedFilters) {
       this.clickedRecordsFilters = clickedFilters

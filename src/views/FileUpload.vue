@@ -298,6 +298,7 @@ export default {
             'Authorization': `bearer ${this.userToken}`
           },
           body: {
+            //switch
             externalId: packageId, //the record
             targets: [{
               direction: 'FromTarget',
@@ -392,17 +393,38 @@ export default {
     },
 
     /**
+    * Reset selected files state
+    */
+   resetSelectedFiles: function () {
+     console.log("selected files reset")
+     this.selectedFiles = []
+     this.lastSelectedFile = {}
+   },
+
+   /**
+    * Sort table by column
+    * @param {String} path
+    * @param {String} dir
+    */
+   sortColumn: function (path, dir = '') {
+     this.sortedFiles = this.returnSort(path, this.files, dir)
+   },
+
+    /**
      * Remove items from files list
      * @param {Object} items
      */
     removeItems: function (items) {
+      console.log("selected files are",items)
       // Remove all successfully deleted files RETURN TO THIS...need to splice out files from display
       for (let i = 0; i < items.length; i++) {
+        console.log(i)
         const fileIndex = findIndex(pathEq(['content', 'id'], items[i]), this.files)
         this.files.splice(fileIndex, 1)
       }
       // Resort files
       this.sortColumn(this.sortBy, this.sortDirection)
+      console.log("resetting selected files")
       this.resetSelectedFiles()
     },
 
@@ -415,6 +437,8 @@ export default {
       console.log("moveitems called. moving linked files out of staging and into linked")
       if (destination) {
         const things = items.map(item => item.content.id)
+        console.log(destination)
+        console.log(things)
         this.sendXhr(destination, {
           method: 'POST',
           body: {
@@ -442,7 +466,8 @@ export default {
       //
       //const successItems = propOr([], 'success', response)
       // eslint-disable-next-line no-undef
-      removeItems(this.selectedFiles);
+      //NOTE: consider using response
+      this.removeItems(this.selectedFiles);
       //dont bother with this for now
       /*
       // Handle conflict items

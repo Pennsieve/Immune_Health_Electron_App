@@ -139,7 +139,9 @@ export default {
       selectedStudyTrigger: false,
       // These are the local filters that get applied when a user clicks on a record in the grid. These filters are used in conjunction with
       // searchModalSearch.filters to create the grid of filtered record results along with their associated files
-      clickedRecordsFilters: []
+      clickedRecordsFilters: [],
+      clickedAPatient: false,
+      clickedAVisit: false
     }
   },
 
@@ -281,14 +283,6 @@ export default {
     this.loadModelData()
     this.bindModelData()
     window.addEventListener('resize', this.handleResize.bind(this))
-
-
-      this.selectedStudyTrigger = true;
-      this.updateStudyDataV2().then(() => {
-        this.updateView()
-        this.selectedStudyTrigger = false;
-      })
-
   },
 
   beforeDestroy() {
@@ -490,6 +484,7 @@ export default {
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
 
             // update the visits and samples records with the new filter being applied
+            this.clickedAPatient = true
             this.visibleVisitsRecords = filteredVisitsRecordsResponse.records
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
@@ -505,6 +500,7 @@ export default {
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
 
             // update the samples records with the new filter being applied
+            this.clickedAVisit = true
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'samples':
@@ -522,11 +518,13 @@ export default {
           case 'patient':
             filteredVisitsRecordsResponse = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, visitsOffset)
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
+            this.clickedAPatient = true
             this.visibleVisitsRecords = filteredVisitsRecordsResponse.records
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'visits':
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
+            this.clickedAVisit = true
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'samples':
@@ -536,90 +534,6 @@ export default {
   }
 },
 
-  /*
-    handleFilterChangeClick(nodeData){
-      // eslint-disable-next-line
-      //Need to get the model from the click (nodeData.details.type, or parent.displayName)
-      // eslint-disable-next-line
-      var model = nodeData.details.type //nodeData.parent.displayName
-      var model_lst = ['patient','visits','samples','files']
-      // eslint-disable-next-line
-      model_lst = model_lst.filter(e => e !== model);
-      switch(model){
-        case 'patient':
-        // eslint-disable-next-line
-          var click_lst = this.shadedParticipants;
-        break;
-        case 'visits':
-        // eslint-disable-next-line
-          var click_lst = this.shadedVisits;
-        break;
-        case 'samples':
-        // eslint-disable-next-line
-          var click_lst = this.shadedSamples;
-        break;
-        case 'files':
-        // eslint-disable-next-line
-          var click_lst = this.shadedFiles;
-
-      }
-        // eslint-disable-next-line
-        for(let record = '';record in click_lst;){
-          // eslint-disable-next-line
-          for(let m = '';m in model_lst;){
-            // eslint-disable-next-line
-            switch(m){
-              case 'patient':
-              // eslint-disable-next-line
-                var mbacklog = this.patientsBacklog;
-                var view = this.visiblePatientRecords;
-                var orderBy = 'externalparticipantid';
-              break;
-              case 'visits':
-              // eslint-disable-next-line
-                var mbacklog = this.visitsBacklog;
-                // eslint-disable-next-line
-                var view = this.visibleVisitsRecords;
-                // eslint-disable-next-line
-                var orderBy = 'event date and time';
-              break;
-              case 'samples':
-              // eslint-disable-next-line
-                var mbacklog = this.samplesBacklog;
-                // eslint-disable-next-line
-                var view = this.visibleSamplesRecords;
-                // eslint-disable-next-line
-                var orderBy = 'study sample ID';
-              break;
-              case 'files':
-              // eslint-disable-next-line
-                var mbacklog = this.filesBacklog;
-                // eslint-disable-next-line
-                var view = this.selectedFileRecords;
-            }
-            //call to api that gets all of the things related (directly or transitivley) to current record for model type m
-            //for each in response, if recordID is in current instance of mbacklog, then add to temp backlog
-            // eslint-disable-next-line
-            var resp_arr =[];
-            //or put in resp_arr and get intersection
-            var flat_arr = mbacklog.flat();
-            // eslint-disable-next-line
-            var filteredBacklog = array1.filter(value => flat_arr.includes(value));
-            //sort this before breaking it up into
-            // eslint-disable-next-line
-            if (m == 'patient' || 'visits' || 'samples'){
-              // eslint-disable-next-line
-              filteredBacklog = filteredBacklog.sort((a, b) => b.orderBy - a.orderBy)
-            }
-            // eslint-disable-next-line
-            var new_arr = splitArrIntoPages(filteredBacklog);
-            //value or reference here??
-            mbacklog = new_arr
-            //setting the set of selected files that will appear on the page to the first page of the backlog
-            // eslint-disable-next-line
-            view = new_arr[0]
-
-*/
     //Must put in correct metadata url
     handleFilterChangeSequential: async function(){
       var model = this.searchModalSearch.model;
@@ -699,60 +613,7 @@ export default {
         var sample_recs = samples_metadata.records;
         this.visibleSamplesRecords = sample_recs;
         console.log('setting related samples records')
-        /*
-        // eslint-disable-next-line
-        const visits_to_compare = this.visitsBacklog.flat();
-        // eslint-disable-next-line
-        var page_1_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-        //set these to the correct vars
-        // eslint-disable-next-line
-        var results_total_count = page_1_metadata.totalCount
-        var visit_res = [];
-        for (let i = 0; i < results_total_count; i += 100){
-          // eslint-disable-next-line
-          var element = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-          // eslint-disable-next-line
-            var recs = element.records
-            visit_res.push(recs)
-        }
-        // eslint-disable-next-line
-        var flat_arr = visit_res.flat();
-        var common = visits_to_compare.filter(x => visit_res.indexOf(x) !== -1)
-        //if API doesn't take orderby
-        common = common.sort((a, b) => b.event_date_and_time - a.event_date_and_time)
-// eslint-disable-next-line
-        var send_to_backlog = splitArrIntoPages(common);
-        this.visibleVisitsRecords = send_to_backlog[0];
-        this.visitsBacklog = send_to_backlog;
-        //this.ignoreHandleFilterChange = true;
-// eslint-disable-next-line
-        var related_samples_recs = [];
-        for (const x of common){
-          // eslint-disable-next-line
-          var id = x.study_participant_event_id //reference this correctly
-          //filterSearchAux(model,id); //see if you need anything else. will add extpid == x to filters which will return all related visits
-          //-------------
-            //ASK Eric about pagination for these... get the total count.. hardcoding to 500 for now
-            // eslint-disable-next-line
-            const visitsStudyMetadataUrl = `https://api.pennsieve.io/models/v1/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/${RELEVANT_CONCEPT_ID}/instances/${id}/relations/samples?limit=500&offset=0&includeIncomingLinkedProperties=true`
-// eslint-disable-next-line
-            var resp =  await axios.get(visitsStudyMetadataUrl, REQUEST_HEADER(token)).then(response => {
-              return handleV1RecordsResponse(response.data)
-            })
-            // eslint-disable-next-line
-            var related = resp.records;
-            // eslint-disable-next-line
-            related_sample_recs.push(related)
-        }
-        // eslint-disable-next-line
-        var flat_arr = related_sample_recs.flat();
-        //if cant specify orderby
-        flat_arr = flat_arr.sort((a, b) => b.study_sample_id - a.study_sample_id)
-// eslint-disable-next-line
-        var send_to_backlog = splitArrIntoPages(flat_arr);
-        this.visibleSamplesRecords = send_to_backlog[0];
-        this.samplesBacklog = send_to_backlog;
-        */
+
         break;
         case 'samples':
         //this.clearSamplesRecordData()
@@ -767,33 +628,6 @@ export default {
         this.visibleSamplesRecords = sample_recs;
         console.log('setting sample records')
 
-        /*
-        // eslint-disable-next-line
-        const samples_to_compare = this.samplesBacklog.flat();
-        // eslint-disable-next-line
-        var page_1_metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, 0)
-        //set these to the correct vars
-        // eslint-disable-next-line
-        var results_total_count = page_1_metadata.totalCount
-// eslint-disable-next-line
-        var sample_res = [];
-        for (let i = 0; i < results_total_count; i += 100){
-          // eslint-disable-next-line
-          var element = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, i)
-          // eslint-disable-next-line
-            var recs = element.records
-            sample_res.push(recs)
-        }
-        // eslint-disable-next-line
-        sample_res = sample_res.flat();
-        // eslint-disable-next-line
-        var common1 = samples_to_compare.filter(x => sample_res.indexOf(x) !== -1)
-        //if API doesn't take orderby
-        common1 = common1.sort((a, b) => b.study_sample_id - a.study_sample_id)
-        var send_to_backlog = splitArrIntoPages(common1);
-        this.visibleSamplesRecords = send_to_backlog[0];
-        this.samplesBacklog = send_to_backlog;
-        */
       }
     },
 
@@ -824,11 +658,11 @@ export default {
             case 'patient':
             //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
 
-                var part_arr = this.shadedParticipants
-                console.log(part_arr)
+                //var part_arr = this.shadedParticipants
+                //console.log(part_arr)
                 var payload = [nodeData,selectedRecord, true]
-                this.shadedParticipants = part_arr.push(payload)
-                this.setShadedParticipants(this.shadedParticipants)
+                console.log(this.shadedParticipants)
+                this.setShadedParticipants(this.shadedParticipants.push(payload))
 
 
                 fillstyle ="#d10a00"
@@ -840,10 +674,11 @@ export default {
 
                 //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
 
-                var vis_arr = this.shadedVisits
+                //var vis_arr = this.shadedVisits
+                //console.log(vis_arr)
                 var payload1 = [nodeData,selectedRecord, true]
-                this.shadedVisits = vis_arr.push(payload1)
-                this.setShadedVisits(this.shadedVisits)
+                console.log(this.shadedVisits)
+                this.setShadedVisits(this.shadedVisits.push(payload1))
 
 
                 //logic for setting linking target
@@ -861,10 +696,10 @@ export default {
 
               //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
 
-                var samp_arr = this.shadedSamples
+                //var samp_arr = this.shadedSamples
                 var payload2 = [nodeData,selectedRecord, true]
-                this.shadedSamples = samp_arr.push(payload2)
-                this.setShadedSamples(this.shadedSamples)
+                console.log(this.shadedSamples)
+                this.setShadedSamples(this.shadedSamples.push(payload2))
 
 
                 //logic for setting linking target
@@ -1076,6 +911,7 @@ export default {
       this.visibleRecordCount['samples'] = data.length
     },
 
+    //NOTE: In the case where we have clicked on a record, we want to perform updateview for the downstream models only if aplicable
     updateView: function() {
       this.nextCol = 1 //reset hidden Canvas color scheme
       this.colorToNode = {}
@@ -1084,7 +920,98 @@ export default {
       this.recordPool = {}
 
       let vm = this
+      var model_arr = []
+      if (this.clickedAPatient){
+        model_arr = ['visits','samples']
+        var model_obj_p = vm.modelData
+        for (var x of model_arr){
+        //Need to change this. Turning modeldata obj into an array, filtering by each of the models that we want
+        //to apply changes to, and then converting back to an object
+        Object.fromEntries(Object.entries(model_obj_p).filter(([key]) => key.includes(x)));
+        }
+        vm.model_obj_p.map(x => {
+
+          // some fixed width that we will decide on
+          // TODO: clean up recordCount and x.count (use just one)
+          let recordCount = vm.visibleRecordCount[x.name]
+          x.count = recordCount
+          let numElem = recordCount < 100 ? recordCount : 100
+          let recs = d3.range(vm.startIndex, vm.startIndex + numElem ).map(function(el) {
+              return {
+                id: el,
+                study: vm.selectedStudy,
+                recordIndex: el-vm.startIndex,
+                parent: x,
+                recordId: null,
+                details: null,
+              }
+            })
+
+          vm.startIndex += numElem
+
+          // Record data is mapped to objects on the canvas
+          vm.recordData[x.id] = {
+            model: x.displayName,
+            showRecords: false,
+            nodes: recs,
+          }
+
+          // RecordPool is caching all records returned from API.
+          vm.recordPool[x.id] = {
+            model: x.displayName,
+            isPending: false,
+            nextPage: 0,
+            unMapped: [],
+            records: [],
+          }
+        })
+      }
+      else if (this.clickedAVisit){
+        model_arr = ['samples']
+        var model_obj_v = vm.modelData
+        for (var y of model_arr){
+        Object.fromEntries(Object.entries(model_obj_v).filter(([key]) => key.includes(y)));
+        }
+        vm.model_obj_v.map(x => {
+
+          // some fixed width that we will decide on
+          // TODO: clean up recordCount and x.count (use just one)
+          let recordCount = vm.visibleRecordCount[x.name]
+          x.count = recordCount
+          let numElem = recordCount < 100 ? recordCount : 100
+          let recs = d3.range(vm.startIndex, vm.startIndex + numElem ).map(function(el) {
+              return {
+                id: el,
+                study: vm.selectedStudy,
+                recordIndex: el-vm.startIndex,
+                parent: x,
+                recordId: null,
+                details: null,
+              }
+            })
+
+          vm.startIndex += numElem
+
+          // Record data is mapped to objects on the canvas
+          vm.recordData[x.id] = {
+            model: x.displayName,
+            showRecords: false,
+            nodes: recs,
+          }
+
+          // RecordPool is caching all records returned from API.
+          vm.recordPool[x.id] = {
+            model: x.displayName,
+            isPending: false,
+            nextPage: 0,
+            unMapped: [],
+            records: [],
+          }
+        })
+      }
+      else{
       vm.modelData.map(x => {
+
         // some fixed width that we will decide on
         // TODO: clean up recordCount and x.count (use just one)
         let recordCount = vm.visibleRecordCount[x.name]
@@ -1119,6 +1046,7 @@ export default {
           records: [],
         }
       })
+    }
 
       vm.binRegistry = Array(vm.binRegistrySize).fill(0)
       vm.modelData.forEach( x => {
