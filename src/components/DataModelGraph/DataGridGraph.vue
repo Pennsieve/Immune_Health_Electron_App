@@ -676,21 +676,28 @@ export default {
 
                 //var vis_arr = this.shadedVisits
                 //console.log(vis_arr)
-                var payload1 = [nodeData,selectedRecord, true]
                 console.log(this.shadedVisits)
-                this.setShadedVisits(this.shadedVisits.push(payload1))
-
+                var payload1 = [nodeData,selectedRecord, true]
+                var le_payload = this.shadedVisits.push(payload1)
+                this.setShadedVisits(le_payload)
+                console.log(this.shadedSamples.length)
+                console.log(this.shadedVisits.length)
 
                 //logic for setting linking target
                 var vis_arr_len = this.shadedVisits;
                 var samp_arr_len = this.shadedSamples;
                 if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
+                  console.log(vis_arr_len.length)
+                  console.log(samp_arr_len.length)
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
+                  console.log(to_be_linked)
+                  console.log(this.linkingTarget)
                   this.setLinkingTarget(to_be_linked)
+                  console.log(this.linkingTarget)
                 }
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
-                this.handleFilterChangeClick(nodeData, 'click');
+                //this.handleFilterChangeClick(nodeData, 'click');
                 break;
             case 'samples':
 
@@ -711,6 +718,7 @@ export default {
                   // eslint-disable-next-line
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   this.setLinkingTarget(to_be_linked)
+                  console.log(this.linkingTarget)
                 }
 
                 fillstyle ="#f0cc00"

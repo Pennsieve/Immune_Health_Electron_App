@@ -6,7 +6,7 @@
       </span>
       <template slot="buttons">
         <bf-button>
-          <a href="http://docs.pennsieve.io" target="_blank">
+          <a href="https://docs.pennsieve.io/page/penn-immune-health-app" target="_blank">
             Documentation
           </a>
         </bf-button>
