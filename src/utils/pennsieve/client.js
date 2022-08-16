@@ -52,13 +52,6 @@ class PennsieveClient {
         })
     }
 
-    // addToManifest(manifestId, filePath, callback) {
-    //     // set callback for IPC response
-    //     window.api.pennsieveAddToManifestResponse(callback)
-    //     // send add to manifest request message via IPC channel
-    //     window.api.pennsieveAddToManifestRequest(manifestId, filePath)
-    // }
-
     uploadManifest(manifestId) {
         return new Promise((resolve, reject) => {
             window.api.pennsieveUploadManifestResponse(function(event, response) {

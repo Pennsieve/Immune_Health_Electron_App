@@ -45,12 +45,6 @@ class PennsieveAgent {
                 )
         })
 
-        // ipcMain.on("pennsieveAddToManifestRequest", (event, args) => {
-        //     this.ps.addToManifest(args.manifestId, args.filePath, '.', async function(err, response) {
-        //         event.sender.send("pennsieveAddToManifestResponse", this.answer(err, response))
-        //     })
-        // })
-
         ipcMain.on("pennsieveUploadManifestRequest", (event, args) => {
             this.ps.uploadManifest(args.manifestId)
                 .then(response =>

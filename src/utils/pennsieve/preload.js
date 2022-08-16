@@ -19,12 +19,6 @@ contextBridge.exposeInMainWorld("api", {
     pennsieveCreateManifestResponse: function(func) {
         ipcRenderer.on("pennsieveCreateManifestResponse", (event, ...args) => func(event, ...args))
     },
-    // pennsieveAddToManifestRequest: function(manifestId, filePath) {
-    //     ipcRenderer.send("pennsieveAddToManifestRequest", {manifestId: manifestId, filePath: filePath});
-    // },
-    // pennsieveAddToManifestResponse: function(func) {
-    //     ipcRenderer.on("pennsieveAddToManifestResponse", (event, ...args) => func(event, ...args))
-    // },
     pennsieveUploadManifestRequest: function(manifestId) {
         ipcRenderer.send("pennsieveUploadManifestRequest", {manifestId: manifestId});
     },
