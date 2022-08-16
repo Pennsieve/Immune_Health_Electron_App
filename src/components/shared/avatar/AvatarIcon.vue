@@ -43,7 +43,8 @@
     },
     computed: {
       ...mapGetters([
-        'profile'
+        'profile',
+        'username'
       ]),
 
       /**
@@ -52,7 +53,7 @@
        * @returns {Object}
        */
       avatarProfile: function() {
-        return Object.keys(this.user).length
+        return Object.keys(this.username).length
           ? this.user
           : this.profile
       },

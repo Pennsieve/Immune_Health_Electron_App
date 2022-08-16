@@ -2,7 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import axios from 'axios'
 import moment from 'moment'
-import { pathOr, propOr, isEmpty } from 'ramda'
+import { pathOr, propOr, isEmpty, defaultTo, find, filter, propEq } from 'ramda'
 import toQueryParams from '@/utils/toQueryParams.js'
 import PennsieveClient from '@/utils/pennsieve/client.js'
 Vue.use(Vuex);
@@ -49,7 +49,12 @@ const getActivityDateRange = (days) => {
  */
 const getQueryParams = (params, apiKey) => {
   const dateRange = getActivityDateRange(params.dateRange.value)
-
+  console.log(dateRange)
+  console.log(apiKey)
+  console.log(params.orderDirection)
+  console.log(params.category.value)
+  console.log(params.userId.value)
+  console.log(params.cursor)
   return toQueryParams({
     api_key: apiKey,
     orderDirection: params.orderDirection,
@@ -126,6 +131,12 @@ const store = new Vuex.Store({
     filterApplicationCount: 0
   },
   getters: {
+    getOrgMemberByIntId: state => (id) => {
+      return defaultTo({}, find(propEq('intId', id), state.orgMembers))
+    },
+    getOrgMembersByIntId: state => (list) => {
+      return state.orgMembers.filter(member => list.includes(member.intId))
+    },
     orgMembers: state => state.orgMembers,
     getOrgMembers: state => () => state.orgMembers,
     getOrgMembersById: state => (list) => {
@@ -139,6 +150,9 @@ const store = new Vuex.Store({
     },
     userToken (state) {
       return propOr('', 'token', state.profile)
+    },
+    profile (state) {
+      return state.profile
     },
     isLoggedIn (state) {
       return state.profile !== null
@@ -350,7 +364,7 @@ const store = new Vuex.Store({
       console.log("attempting to fetch organization activity")
       const datasetId = datasetId
       //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
-      const endpoint = `https://api.pennsieve.io/datasets/${datasetId}/changelog/timeline`
+      const endpoint = `https://api.pennsieve.io/datasets/${IMMUNE_HEALTH_DATASET_ID}/changelog/timeline`
       const apiKey =  propOr('', 'token', state.profile)
       //const apiKey = this.userToken
       //import below from datasetModule.js in utils and uncomment

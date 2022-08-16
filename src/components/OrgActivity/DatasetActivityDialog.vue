@@ -68,7 +68,7 @@ import DialogBody from '../shared/dialog-body/DialogBody.vue'
 import DatasetActivityDetail from './DatasetActivityDetail.vue'
 
 import formatDateRange from '@/mixins/format-date'
-//import { ChangelogMessage } from '@/utils/constants'
+import { ChangelogMessage } from '@/utils/constants'
 
 export default {
   name: 'DatasetActivityDialog',
@@ -144,8 +144,9 @@ export default {
      * @param {String} eventType
      * @returns {String}
      */
-     /*
+
     renderActivityType: function(eventType) {
+      // eslint-disable-next-line
       if (ChangelogMessage.PUBLISHING.hasOwnProperty(eventType)) {
           const publishing = this.ChangelogMessage.PUBLISHING
           return publishing[eventType]
@@ -160,7 +161,7 @@ export default {
         }
         return ChangelogMessage[eventType]
     },
-    */
+
 
 
     /**
