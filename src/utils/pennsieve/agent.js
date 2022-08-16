@@ -16,28 +16,54 @@ class PennsieveAgent {
         this.ps = new Pennsieve();
 
         ipcMain.on("pennsieveLoginRequest", (event, args) => {
-            this.ps.reAuthenticate(async function(err, response) {
-                if (err) {
-                    event.sender.send("pennsieveLoginResponse", {status: 'error', error: err});
-                }
-                else {
-                    let user = response;
-                    event.sender.send("pennsieveLoginResponse", {status: 'success', result: user});
-                }
-            })
+            this.ps.reAuthenticate()
+                .then(response =>
+                    event.sender.send("pennsieveLoginResponse", {status: 'success', result: response})
+                )
+                .catch( err =>
+                    event.sender.send("pennsieveLoginResponse", {status: 'error', error: err})
+                )
         })
 
         ipcMain.on("pennsieveUseDatasetRequest", (event, args) => {
-            this.ps.useDataset(args.datasetId, async function (err, response) {
-                if (err) {
-                    event.sender.send("pennsieveUseDatasetResponse", {status: 'error', error: err});
-                }
-                else {
-                    event.sender.send("pennsieveUseDatasetResponse", {status: 'success', result: response});
-                }
-            })
+            this.ps.useDataset(args.datasetId)
+                .then(response =>
+                    event.sender.send("pennsieveUseDatasetResponse", {status: 'success', result: response})
+                )
+                .catch(err =>
+                    event.sender.send("pennsieveUseDatasetResponse", {status: 'error', error: err})
+                )
         })
 
+        ipcMain.on("pennsieveCreateManifestRequest", (event, args) => {
+            this.ps.createManifest('', args.targetBasePath, args.fileList)
+                .then(response =>
+                    event.sender.send("pennsieveCreateManifestResponse", {status: 'success', result: response})
+                )
+                .catch(err =>
+                    event.sender.send("pennsieveCreateManifestResponse", {status: 'error', error: err})
+                )
+        })
+
+        ipcMain.on("pennsieveUploadManifestRequest", (event, args) => {
+            this.ps.uploadManifest(args.manifestId)
+                .then(response =>
+                    event.sender.send("pennsieveUploadManifestResponse", {status: 'success', result: response})
+                )
+                .catch(err =>
+                    event.sender.send("pennsieveUploadManifestResponse", {status: 'error', error: err})
+                )
+        })
+
+    }
+
+    answer(err, response) {
+        if (err) {
+            return {status: 'error', error: err}
+        }
+        else {
+            return {status: 'success', result: response}
+        }
     }
 }
 

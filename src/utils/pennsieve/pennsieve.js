@@ -5,17 +5,11 @@ Copyright (c) 2022 Patryk Orzechowski | Wagenaar Lab | University of Pennsylvani
 ***/
 
 
-var PROTO_PATH = __dirname+'/protos/agent.proto'
-//var async = require('async');
-//var fs = require('fs');
-//var parseArgs = require('minimist');
-//var path = require('path');
-//var _ = require('lodash');
-var grpc = require('@grpc/grpc-js');
-var protoLoader = require('@grpc/proto-loader');
-//var protobuf = require("protobufjs/minimal");
+const PROTO_PATH = __dirname+'/protos/agent.proto'
+const grpc = require('@grpc/grpc-js');
+const protoLoader = require('@grpc/proto-loader');
 
-var packageDefinition = protoLoader.loadSync(
+const packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
     {keepCase: true,
      longs: String,
@@ -31,78 +25,133 @@ class Pennsieve {
     constructor(target='localhost:9000') { 
         //creating a connection stub
         const routeguide = grpc.loadPackageDefinition(packageDefinition);
-        this.client = new routeguide.protos.Agent(target, grpc.credentials.createInsecure());
+        this.client = new routeguide.protos.Agent('localhost:9000', grpc.credentials.createInsecure());
     }
 
 
     // Manifest Endpoints
-    createManifest(base_path, callback) {
-        var payload = { base_path : base_path };
-        this.client.createManifest(payload, callback);
+    createManifest(base_path, target_base_path='.', files = null) {
+        let payload = {
+            base_path : base_path,
+            target_base_path: target_base_path,
+            files: files
+        };
+        return new Promise ((resolve, reject) => {
+            this.client.createManifest(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    addToManifest(manifest_id, base_path, targetBasePath='.', callback) {
-        var payload = {
-                        manifest_id : manifest_id,
-                        base_path : base_path,
-                        targetBasePath : targetBasePath
-                      };
-        this.client.addToManifest(payload, callback);
+    addToManifest(manifest_id, base_path, target_base_path='.', files = null) {
+        let payload = {
+            manifest_id : manifest_id,
+            base_path : base_path,
+            target_base_path : target_base_path,
+            files: files
+        };
+        return new Promise ((resolve, reject) => {
+            this.client.addToManifest(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    removeFromManifest(manifest_id, file_id, callback) {
-        var payload = {
+    removeFromManifest(manifest_id, file_id) {
+        let payload = {
                         manifest_id : manifest_id,
                         file_id : file_id,
                       };
-        this.client.removeFromManifest(payload, callback);
+        return new Promise ((resolve, reject) => {
+            this.client.removeFromManifest(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    deleteManifest(manifest_id, callback) {
-        var payload = { manifest_id : manifest_id };
-        this.client.deleteManifest(payload, callback);
+    deleteManifest(manifest_id) {
+        let payload = { manifest_id : manifest_id };
+        return new Promise ((resolve, reject) => {
+            this.client.deleteManifest(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    resetManifest(manifest_id, callback) {
-        var payload = { manifest_id : manifest_id };
-        this.client.resetManifest(payload, callback);
+    resetManifest(manifest_id) {
+        let payload = { manifest_id : manifest_id };
+        return new Promise ((resolve, reject) => {
+            this.client.resetManifest(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    listManifests(callback) {
-        this.client.listManifests({}, callback);
+    listManifests() {
+        return new Promise ((resolve, reject) => {
+            this.client.listManifests({}, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    listManifestFiles(manifest_id, offset=0, limit=100, callback) {
-        var payload = {
+    listManifestFiles(manifest_id, offset=0, limit=100) {
+        let payload = {
                         manifest_id : manifest_id,
                         offset : offset,
                         limit : limit
                       };
-        this.client.listManifestFiles(payload, callback);
+        return new Promise ((resolve, reject) => {
+            this.client.listManifestFiles(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    syncManifest(manifest_id, callback) {
-        var payload = { manifest_id : manifest_id };
-        this.client.syncManifest(payload, callback);
+    syncManifest(manifest_id) {
+        let payload = { manifest_id : manifest_id };
+        return new Promise ((resolve, reject) => {
+            this.client.syncManifest(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
 
     // Upload Endpoints
-    uploadManifest(manifest_id, callback) {
-        var payload = { manifest_id : manifest_id };
-        this.client.uploadManifest(payload, callback);
+    uploadManifest(manifest_id) {
+        let payload = { manifest_id : manifest_id };
+        return new Promise ((resolve, reject) => {
+            this.client.uploadManifest(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    cancelUpload(manifest_id, cancel_all=true, callback) {
-        var payload = {
+    cancelUpload(manifest_id, cancel_all=true) {
+        let payload = {
                         manifest_id : manifest_id,
                         cancel_all : cancel_all
                       };
-        this.client.cancelUpload(payload, callback);
+        return new Promise ((resolve, reject) => {
+            this.client.cancelUpload(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
 
-    // Server Endpoints
+    // Server Endpoints  // TODO: figure out subscribe/unsubscribe
     subscribe(id, callback) {
         var payload = { id : id };
         this.client.subscribe(payload, callback);
@@ -115,27 +164,47 @@ class Pennsieve {
 
 
     //User Endpoints
-    getUser(callback) {
-        this.client.getUser({}, callback);
+    getUser() {
+        return new Promise ((resolve, reject) => {
+            this.client.getUser({}, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    switchProfile(profile, callback) {
-        var payload = { profile : profile };
-        this.client.switchProfile(payload, callback);
+    switchProfile(profile) {
+        let payload = { profile : profile };
+        return new Promise ((resolve, reject) => {
+            this.client.switchProfile(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
-    reAuthenticate(callback) {
-        this.client.reAuthenticate({}, callback);
+    reAuthenticate() {
+        return new Promise ((resolve, reject) => {
+            this.client.reAuthenticate({}, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
 
     // Datasets Endpoints
-    useDataset(dataset_id, callback) {
-        var payload = { dataset_id : dataset_id };
-        this.client.useDataset(payload, callback);
+    useDataset(dataset_id) {
+        let payload = { dataset_id : dataset_id };
+        return new Promise ((resolve, reject) => {
+            this.client.useDataset(payload, (err, data) => {
+                if (err) return reject(err)
+                resolve(data)
+            })
+        })
     }
 
 }
 
 
-export default Pennsieve
+module.exports = Pennsieve

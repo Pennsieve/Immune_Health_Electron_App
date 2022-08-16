@@ -10,18 +10,60 @@ class PennsieveClient {
     constructor() {
     }
 
-    login(callback) {
-        // set callback for IPC response
-        window.api.pennsieveLoginResponse(callback)
-        // send login request message via IPC channel
-        window.api.pennsieveLoginRequest()
+    async login() {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveLoginResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveLoginRequest()
+        })
     }
 
-    useDatset(datasetNodeId, callback) {
-        // set callback for IPC response
-        window.api.pennsieveUseDatasetResponse(callback)
-        // send use dataset request message via IPC channel
-        window.api.pennsieveUseDatasetRequest(datasetNodeId)
+    async useDatset(datasetNodeId) {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveUseDatasetResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveUseDatasetRequest(datasetNodeId)
+        })
+    }
+
+    async createManifest(fileList, targetBasePath='.') {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveCreateManifestResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveCreateManifestRequest(fileList, targetBasePath)
+        })
+    }
+
+    uploadManifest(manifestId) {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveUploadManifestResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveUploadManifestRequest(manifestId)
+        })
     }
 }
 

@@ -78,139 +78,6 @@
             >
           </div>
 
-          <!-- these "warnings" may be obsolete, or we can repurpose for issues with Agent -->
-          <!-- COMMENT OUT TABLE VIEWS OF FILES TO BE UPLOADED
-          <div
-            v-if="showWarnings"
-            class="bf-upload-warning-wrap"
-          >
-            <p v-if="hasWarnings">
-              We've detected some errors. Continuing may affect your ability to use built-in viewers for some data.
-            </p>
-          </div>
-
-          <div
-            v-if="(hasItems(fileList) || hasItems(packageList)) && !errorPreflight"
-            ref="packageWrap"
-            class="bf-upload-packages-wrap"
-            :class="[ hasWarnings ? 'has-warnings' : '' ]"
-          >
-            <div
-              v-if="hasWarnings"
-              class="warning-packages-wrap"
-            >
-              <bf-upload-package
-                v-for="item in warningPackages"
-                :key="item.uploadId"
-                :item="item"
-                :name="item.packageName"
-                :show-path="true"
-                @remove-package="removePackage"
-                @toggle-files="checkOverflow($refs.packageWrap)"
-              />
-            </div>
-
-            <div class="good-packages-wrap">
-              <bf-upload-package
-                v-for="item in goodPackages"
-                :key="item.uploadId"
-                :item="item"
-                :name="item.packageName"
-                :is-uploaded="item.isUploaded"
-                :show-path="true"
-                @remove-package="removePackage"
-                @toggle-files="checkOverflow($refs.packageWrap)"
-              />
-
-              <bf-upload-package
-                v-for="file in filesProcessing"
-                :key="file.uploadId"
-                :item="file"
-                :name="file.fileName"
-                :processing="file.processing"
-                :show-path="true"
-                @remove-package="removePackage"
-                @toggle-files="checkOverflow($refs.packageWrap)"
-              />
-            </div>
-          </div>
-
-          <div
-            class="uploading-info"
-            :class="showInfo ? 'show-info' : ''"
-          >
-            <div class="uploading-info-copy">
-              <h2>Uploading to Pennsieve</h2>
-              <p>
-                When you upload certain types of data, we attempt to combine them into
-                <strong>Packages</strong>. Packages allow you to use our interactive viewers to playback, zoom, annotate and discuss directly on your data. If we can’t determine how to process your data, we’ll upload your file in a generic format.
-              </p>
-
-              <div class="uploading-info-actions">
-                <bf-button
-                  class="secondary"
-                  @click="dismissInfo"
-                >
-                  Got it
-                </bf-button>
-                <p>
-                  <a
-                    href="https://docs.pennsieve.io/docs/supported-file-formats"
-                    target="_blank"
-                  >
-                    Learn More About Packages
-                  </a>
-                </p>
-              </div>
-            </div>
-            <div class="uploading-info-image">
-              <img
-                src="/static/images/illustrations/illo-data-management.svg"
-                alt="packages illustration"
-              >
-            </div>
-          </div>
-
-          <div
-            v-if="errorPreflight"
-            class="uploading-error upload-content"
-          >
-            <div>
-              <iron-icon
-                icon="blackfynn:warning-circle"
-              />
-              <h3>{{ errorPreflight === 'error' ? 'File processing has failed' : 'Experiencing Heavy Traffic' }}</h3>
-              <p>
-                {{ errorPreflight === 'error'
-                  ? 'We had a problem attempting to process your files. There is either a problem with your Internet connection or our servers aren’t responding. You can retry or cancel your upload.'
-                  : `We're experiencing heavy traffic and cannot complete the upload request at this time.  Please try again later or cancel your upload.`
-                }}
-              </p>
-              <div>
-                <bf-button
-                  class="secondary"
-                  @click="cancelQueue"
-                >
-                  Cancel
-                </bf-button>
-                <bf-button
-                  class="upload-retry"
-                  @click="retryGetPackages"
-                >
-                  Retry
-                </bf-button>
-              </div>
-            </div>
-            <a
-              class="contact-us"
-              href="#"
-              @click.prevent="openIntercom"
-            >
-              Need help? Contact Us
-            </a>
-          </div>
-          -->
-
           <div
               v-if="hasItems(fileListMap)"
               ref="fileListMapWrap"
@@ -299,36 +166,14 @@
 </template>
 
 <script>
-// TODO List
-// 1. import Pennsieve Agent JavaScript (in main.js?)
-// 2a. crate Pennsieve object (keep in Store?) (in login?)
-// 2b. switch profile and re-authenticate (in login?)
-// 3. use dataset (in login?)
-// 4. create manifest (with initial upload offering)
-// 5. add/remove files
-// 6. initiate upload
 
-// TODO how to handle adding files
-// 1. Input:
-// 2. drag and drop:
-// Note: may need to keep track of files here, and prevent duplicates
-// when user presses "Upload" then create the manifest from the file list
-// and initiate upload. The Agent does not prevent duplicates.
-
-// TODO Figure out / Questions
-// 1. how do we specify target path for uploads? (by name? with leading slash? by collection nodeId?)
-
-
-//  import Vue from 'vue'
 import qq from 'fine-uploader/lib/core'
 import { mapActions, mapGetters, mapState } from 'vuex';
 import BfButton from '../shared/BfButton.vue'
 import BfDialog from '../shared/bf-dialog/bf-dialog.vue'
-// import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
 import CheckOverflow from '../../mixins/check-overflow/index'
 import Sorter from '../../mixins/sorter'
 import Request from '../../mixins/request';
-//import FileIcon from '../../mixins/file-icon'
 import debounce from 'lodash/debounce'
 import {v1 as uuidv1} from 'uuid'
 import {
@@ -340,12 +185,10 @@ import {
   findIndex,
   init,
   pathOr,
-  pluck,
   prop,
   propEq,
   propOr,
-  split,
-  sum
+  split
 } from 'ramda';
 import EventBus from '../../utils/event-bus.js';
 import PennsieveClient from '@/utils/pennsieve/client.js'
@@ -364,7 +207,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       FilesTable,
       BfButton,
       BfDialog,
-      // BfUploadPackage
     },
 
     mixins: [Sorter, CheckOverflow, Request,
@@ -380,6 +222,9 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
     data: function() {
       return {
+        isDragging: false,
+        showInfo: false,
+        droppedFiles: [],
         fileListMap: {},
         fileList: [],
         packageList: [],
@@ -391,7 +236,9 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         recordId: '',
         uploadListId: -1, // start at -1 because this is incremented for every file added
         ps: null,
-        selectedFiles: null
+        selectedFiles: null,
+        datasetIdInUse: '',
+        uploadTargetFolder: 'staging'
       }
     },
 
@@ -450,14 +297,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
           return item.warnings.length === 0
         })
       },
-      /*
-      onboardingEventsUrl() {
-        const apiUrl = propOr('', 'apiUrl', this.config)
-        if (apiUrl && this.userToken) {
-          return `${apiUrl}/onboarding/events?api_key=${this.userToken}`
-        }
-      }
-      */
     },
 
     watch: {
@@ -525,7 +364,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        * Cancel queueing files for upload
        */
       cancelQueue: function() {
-        // this.uploader.clearStoredFiles()
         this.resetQueue()
         this.onClose()
       },
@@ -544,14 +382,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         this.modelId = ''
         this.recordId = ''
         this.clearUploadedFiles()
+        this.$emit('close-upload-dialog')
       },
 
       onOverlayClick: function() {
-        if (this.isAddingFiles) {
-          this.cancelQueue()
-        } else {
-          this.onClose()
-        }
         this.$emit('close-upload-dialog')
       },
 
@@ -573,7 +407,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         // Reset file input
         this.$refs.inputFile.value = ''
       },
-      //ON first instance of this, we want to call createManifest(), which will return the newly created manifest ID (for this upload)
 
       /**
        * onDrop(): handles the drag-and-drop of a file or folder into the upload area
@@ -770,19 +603,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         )(list),
 
       /**
-       * Cancel package upload
-       * @param {Object} item
-       */
-      cancelPackageUpload: function(item) {
-        const uploads = this.uploader.getUploads()
-        const files = propOr([], 'files', item)
-        files.forEach(file => {
-          const uploadId = this.getFineUploaderId(file, uploads)
-          this.uploader.cancel(uploadId)
-        })
-      },
-
-      /**
        * Retry get packages
        */
       retryGetPackages: function() {
@@ -882,63 +702,32 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        * Start uploading stored files
        */
       startUpload: function() {
-        //Here, we subscribe to the channel (NEED ARGS) by calling p.subscribe({}). Check function return, this should provide us with the upload progress for each file.
-        //
-        //uploadManifest(manifest_id, callback)
+        // check that there are files in the fileListMap
+        let ps = new PennsieveClient()
+        if (this.fileListMap.size > 0) {
+          // generate list of files as an Array
+          let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
 
+          // create a manifest passing in the list of files
+          ps.createManifest(fileList, this.uploadTargetFolder)
+            .then(response => {
+              let manifestId = response.manifest_id
+              // start upload
+              ps.uploadManifest(manifestId)
+                .catch(err => {
+                  console.log('error:')
+                  console.log(err)
+                })
+            })
+            .catch(err => {
+              console.log('error:')
+              console.log(err)
+            })
 
-        // Add files to fine uploader... for each of these, must create manifest
-        this.uploader.addFiles(pluck('file', this.fileList))
-
-        // Add to uploadList
-        const packageList = this.packageList.slice()
-        packageList.forEach(thePackage => {
-          thePackage.uploadDestination = this.uploadDestination
-          // Set recordId and modelId properties on the package
-          if (this.modelId && this.recordId) {
-            thePackage.recordId = this.recordId
-            thePackage.modelId = this.modelId
-          }
-        })
-
-        this.uploadList.push(...packageList)
-
-        this.uploader.setCustomHeaders({
-          Authorization: `bearer ${this.API_KEY}`
-        })
-
-        // Get credentials to upload for queued files
-        // this.getCreds()
-
-        // Set shouldUpload flag to start upload when credentials are received
-        // this.shouldUpload = true
-
-        this.uploader.uploadStoredFiles()
-
-        // Set uploading state
-        this.$store.dispatch('updateUploadStatus', true)
-
-        // Add file size
-        const totalSize = sum(pluck('groupSize', packageList))
-        this.$store.dispatch('updateUploadRemainingAdd', totalSize)
-        this.$store.dispatch('updateTotalUploadSize', totalSize)
-
-        // Add file count
-        this.$store.dispatch('uploadCountAdd', this.fileList.length)
-
-        // Reset the queue
-        this.resetQueue()
-
-        // Change view to upload status
-        this.isAddingFiles = false
-
-        // Clear recordId state
-        this.recordId = ''
-
-        //WHEN done, we want to unsubscribe w/ p.unsubscribe()
+        }
+        // close the upload dialog
+        this.onClose()
       },
-
-
 
       /**
        * Reset upload queue
@@ -1006,28 +795,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       },
 
       /**
-       * Sends onboarding event
-       */
-       /*
-      sendOnboardingEventsRequest: function() {
-        if (this.onboardingEventsUrl) {
-          this.sendXhr(this.onboardingEventsUrl, {
-            method: 'POST',
-            body: 'AddedFile',
-            header: {
-              Authorization: `bearer ${this.API_KEY}`
-            }
-          })
-            .then(response => {
-              const onboardingEvents = [...this.onboardingEvents, 'AddedFile']
-              this.updateOnboardingEvents(onboardingEvents)
-            })
-            .catch(this.handleXhrError.bind(this))
-        }
-      },
-      */
-
-      /**
        * Update files list when a file has completed uploading
        * @params {Array}
        */
@@ -1088,304 +855,15 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     mounted: function() {
       this.resetQueue()
       this.ps = new PennsieveClient()
-      this.ps.useDatset(this.datasetNodeId, function() {})
-
-      // let customheaders = {}
-      //
-      // Set header if userToken is available
-      // if (this.userToken) {
-      //   customheaders = {
-      //     Authentication: `bearer ${this.userToken}`
-      //   }
-      // }
-      // eslint-disable-next-line no-undef
-      // this.uploader = new qq.FineUploaderBasic({
-      //   element: this.$refs.bfUpload,
-      //   button: this.$refs.btnUpload,
-      //   autoUpload: false,
-      //
-      //   request: {
-      //     customheaders
-      //   },
-      //
-      //   validation: {
-      //     allowEmpty: true
-      //   },
-      //
-      //   chunking: {
-      //     enabled: true,
-      //     /**
-      //      * Set part size for each file
-      //      * This is set per file, from data received by the preview endpoint
-      //      * @param {Integer} id
-      //      */
-      //     partSize: id => {
-      //       const file = this.uploader.getFile(id)
-      //       const chunkSize = pathOr(200000, ['chunkedUpload', 'chunkSize'], file)
-      //       return chunkSize
-      //     },
-      //     mandatory: true
-      //   },
-      //
-      //   retry: {
-      //     enableAuto: true,
-      //     maxAutoAttempts: 5
-      //   },
-      //
-      //   resume: {
-      //     enabled: false
-      //   },
-      //
-      //   objectProperties: {
-      //     key: id => {
-      //       const file = this.uploader.getFile(id)
-      //       const name = file.name
-      //       const importId = file.importId
-      //       // eslint-disable-next-line no-undef
-      //       return qq.format(
-      //         '{}/{}',
-      //         `${this.$store.state.profile.email}/${importId}`,
-      //         name
-      //       )
-      //     },
-      //     bucket: this.$store.state.config.bucketName
-      //   },
-      //
-      //   callbacks: {
-      //     onUpload: id => {
-      //       // Get file to get import ID
-      //       const file = this.uploader.getFile(id)
-      //       const importId = file.importId
-      //       const organizationId = pathOr(
-      //         '',
-      //         ['organization', 'id'],
-      //         this.activeOrganization
-      //       )
-      //       const uploadListFile = this.getUploadListFile(id)
-      //
-      //       const multipartId = propOr('', 'multipartUploadId', uploadListFile)
-      //       const endpoint = `${
-      //         this.config.apiUrl
-      //       }/upload/fineuploaderchunk/organizations/${organizationId}/id/${importId}?multipartId=${multipartId}`
-      //
-      //       // Set endpoint for file
-      //       this.uploader.setEndpoint(endpoint, id)
-      //
-      //       Vue.set(uploadListFile, 'uploading', true)
-      //     },
-      //     /*
-      //     onAllComplete: (succeeded, failed) => {
-      //       this.$store.dispatch('updateUploadStatus', false)
-      //     },
-      //     */
-      //     /**
-      //      * Callback when a file has completed uploading
-      //      * @param {number} id
-      //      */
-      //     onComplete: (id, name, response) => {
-      //       // Check if all files in a package, and let API know
-      //       const file = this.uploader.getFile(id)
-      //       const importId = prop('importId', file)
-      //
-      //       // Check if all files in package are done
-      //       const packageIndex = findIndex(
-      //         propEq('importId', importId),
-      //         this.uploadList
-      //       )
-      //
-      //       // If the response failed, show an error message for the file
-      //       if (!response.success) {
-      //         this._onPackageCompleteError(packageIndex)
-      //         return
-      //       }
-      //
-      //       // Set uploading and complete properties
-      //       const uploadListFile = this.getUploadListFile(id)
-      //       Vue.set(uploadListFile, 'complete', true)
-      //       Vue.set(uploadListFile, 'uploading', false)
-      //
-      //       // Remove files count from state
-      //       this.$store.dispatch('uploadCountRemove', 1)
-      //
-      //       // Remove file size
-      //       this.$store.dispatch('updateUploadRemainingRemove', file.size)
-      //
-      //       if (uploadListFile && importId) {
-      //         const packageGroup = this.uploadList[packageIndex]
-      //         const completeFiles = filter(
-      //           propEq('complete', true),
-      //           packageGroup.files
-      //         )
-      //         const datasetId = propOr(
-      //           prop('id', this.uploadDestination),
-      //           'datasetId',
-      //           this.uploadDestination
-      //         )
-      //
-      //         if (equals(completeFiles, packageGroup.files)) {
-      //           let dataParams = `datasetId=${datasetId}`
-      //
-      //           // If uploading to a collection
-      //           if (packageGroup.uploadDestination.packageType !== 'DataSet') {
-      //             dataParams += `&destinationId=${
-      //               packageGroup.uploadDestination.id
-      //             }`
-      //           }
-      //
-      //           const options = {
-      //             method: 'POST',
-      //             headers: {
-      //               Authorization: `bearer ${this.userToken}`,
-      //               'X-SESSION-ID': this.userToken
-      //             },
-      //             retries: 3,
-      //             retryDelay: 1000,
-      //             retryBackoff: 2,
-      //             retryOn: [429, 503]
-      //           }
-      //
-      //           // If adding a relationship to a record
-      //           if (packageGroup.modelId && packageGroup.recordId) {
-      //             options.body = {
-      //               conceptId: packageGroup.modelId,
-      //               instanceId: packageGroup.recordId,
-      //               targets: [
-      //                 {
-      //                   linkTarget: packageGroup.recordId,
-      //                   relationshipType: 'belongs_to',
-      //                   relationshipDirection: 'FromTarget'
-      //                 }
-      //               ]
-      //             }
-      //           }
-      //
-      //           // Send info to API
-      //           const organizationId = pathOr(
-      //             '',
-      //             ['organization', 'id'],
-      //             this.activeOrganization
-      //           )
-      //           fetchRetry(
-      //             `${this.config.apiUrl}/upload/complete/organizations/${organizationId}/id/${importId}?${dataParams}`,
-      //             options
-      //           )
-      //             .then(response => response.json())
-      //             .then(response => {
-      //               // update relationship table on record page
-      //               if (
-      //                 packageGroup.modelId &&
-      //                 packageGroup.recordId &&
-      //                 packageGroup.recordId === this.$route.params.instanceId
-      //               ) {
-      //                 EventBus.$emit('refresh-table-data', {
-      //                   name: 'package',
-      //                   displayName: 'Files',
-      //                   count: 1,
-      //                   type: 'Add'
-      //                 })
-      //               }
-      //
-      //               this.packageList = this.packageList.map(item => {
-      //                 if (item.importId === importId) {
-      //                   item.isUploaded = true
-      //                 }
-      //                 return item
-      //               })
-      //
-      //               this.uploadList = this.uploadList.map(item => {
-      //                 if (item.importId === importId) {
-      //                   item.isUploaded = true
-      //                 }
-      //                 return item
-      //               })
-      //
-      //               // update files list
-      //               response.forEach(item => {
-      //                 // add package dto to each item in uploadList
-      //                 const uploadListPkg = find(
-      //                   propEq('importId', item.manifest.importId),
-      //                   this.uploadList
-      //                 )
-      //
-      //                 // Add file to files list
-      //                 const packageDTO =
-      //                   uploadListPkg.previewPath === null
-      //                     ? propOr({}, 'package', item)
-      //                     : pathOr({}, ['package', 'parent'], item)
-      //
-      //                 EventBus.$emit('add-uploaded-file', {
-      //                   packageDTO,
-      //                   uploadDestination: this.uploadDestination
-      //                 })
-      //
-      //                 this.$set(uploadListPkg, 'package', item.package)
-      //               })
-      //
-      //               // check for onboarding event state for uploading a file
-      //               if (this.onboardingEvents.indexOf('AddedFile') === -1) {
-      //                 // make post request
-      //                 this.sendOnboardingEventsRequest()
-      //               }
-      //
-      //               // track file
-      //               EventBus.$emit('track-event', {
-      //                 name: 'File Uploaded'
-      //               })
-      //             })
-      //             /*
-      //             .catch((err) => {
-      //               this._onPackageCompleteError(packageIndex)
-      //             })
-      //             */
-      //         }
-      //       }
-      //     },
-      //     // eslint-disable-next-line no-unused-vars
-      //     onProgress: (id, name, uploadedBytes, totalBytes) => {
-      //       const uploadListFile = this.getUploadListFile(id)
-      //
-      //       Vue.set(uploadListFile, 'totalUploaded', uploadedBytes)
-      //     },
-      //
-      //     /**
-      //      * Callback when item has been canceled
-      //      */
-      //      // eslint-disable-next-line no-unused-vars
-      //     onCancel: (id, name) => {
-      //       if (this.isAddingFiles) {
-      //         // Remove from fileList
-      //         const index = findIndex(propEq('uploadId', id), this.fileList)
-      //         this.fileList.splice(index, 1)
-      //       } else {
-      //         const uploadListFile = this.getUploadListFile(id)
-      //         Vue.set(uploadListFile, 'canceled', true)
-      //
-      //         const file = this.uploader.getFile(id)
-      //         const packageIndex = findIndex(
-      //           propEq('importId', file.importId),
-      //           this.uploadList
-      //         )
-      //         const packageGroup = this.uploadList[packageIndex]
-      //
-      //         const canceledFiles = filter(
-      //           propEq('canceled', true),
-      //           packageGroup.files
-      //         )
-      //
-      //         // If all files for the package have been canceled, remove package from uploadList
-      //         if (equals(canceledFiles, packageGroup.files)) {
-      //           this.uploadList.splice(packageIndex, 1)
-      //         }
-      //       }
-      //     },
-      //     // eslint-disable-next-line no-unused-vars
-      //     onSubmit: (id, name) => {
-      //       const file = this.uploader.getFile(id)
-      //       const upload = this.uploader.getUploads({ id })
-      //       upload.uploadId = file.uploadId
-      //     }
-      //   }
-      // })
+      this.ps.useDatset(this.datasetNodeId)
+        .then(response => {
+          this.datasetIdInUse = response.dataset_id
+        })
+        .catch(err => {
+          // TODO: raise a toast notification?
+          console.log('useDatset() failure:')
+          console.log(err)
+        })
     }
   }
 </script>
