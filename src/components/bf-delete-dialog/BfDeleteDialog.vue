@@ -139,18 +139,18 @@
       deleteFiles: function() {
         const fileIds = this.selectedFiles.map(item => item.content.id)
 
-        this.sendXhr(this.deleteUrl, {
+        this.sendXhr(`https://api.pennsieve.io/data/delete?api_key=${this.userToken}`, {
           method: 'POST',
           body: { things: fileIds }
         })
         .then(response => {
-          this.$emit('file-delete', response)
-          this.closeDialog()
+          console.log("files deleted")
         })
         .catch(response => {
           this.handleXhrError(response)
         })
       }
+
     }
   }
 </script>

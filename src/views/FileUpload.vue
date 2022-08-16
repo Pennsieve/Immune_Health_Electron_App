@@ -79,7 +79,7 @@
             v-if="hasFiles"
             :data="files"
             :multiple-selected="multipleSelected"
-            @delete="showDelete"
+            @delete="deleteIt"
             @process="processFile"
             @copy-url="getPresignedUrl"
             @selection-change="setSelectedFiles"
@@ -345,7 +345,7 @@ export default {
       //const conceptName = propOr('', 'name', this.concept)
       //const displayName = propOr('', 'displayName', this.concept)
       //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
-      var destination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:26ccb088-419b-4e48-bbe6-5bd54847656d';
+      var destination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:42632589-b052-453d-ad03-23701ab595df'
       this.moveItems(destination, this.selectedFiles);
       const numRequests = this.selectedFiles.size
       const plural = numRequests === 1 ? '' : 's'
@@ -411,13 +411,43 @@ export default {
         .catch(this.handleXhrError.bind(this))
     },
 
+    deleteIt: function (){
+      const fileIds = this.selectedFiles.map(item => item.content.id)
+
+      this.sendXhr(`https://api.pennsieve.io/data/delete?api_key=${this.userToken}`, {
+        method: 'POST',
+        body: { things: fileIds }
+      })
+      .then(response => {
+        console.log("files deleted", response)
+      })
+      .catch(response => {
+        this.handleXhrError(response)
+      })
+    },
     /**
     * Reset selected files state
     */
    resetSelectedFiles: function () {
-     console.log("selected files reset")
+      /*
+       const fileIds = this.selectedFiles.map(item => item.content.id)
+
+       this.sendXhr(`https://api.pennsieve.io/data/delete?api_key=${this.userToken}`, {
+         method: 'POST',
+         body: { things: fileIds }
+       })
+       .then(response => {
+         console.log("files deleted", response)
+       })
+       .catch(response => {
+         this.handleXhrError(response)
+       })
+       */
+     console.log("selected files resetting")
      this.selectedFiles = []
      this.lastSelectedFile = {}
+     //refresh after moving
+     this.fetchFiles()
    },
 
    /**
@@ -436,11 +466,13 @@ export default {
     removeItems: function (items) {
       console.log("selected files are",items)
       // Remove all successfully deleted files RETURN TO THIS...need to splice out files from display
+      console.log("file len before loop is ", this.files.length)
       for (let i = 0; i < items.length; i++) {
         console.log(i)
         const fileIndex = findIndex(pathEq(['content', 'id'], items[i]), this.files)
         this.files.splice(fileIndex, 1)
       }
+      console.log("file len after loop is ", this.files.length)
       // Resort files
       this.sortColumn(this.sortBy, this.sortDirection)
       console.log("resetting selected files")
@@ -466,12 +498,15 @@ export default {
           }
         })
           .then(response => {
-            this.onMoveItems(response)
+            //this.onMoveItems(response)
+            console.log(response)
+            console.log('selected files are: ',this.selectedFiles)
           })
           .catch(response => {
             this.handleXhrError(response)
           })
       }
+      this.removeItems(this.selectedFiles)
     },
 
     /**
@@ -554,22 +589,6 @@ export default {
         ? subtype
         : defaultType
     },
-
-    /**
-     * Show delete dialog
-     */
-    showDelete: function () {
-      this.$refs.deleteDialog.visible = true
-    },
-    /**
-     * Handler for delete XHR
-     */
-     /*
-    onDelete: function (response) {
-      //const successItems = propOr([], 'success', response)
-      //this.removeItems(successItems)
-    },
-    */
 
     /**
      * Set selected files
