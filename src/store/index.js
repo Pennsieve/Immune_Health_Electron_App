@@ -416,19 +416,24 @@ const store = new Vuex.Store({
     updateUploadRemainingAdd: ({ commit }, evt) => commit('UPDATE_UPLOAD_REMAINING_ADD', evt),
     async login({ commit, dispatch, state }) {
       let ps = new PennsieveClient()
-      ps.login(async (event, response) => {
-        if (response.status === 'success') {
-          await commit('UPDATE_PROFILE',{
-            firstName: response.result.name.split(' ')[0],
-            lastName: response.result.name.split(' ')[1],
-            token: response.result.session_token
-          })
+      ps.login()
+        .then(async function(user) {
+          await dispatch('updateProfile', user)
           await dispatch('fetchStudies')
           await dispatch('setSelectedStudy', state.allStudies[0])
           await dispatch('setScientificUnits')
-        } else {
-          // TODO: what to do in case of an error?
-        }
+        })
+        .catch(err => {
+          // TODO: what to do in case of an error? (perhaps add toast messages?)
+          console.log('login() failed, err:')
+          console.log(err)
+        })
+    },
+    async updateProfile({commit}, user) {
+      await commit('UPDATE_PROFILE',{
+        firstName: user.name.split(' ')[0],
+        lastName: user.name.split(' ')[1],
+        token: user.session_token
       })
     },
     async setSelectedStudy({ commit }, data) {
