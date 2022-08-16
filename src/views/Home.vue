@@ -6,7 +6,7 @@
       </span>
       <template slot="buttons">
         <bf-button>
-          <a href="http://docs.pennsieve.io" target="_blank">
+          <a href="https://docs.pennsieve.io/page/penn-immune-health-app" target="_blank">
             Documentation
           </a>
         </bf-button>
@@ -55,13 +55,10 @@
     <br>
     <h1 class="orgtext">Immune Health Organization Activity</h1>
         <div v-if="userToken" class="orgtext">
-          <h3>Org activity should be showin below'</h3>
            <org-activity/>
         </div>
         <div v-else class="orgtext">
           <h3>Please sign in to view organization activity</h3>
-          <!--get rid of this after testing -->
-          <org-activity/>
         </div>
     </div>
   </div>

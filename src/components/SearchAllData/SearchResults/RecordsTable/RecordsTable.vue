@@ -179,12 +179,12 @@ export default {
 .el-table {
   width: 100%;
 }
-.el-table--border /deep/ td {
+.el-table--border ::v-deep td {
   border-right: 1px solid transparent;
 }
 
-/deep/ .hover-row,
-/deep/ .el-table__row:hover {
+::v-deep .hover-row,
+::v-deep .el-table__row:hover {
   background: #f5f6f9;
 }
 .btn-selection-action {
@@ -193,7 +193,7 @@ export default {
   font-size: 14px;
 }
 
-/deep/ .el-table {
+::v-deep .el-table {
   border-radius: 4px;
   tr {
     transition: background-color 0.3s ease-in-out;

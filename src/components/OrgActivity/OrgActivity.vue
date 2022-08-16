@@ -146,19 +146,17 @@ export default {
       'orgMembers',
       'dataset',
       'config',
-      'userToken'
-    ]),
-
-    ...mapState('datasetModule', [
-      'datasetActivity',
+      'userToken',
       'datasetActivityParams',
+      'datasetActivity',
       'isLoadingDatasetActivity'
     ]),
 
     ...mapGetters([
       'getOrgMembersById',
       'datasetId',
-      'userToken'
+      'userToken',
+      'datasetActivityParams'
     ]),
 
     /**
@@ -183,7 +181,7 @@ export default {
      */
     getDatasetUsersUrl: function() {
       const datasetId = this.datasetId
-      const apiKey = this.userToken()
+      const apiKey = this.userToken
       return  `https//:api.pennsieve.io/datasets/${datasetId}/collaborators/users?api_key=${apiKey}`
     },
 
@@ -251,13 +249,13 @@ export default {
 
   methods: {
     //can likely omit datset module
-    ...mapActions(
+    ...mapActions([
       'updateDatasetActivityCategory',
       'updateDatasetActivityUserId',
       'updateDatasetActivityDateRange',
       'updateDatasetActivityOrderDirection',
       'fetchDatasetActivity',
-      'clearDatasetActivityState'),
+      'clearDatasetActivityState']),
 
     /**
      * Set sort direction
@@ -309,7 +307,7 @@ export default {
 .dataset-activity {
   background: #fff;
 }
-/deep/ .bf-stage-content {
+::v-deep .bf-stage-content {
   display: flex;
   flex-direction: column;
 }

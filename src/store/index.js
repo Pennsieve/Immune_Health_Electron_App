@@ -2,15 +2,13 @@ import Vue from "vue";
 import Vuex from "vuex";
 import axios from 'axios'
 import moment from 'moment'
-import { pathOr, propOr, isEmpty } from 'ramda'
+import { pathOr, propOr, isEmpty, defaultTo, find, filter, propEq } from 'ramda'
 import toQueryParams from '@/utils/toQueryParams.js'
 import PennsieveClient from '@/utils/pennsieve/client.js'
 Vue.use(Vuex);
 
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
-// HARDCODED FOR NOW: UPDATE apiKey VALUE WITH A VALID LOGGED IN USER API TOKEN TO GET STUDIES POPULATED
-const API_KEY = 'eyJraWQiOiJwcjhTaWE2dm9FZTcxNyttOWRiYXRlc3lJZkx6K3lIdDE4RGR5aGVodHZNPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI2YzViZGUwMS1mM2U1LTRhYzQtYmZkYi1mODgzYjkyZTQ1YzYiLCJkZXZpY2Vfa2V5IjoidXMtZWFzdC0xXzk5NjhiOTUyLTFlY2EtNDk2Yi1hOTEwLTMzODA5MzlmZDQxMSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2IxTnl4WWNyMCIsImNsaWVudF9pZCI6IjY3MG1vN3NpODFwY2Mzc2Z1YjdvMTkxNGQ4Iiwib3JpZ2luX2p0aSI6IjEwNWYxMjViLTczM2MtNGRjOS1iOTVkLTZmNDdjZGEzYmQ4OCIsImV2ZW50X2lkIjoiYWYyMDBjNTYtZmIyZS00NDQ5LWE0ZTctYjgyYjFhNmVkZDE0IiwidG9rZW5fdXNlIjoiYWNjZXNzIiwic2NvcGUiOiJhd3MuY29nbml0by5zaWduaW4udXNlci5hZG1pbiIsImF1dGhfdGltZSI6MTY1OTcyNjM1OSwiZXhwIjoxNjU5NzI5OTU5LCJpYXQiOjE2NTk3MjYzNTksImp0aSI6IjNlNGFhOTNiLWE5ZGMtNDcxOC1iODQzLTc5NDcxZWE0YWQ0YSIsInVzZXJuYW1lIjoiNmM1YmRlMDEtZjNlNS00YWM0LWJmZGItZjg4M2I5MmU0NWM2In0.AWNDktaFIJ5iZvXA2rRmD5gRtyEljkKQNZD9Ov2gadhoHZU958IsrYsuPOSBBKcfxiY2kUe7gI1CuzFlw16TPxzklAm-7eHB6SfTH0KrSYfSwVmkTImgTurVyxIU73kD_NyHJIdfggeZdP4M0fBS8WbjC9Tz7JxhfaL-t51RA0OwG-Ix2DYFqcwZZUVY9u3BAU9sfOdIpPuHhsPmiB5VO8cNp7rYWN3cfcA39uhepvmGC6yF05KxAWiQRKu8pkOzwVB9YwRQ_oClKcRyXJjv1XujxGMjqNJxFTwdllYdFh93Dup1tpVGU6rhQuTsPkHaTUCvSEU1K1hNpvqcIUZNeg'
 const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
 
 const DATASET_ACTIVITY_ALL_CATEGORIES = {
@@ -51,7 +49,12 @@ const getActivityDateRange = (days) => {
  */
 const getQueryParams = (params, apiKey) => {
   const dateRange = getActivityDateRange(params.dateRange.value)
-
+  console.log(dateRange)
+  console.log(apiKey)
+  console.log(params.orderDirection)
+  console.log(params.category.value)
+  console.log(params.userId.value)
+  console.log(params.cursor)
   return toQueryParams({
     api_key: apiKey,
     orderDirection: params.orderDirection,
@@ -124,9 +127,16 @@ const store = new Vuex.Store({
     shadedVisits: [],
     shadedSamples: [],
     shadedFiles: [],
-    triggerForClearing: false
+    triggerForClearing: false,
+    filterApplicationCount: 0
   },
   getters: {
+    getOrgMemberByIntId: state => (id) => {
+      return defaultTo({}, find(propEq('intId', id), state.orgMembers))
+    },
+    getOrgMembersByIntId: state => (list) => {
+      return state.orgMembers.filter(member => list.includes(member.intId))
+    },
     orgMembers: state => state.orgMembers,
     getOrgMembers: state => () => state.orgMembers,
     getOrgMembersById: state => (list) => {
@@ -140,6 +150,9 @@ const store = new Vuex.Store({
     },
     userToken (state) {
       return propOr('', 'token', state.profile)
+    },
+    profile (state) {
+      return state.profile
     },
     isLoggedIn (state) {
       return state.profile !== null
@@ -172,7 +185,7 @@ const store = new Vuex.Store({
     shadedParticipants (state){
       return state.shadedParticipants
     },
-    shadedVisits (state) {
+    s (state) {
       return state.shadedVisits
     },
     shadedSamples (state) {
@@ -189,9 +202,18 @@ const store = new Vuex.Store({
     },
     datasetNodeId(state) {
       return state.datasetNodeId
+    },
+    datasetActivityParams(state) {
+      return state.datasetActivityParams
+    },
+    filterApplicationCount(state){
+      return state.filterApplicationCount
     }
   },
   mutations: {
+    UPDATE_FILTER_APPLICATION_COUNT(state, data){
+      state.filterApplicationCount = data
+    },
     UPDATE_PROFILE(state, data) {
       state.profile = data
     },
@@ -296,6 +318,9 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    updateFilterApplicationCount({commit}, data){
+      commit('UPDATE_FILTER_APPLICATION_COUNT', data)
+    },
     clearClickedSelections({commit}){
       commit('CLEAR_CLICKED_SELECTIONS')
     },
@@ -308,7 +333,7 @@ const store = new Vuex.Store({
     setShadedSamples({commit}, data){
       commit('SET_SHADED_SAMPLES',data)
     },
-    setShadedFiles({commit}, data){
+    setShadedFiles({commit}, data) {
       commit('SET_SHADED_FILES',data)
     },
     setTriggerForClearing({commit}, data){
@@ -336,11 +361,12 @@ const store = new Vuex.Store({
     },
     fetchDatasetActivity: async ({state, commit}) => {
       commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', true)
-
+      console.log("attempting to fetch organization activity")
       const datasetId = datasetId
       //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
-      const endpoint = `https://api.pennsieve.io/datasets/${datasetId}/changelog/timeline`
-      const apiKey = this.userToken
+      const endpoint = `https://api.pennsieve.io/datasets/${IMMUNE_HEALTH_DATASET_ID}/changelog/timeline`
+      const apiKey =  propOr('', 'token', state.profile)
+      //const apiKey = this.userToken
       //import below from datasetModule.js in utils and uncomment
       const queryParams = getQueryParams(state.datasetActivityParams, apiKey)
 
@@ -351,6 +377,7 @@ const store = new Vuex.Store({
         if (resp.ok) {
           const { eventGroups, cursor } = await resp.json()
           const datasetActivity = state.datasetActivityParams.cursor ? [ ...state.datasetActivity, ...eventGroups ] : eventGroups
+          console.log("we've got dataset activity")
           commit('UPDATE_DATASET_ACTIVITY', datasetActivity)
 
           commit('UPDATE_DATASET_ACTIVITY_CURSOR', cursor)
@@ -410,21 +437,6 @@ const store = new Vuex.Store({
       })
       await commit('SET_ALL_STUDIES',responseData)
     },
-    /*
-    async fetchSelectedStudyPatientsMetadata({ commit, state }) {
-      const selectedStudyId = propOr('', 'id', state.selectedStudy)
-      const patientsStudyMetadataUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/concepts/33a61ee7-fce9-4f0c-823c-78368ed8dc42/instances/${selectedStudyId}/relations/patient?includeIncomingLinkedProperties=true`
-      const apiKey = this.state.profile.token
-      const header = {
-        headers: { Authorization: `Bearer ${apiKey}`}
-      }
-      let responseData = []
-      await axios.get(patientsStudyMetadataUrl, header).then(response => {
-        responseData = response.data
-      })
-      await commit('SET_SELECTED_STUDY_PATIENTS_METADATA', responseData)
-    },
-    */
     updateSearchModalVisible({ commit }, data) {
       commit('UPDATE_SEARCH_MODAL_VISIBLE', data)
     },

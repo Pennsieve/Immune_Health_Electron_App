@@ -134,7 +134,8 @@ export default {
   computed: {
     ...mapState([
       'searchModalSearch',
-      'searchPage'
+      'searchPage',
+      'filterApplicationCount'
     ]),
     ...mapGetters(['userToken', 'selectedStudyName']),
     title: function() {
@@ -148,7 +149,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'applyFiltersToMetadata']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'applyFiltersToMetadata','updateFilterApplicationCount']),
     /**
      * Resets table search params for pagination
      */
@@ -216,6 +217,8 @@ export default {
      * Closes the Search Across All Datasets dialog
      */
     closeDialog: function() {
+      var count = this.filterApplicationCount+1;
+      this.updateFilterApplicationCount(count)
       this.updateSearchModalVisible(false)
     },
     /**
@@ -292,7 +295,7 @@ h2 {
   font-weight: 400;
   line-height: 1;
 }
-/deep/ .el-dialog {
+::v-deep .el-dialog {
   height: calc(100vh - 32px);
   border-radius: 3px;
   margin-bottom: 0;
@@ -327,7 +330,7 @@ p {
   letter-spacing: 0px;
   color: $gray_4;
 }
-/deep/ h3 {
+::v-deep h3 {
   font-size: 14px;
   font-weight: bold;
   color: $gray_6;

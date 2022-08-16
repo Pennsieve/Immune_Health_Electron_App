@@ -12,13 +12,14 @@
       <div class="dataset-activity-panel-item__info">
         <div class="dataset-activity-panel-item__info__label-wrap">
           <div class="dataset-activity-panel-item__info__label-activity">
+            <!--
             <span
               v-if="isPublishingChange(event.eventType)"
               class="label-publishing"
             >
               Publishing
             </span>
-
+            -->
 
             <dataset-activity-metadata-label
               v-if="isMetadataUpdate"
@@ -40,7 +41,7 @@
           </div>
 
           <dataset-activity-detail
-            v-if="totalCount === 1 && !isPublishingChange(event.eventType) && !hideMetadataDetails(event.eventType)"
+            v-if="totalCount === 1 && !hideMetadataDetails(event.eventType)"
             :parent-panel="true"
             :event-detail="event.event"
           />
@@ -83,7 +84,7 @@
       </div>
 
       <dataset-activity-panel-dropdown
-        v-if="totalCount > 1 && !isPublishingChange(event.eventType) && event.eventType !== 'UPDATE_IGNORE_FILES' && event.eventType !== 'UPDATE_BANNER_IMAGE'"
+        v-if="totalCount > 1 && event.eventType !== 'UPDATE_IGNORE_FILES' && event.eventType !== 'UPDATE_BANNER_IMAGE'"
         class="event-details-wrap"
         :event="event"
         :total-count="totalCount"
@@ -250,9 +251,9 @@ import { ChangelogMessage, PublicationStatus } from '@/utils/constants'
        * @param {String} eventType
        * @returns {String}
        */
-       /*
+
       renderActivityType: function(eventType) {
-        if (this.ChangelogMessage.PUBLISHING.hasOwnProperty(eventType)) {
+        if (this.ChangelogMessage.PUBLISHING) {
           const publishing = this.ChangelogMessage.PUBLISHING
           return publishing[eventType]
         } else if (typeof this.ChangelogMessage[eventType] === 'object' && this.ChangelogMessage[eventType] !== null) {
@@ -264,7 +265,7 @@ import { ChangelogMessage, PublicationStatus } from '@/utils/constants'
           return this.renderPermissionsActivity()
         }
       },
-      */
+
 
       /**
        * Indicator label for publishing changlog items
@@ -430,7 +431,7 @@ import { ChangelogMessage, PublicationStatus } from '@/utils/constants'
     }
   }
 
-  /deep/ .avatar-circle {
+  ::v-deep .avatar-circle {
     border: solid 2px white;
     font-size: 12.2px;
 

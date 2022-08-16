@@ -272,7 +272,7 @@ export default {
       const datasetId = this.datasetId;
       //pathOr('', ['params', 'datasetId'], this.$route)
       //CHANGE THIS URL
-      const url = `https://api.pennsieve.io/datasets/${datasetId}/proxy/package/instances`
+      const url = `https://api.pennsieve.io/models/${datasetId}/proxy/package/instances`
       //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
       var iter = this.selectedFiles;
       var selecteditemids = []
@@ -282,7 +282,9 @@ export default {
       }
       const queues = Array.from(selecteditemids).map(itemId => {
         const recordId = itemId
-        const packageId = this.linkingTarget.visit_event //the record we are linking to
+        console.log(recordId)
+        const packageId = this.linkingTarget.recordId //the record we are linking to
+        console.log(packageId)
         //pathOr('', ['params', 'instanceId'], this.$route)
         const linkTarget = {
           'ConceptInstance': {
@@ -296,6 +298,7 @@ export default {
             'Authorization': `bearer ${this.userToken}`
           },
           body: {
+            //switch
             externalId: packageId, //the record
             targets: [{
               direction: 'FromTarget',
@@ -319,6 +322,7 @@ export default {
 
     // eslint-disable-next-line no-unused-vars
     createRelationshipsSuccess: function() {
+      console.log('createRElationshipsSuccess called')
       //const conceptName = propOr('', 'name', this.concept)
       //const displayName = propOr('', 'displayName', this.concept)
       //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
@@ -389,17 +393,38 @@ export default {
     },
 
     /**
+    * Reset selected files state
+    */
+   resetSelectedFiles: function () {
+     console.log("selected files reset")
+     this.selectedFiles = []
+     this.lastSelectedFile = {}
+   },
+
+   /**
+    * Sort table by column
+    * @param {String} path
+    * @param {String} dir
+    */
+   sortColumn: function (path, dir = '') {
+     this.sortedFiles = this.returnSort(path, this.files, dir)
+   },
+
+    /**
      * Remove items from files list
      * @param {Object} items
      */
     removeItems: function (items) {
+      console.log("selected files are",items)
       // Remove all successfully deleted files RETURN TO THIS...need to splice out files from display
       for (let i = 0; i < items.length; i++) {
+        console.log(i)
         const fileIndex = findIndex(pathEq(['content', 'id'], items[i]), this.files)
         this.files.splice(fileIndex, 1)
       }
       // Resort files
       this.sortColumn(this.sortBy, this.sortDirection)
+      console.log("resetting selected files")
       this.resetSelectedFiles()
     },
 
@@ -409,8 +434,11 @@ export default {
      * @param {Array} items
      */
     moveItems: function (destination, items) {
+      console.log("moveitems called. moving linked files out of staging and into linked")
       if (destination) {
         const things = items.map(item => item.content.id)
+        console.log(destination)
+        console.log(things)
         this.sendXhr(destination, {
           method: 'POST',
           body: {
@@ -433,11 +461,13 @@ export default {
      */
      // eslint-disable-next-line no-unused-vars
     onMoveItems: function (response) {
+      console.log("onMoveItems called. We are removing the files that we linked from the staging file")
       // Remove successful items from the files list
       //
       //const successItems = propOr([], 'success', response)
       // eslint-disable-next-line no-undef
-      removeItems(this.selectedFiles);
+      //NOTE: consider using response
+      this.removeItems(this.selectedFiles);
       //dont bother with this for now
       /*
       // Handle conflict items

@@ -96,7 +96,7 @@ export default {
   flex: 1;
   max-width: 418px;
   width: 100%;
-  /deep/ .el-input__prefix {
+  ::v-deep .el-input__prefix {
     display: flex;
     left: 13px;
     font-style: normal;
@@ -105,7 +105,7 @@ export default {
     }
   }
 
-  /deep/ .el-input__inner {
+  ::v-deep .el-input__inner {
     border-color: #dadada;
     padding-left: 40px;
   }
