@@ -9,6 +9,7 @@ Vue.use(Vuex);
 
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
+//WHAT IS THIS???
 const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
 
 const DATASET_ACTIVITY_ALL_CATEGORIES = {
@@ -128,9 +129,16 @@ const store = new Vuex.Store({
     shadedSamples: [],
     shadedFiles: [],
     triggerForClearing: false,
-    filterApplicationCount: 0
+    filterApplicationCount: 0,
+    relationshipTypes: []
   },
   getters: {
+    getRelationshipTypeByName: state => (name) => {
+      return compose(
+        defaultTo({}),
+        find(propEq('name', name))
+      )(state.relationshipTypes)
+    },
     getOrgMemberByIntId: state => (id) => {
       return defaultTo({}, find(propEq('intId', id), state.orgMembers))
     },
@@ -315,9 +323,13 @@ const store = new Vuex.Store({
     },
     SET_TRIGGER_FOR_CLEARING(state,data){
       state.triggerForClearing = data
-    }
+    },
+    ADD_RELATIONSHIP_TYPE (state, data) {
+      state.relationshipTypes.push(data)
+    },
   },
   actions: {
+    addRelationshipType: ({commit}, evt) => commit('ADD_RELATIONSHIP_TYPE', evt),
     updateFilterApplicationCount({commit}, data){
       commit('UPDATE_FILTER_APPLICATION_COUNT', data)
     },

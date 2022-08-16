@@ -131,14 +131,13 @@ import BfUpload from '../components/BfUpload/BfUpload.vue'
 import Sorter from '../mixins/sorter/index.js'
 import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
-import {findIndex,pathEq,} from 'ramda'
+import {findIndex, pathEq, isEmpty} from 'ramda'
 import { mapGetters,
          mapActions,
          mapState
        }
 from 'vuex'
 // import PennsieveClient from '@/utils/pennsieve/client.js'
-import { isEmpty } from 'ramda'
 
 export default {
   name: 'FileUpload',
@@ -156,7 +155,7 @@ export default {
     //GetFileProperty
   ],
   computed: {
-    ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId']),
+    ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName']),
   ...mapState(['linkingTarget']),
   isLinkingTargetSet() {
     return !isEmpty(this.linkingTarget)
@@ -210,7 +209,7 @@ export default {
     // EventBus.$off('update-external-file', this.onFileRenamed)
   },
   methods: {
-      ...mapActions(['setSearchPage', 'updateSearchModalVisible']),
+      ...mapActions(['setSearchPage', 'updateSearchModalVisible','addRelationshipType']),
     /**
      * Handle upload menu click event
      * @param {String} command
@@ -253,12 +252,32 @@ export default {
       console.log('setting target');
       //send API request for specific visit record, and set that record to the store
     },
+    createDefaultRelationship: function() {
+      const datasetId = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
+      const url = `${this.config.conceptsUrl}/datasets/${datasetId}/relationships`
+      return this.sendXhr(url, {
+        method: 'POST',
+        header: {
+          'Authorization': `bearer ${this.userToken}`
+        },
+        body: {
+          name: 'belongs_to',
+          displayName: 'Belongs To',
+          description: '',
+          schema: []
+        }
+      }).then(response => {
+        this.addRelationshipType(response)
+      })
+    },
     checkBelongsToExists: function() {
+      /*
       const belongsTo = this.getRelationshipTypeByName('belongs_to')
       if (Object.keys(belongsTo).length === 0) {
         // if not, create a default, then create the file relationship
         return this.createDefaultRelationship()
       }
+      */
       return Promise.resolve([])
     },
 
@@ -269,10 +288,10 @@ export default {
       console.log('createrelationshiprequests called')
       //change datasetId
       this.isCreating = true
-      const datasetId = this.datasetId;
+      //const datasetId = this.datasetId;
       //pathOr('', ['params', 'datasetId'], this.$route)
       //CHANGE THIS URL
-      const url = `https://api.pennsieve.io/models/${datasetId}/proxy/package/instances`
+      const url = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/proxy/package/instances`
       //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
       var iter = this.selectedFiles;
       var selecteditemids = []
@@ -288,7 +307,7 @@ export default {
         //pathOr('', ['params', 'instanceId'], this.$route)
         const linkTarget = {
           'ConceptInstance': {
-            id: recordId //again, the file we are currently on
+            id: packageId //again, the file we are currently on
           }
         }
 
@@ -299,7 +318,7 @@ export default {
           },
           body: {
             //switch
-            externalId: packageId, //the record
+            externalId: recordId, //OR MAYBE recordId
             targets: [{
               direction: 'FromTarget',
               linkTarget, //the file
@@ -494,9 +513,8 @@ export default {
       this.isLoading = true
     //  if (this.isFile) {
       console.log('createrelationships called')
-        //this.checkBelongsToExists()
-        //Below is for debugging
-        this.createFileRelationshipRequests()
+        this.checkBelongsToExists()
+        //this.createFileRelationshipRequests()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
         .finally(() => this.isLoading === false)
