@@ -193,7 +193,7 @@ const store = new Vuex.Store({
     shadedParticipants (state){
       return state.shadedParticipants
     },
-    s (state) {
+    shadedVisits (state) {
       return state.shadedVisits
     },
     shadedSamples (state) {

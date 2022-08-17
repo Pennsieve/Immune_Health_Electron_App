@@ -219,6 +219,7 @@ export default {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setSearchPage','clearClickedSelections','setTriggerForClearing']),
     clearAllSelections: function() {
       this.setTriggerForClearing(true)
+      console.log('trigger for clearning set to true')
       this.clearClickedSelections()
       this.clearFilters()
       //NOTE: should just call a default update view at this point
@@ -354,7 +355,7 @@ export default {
   float: left;
   margin: .5px;
   position: relative;
-  
+
 
 }
 </style>

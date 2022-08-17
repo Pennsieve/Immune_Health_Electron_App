@@ -237,8 +237,16 @@ export default {
     filterApplicationCount: function(){
       this.handleFilterChangeSequential()
     },
-
+    //NOTE: temporarily disabled some functionality. For now when all selections are cleared we essentially 'refresh' the view
     triggerForClearing: function(){
+      this.selectedStudyTrigger = true;
+      console.log('we are refreshing the page')
+      this.updateStudyDataV2().then(() => {
+        this.updateView()
+        this.selectedStudyTrigger = false;
+        this.clickedRecordsFilters = []
+      })
+      /*
       var shadedarr = []
       var p = this.shadedParticipants
       var v = this.shadedVisits
@@ -251,6 +259,7 @@ export default {
           this.onClickElement(y) //will trigger branch of code that sets click to 0
         }
       }
+      */
     },
     clickedRecordsFilters (newFilters) {
       this.$emit('record-clicked', newFilters)
@@ -259,6 +268,7 @@ export default {
 
   mounted() {
     let vm = this
+    console.log(this.shadedParticipants,this.shadedVisits)
 
     // eslint-disable-next-line
     const mainCanvas = d3.select('.mainCanvas')
@@ -457,7 +467,7 @@ export default {
     handleFilterChangeClick: async function(nodeData, clickstatus) {
       const limit = 100
       const model = nodeData.parent.displayName;
-      const identifier = nodeData.details.values[0].value
+      //const identifier = nodeData.details.values[0].value
       const visitsOffset = limit*this.visitsPage;
       const samplesOffset = limit*this.samplesPage;
       var filters = []
@@ -470,6 +480,8 @@ export default {
       if (clickstatus == 'click'){
         switch(model) {
           case 'patient':
+          // eslint-disable-next-line
+            var identifier = nodeData.details.name
             //this.clearVisitRecordData()
             //this.clearSamplesRecordData()
             // We will first remove any previous filters that might no longer apply
@@ -489,6 +501,8 @@ export default {
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'visits':
+          // eslint-disable-next-line
+          var identifier = nodeData.details.visit_event
           //this.clearSamplesRecordData()
             // We will first remove any previous filters that might no longer apply
             // i.e. the user has already clicked a sample record and then clicked a visit record after
@@ -504,6 +518,9 @@ export default {
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'samples':
+          //NOTE:MUST UNCOMMENT
+          // eslint-disable-next-line
+          //var identifier = nodeData.details.name
             // add the clicked sample record as a filter
             this.addClickedFilter("study_sample_id", model, identifier)
             break;
@@ -650,80 +667,93 @@ export default {
           // TODO: add selectedNode to a "selected nodes" list (based on record type -> `parentName`)
 
           this.handleFilterChangeClick(nodeData, 'unclick');
+          console.log(nodeData)
+          console.log(selectedRecord)
         }
         // selected (an odd number of clicks)
         else if (clickCount%2 == 1 ){
           // TODO: remove selectedNode from a "selected nodes" list (based on record type -> `parentName`)
           switch (parentName) {
             case 'patient':
+            console.log(nodeData)
+            console.log(selectedRecord)
             //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
 
                 //var part_arr = this.shadedParticipants
                 //console.log(part_arr)
-                var payload = [nodeData,selectedRecord, true]
-                console.log(this.shadedParticipants)
-                this.setShadedParticipants(this.shadedParticipants.push(payload))
+                //NOTE: temporarily getting rid of tracking shaded recods
+                //var payload = [nodeData,selectedRecord, true]
+                //console.log(this.shadedParticipants)
+                //var meep = this.shadedParticipants.push(payload)
+                //this.setShadedParticipants(meep)
 
 
                 fillstyle ="#d10a00"
                 // eslint-disable-next-line
                 this.handleFilterChangeClick(nodeData, 'click');
+
+
                 break;
             case 'visits':
 
-
+              console.log(nodeData)
+              console.log(selectedRecord)
                 //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
 
                 //var vis_arr = this.shadedVisits
                 //console.log(vis_arr)
-                console.log(this.shadedVisits)
-                var payload1 = [nodeData,selectedRecord, true]
-                var le_payload = this.shadedVisits.push(payload1)
-                this.setShadedVisits(le_payload)
-                console.log(this.shadedSamples.length)
-                console.log(this.shadedVisits.length)
+                //console.log(this.shadedVisits)
+                //var payload1 = [nodeData,selectedRecord, true]
+                //var shadedviscpy = this.shadedVisits
+                //var le_payload = shadedviscpy.push(payload1)
+                //this.setShadedVisits(le_payload)
+                //console.log(this.shadedSamples.length)
+                //console.log(this.shadedVisits.length)
 
                 //logic for setting linking target
-                var vis_arr_len = this.shadedVisits;
-                var samp_arr_len = this.shadedSamples;
-                if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
-                  console.log(vis_arr_len.length)
-                  console.log(samp_arr_len.length)
+                //var vis_arr_len = this.shadedVisits;
+                //var samp_arr_len = this.shadedSamples;
+                //if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
+                //  console.log(vis_arr_len.length)
+                  //console.log(samp_arr_len.length)
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   console.log(to_be_linked)
                   console.log(this.linkingTarget)
                   this.setLinkingTarget(to_be_linked)
                   console.log(this.linkingTarget)
-                }
+                //}
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
                 //this.handleFilterChangeClick(nodeData, 'click');
+
                 break;
             case 'samples':
-
+            console.log(nodeData)
+            console.log(selectedRecord)
               //LOGIC FOR POPULATING ARRAY FOR CLEARING SELECTIONS
 
                 //var samp_arr = this.shadedSamples
-                var payload2 = [nodeData,selectedRecord, true]
-                console.log(this.shadedSamples)
-                this.setShadedSamples(this.shadedSamples.push(payload2))
+              //  var payload2 = [nodeData,selectedRecord, true]
+                //console.log(this.shadedSamples)
+                //this.setShadedSamples(this.shadedSamples.push(payload2))
 
 
                 //logic for setting linking target
                 // eslint-disable-next-line
-                var vis_arr_len = this.shadedVisits;
+              //  var vis_arr_len = this.shadedVisits;
                 // eslint-disable-next-line
-                var samp_arr_len = this.shadedSamples;
-                if (samp_arr_len.length == 1 && (vis_arr_len.length == 0 || vis_arr_len.length > 1)){
+                //var samp_arr_len = this.shadedSamples;
+                //if (samp_arr_len.length == 1 && (vis_arr_len.length == 0 || vis_arr_len.length > 1)){
                   // eslint-disable-next-line
                   var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
                   this.setLinkingTarget(to_be_linked)
                   console.log(this.linkingTarget)
-                }
+                //}
 
                 fillstyle ="#f0cc00"
                 // eslint-disable-next-line
                 this.handleFilterChangeClick(nodeData, 'click');
+
           }
         }
         // set selected record's fill style and re-draw the main canvas
