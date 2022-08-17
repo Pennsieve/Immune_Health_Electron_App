@@ -154,7 +154,7 @@ export default {
 
     ...mapGetters([
       'getOrgMembersById',
-      'datasetId',
+      'datasetNodeId',
       'userToken',
       'datasetActivityParams'
     ]),
@@ -180,7 +180,7 @@ export default {
      * @returns {String}
      */
     getDatasetUsersUrl: function() {
-      const datasetId = this.datasetId
+      const datasetId = this.datasetNodeId
       const apiKey = this.userToken
       return  `https://api.pennsieve.io/datasets/${datasetId}/collaborators/users?api_key=${apiKey}`
     },
@@ -274,7 +274,8 @@ export default {
      */
 
     getDatasetUsers: function() {
-      this.sendXhr(this.getDatasetUsersUrl)
+      let url = this.getDatasetUsersUrl
+      this.sendXhr(url, {})
         .then(datasetUsers => {
           this.datasetUsers = datasetUsers
         })
