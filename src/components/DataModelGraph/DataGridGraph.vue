@@ -103,10 +103,10 @@ export default {
       recordStack: [],
       canvasSize: {
         width: 1000,
-        height: 1000
+        height: 400
       },
       custom: null,
-      numberOfRows: 10,
+      numberOfRows: 1,
       binRegistrySize: 5000,
       binRegistry: [],
       drawTimer:null,
@@ -122,7 +122,7 @@ export default {
       startIndex: 0,  //used to map colors to nodes
       selectedNode: null,
       datasetId: 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc',
-      interestedModels: ['patient', 'visits', 'samples' /*'files'*/],
+      interestedModels: ['samples', 'visits', 'patient'],
       visibleRecordCount: {
         'patient': 0,
         'visits': 0,
@@ -759,7 +759,10 @@ export default {
         .then(response => {
           vm.hasData = true
           vm.isLoading = false
-          vm.modelData = response.filter(x => x.type === 'concept').filter(x => vm.interestedModels.includes(x.displayName))
+          vm.modelData = response.filter(x => x.type === 'concept').filter(x => vm.interestedModels.includes(x.displayName)).sort((a, b) => {
+          // If two elements have different number, then the one who has larger number wins
+          return b.displayName - a.displayName;
+      });
         })
         .catch(this.handleXhrError.bind(this))
     },
@@ -1557,10 +1560,10 @@ export default {
           ctx.font = '14px "Helvetica Neue"';
           let xCoordPrev = parseInt(node.attr('x')) + 70
           let yCoordPrev = parseInt(node.attr('y')) - 5
-          let pageTxtPrev = "< Previous"
+          let pageTxtPrev = "< previous"
           let xCoordNext = xCoordPrev + 140
           let yCoordNext = parseInt(node.attr('y')) - 5
-          let pageTxtNext = "Next >"
+          let pageTxtNext = "next >"
           ctx.fillText(pageTxtPrev, xCoordPrev, yCoordPrev);
           ctx.fillText(pageTxtNext, xCoordNext, yCoordNext);
         }

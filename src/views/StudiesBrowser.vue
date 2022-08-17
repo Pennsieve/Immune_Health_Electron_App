@@ -33,6 +33,7 @@
         </template>
       </ih-subheader>
       <div v-if="Object.keys(selectedStudy).length != 0">
+
         <div class="mb-16">
           <bf-button  @click="clearAllSelections()">
             Clear selections
@@ -57,6 +58,7 @@
           <h2>Clear filters and selections to start another search</h2>
         </div>
       </div>
+
       <br>
       <div>
         <graph-browser
@@ -219,6 +221,7 @@ export default {
       this.setTriggerForClearing(true)
       this.clearClickedSelections()
       this.clearFilters()
+      //NOTE: should just call a default update view at this point
       this.SearchStep = 0;
     },
     incrementStep: function(){
@@ -346,5 +349,12 @@ export default {
   align-items: flex-end;
   flex-direction: row;
   margin-bottom: 21px;
+}
+.mb-16 {
+  float: left;
+  margin: .5px;
+  position: relative;
+  
+
 }
 </style>
