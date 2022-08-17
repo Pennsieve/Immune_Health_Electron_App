@@ -24,8 +24,8 @@
 <!--        </h2>-->
         <h2>{{ model.displayName }}</h2>
         <ul class="unstyled">
-          <li v-for="property in model.properties" :key="property.name">
-            <span><b>{{ property.name }}:</b> {{ property.value }}</span>
+          <li v-for="[key, value] of Object.entries(model.properties)" :key="key">
+            <span><b>{{ key }}:</b> {{ value }}</span>
           </li>
 <!--          <li>-->
 <!--            <svg-icon-->
