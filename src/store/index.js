@@ -429,12 +429,27 @@ const store = new Vuex.Store({
           console.log(err)
         })
     },
-    async updateProfile({commit}, user) {
+    async updateProfile({commit, dispatch}, user) {
       await commit('UPDATE_PROFILE',{
         firstName: user.name.split(' ')[0],
         lastName: user.name.split(' ')[1],
-        token: user.session_token
+        token: user.session_token,
+        tokenExpirationTime: +user.token_expire
       })
+      // check for token expiration every minute
+      let reAuthTimer = setTimeout(function reAuth() {
+        dispatch('reAuthenticate')
+        reAuthTimer = setTimeout(reAuth, 60000);
+      }, 60000);
+    },
+    reAuthenticate({state, dispatch}) {
+      let expirationTime = +state.profile.tokenExpirationTime
+      let currentTime = Math.floor(Date.now()/1000)
+      let expiresIn = expirationTime - currentTime
+      // re-authenticate if token expires in less than 5 minutes
+      if (expiresIn  <= 300) {
+        dispatch('login')
+      }
     },
     async setSelectedStudy({ commit }, data) {
       await commit('SET_SELECTED_STUDY', data)
