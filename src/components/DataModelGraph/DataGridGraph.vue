@@ -1255,7 +1255,6 @@ export default {
             const randomIndex =Math.floor(Math.random() * unMapped.length);
             // eslint-disable-next-line
             nodeData.details = this.recordPool[modelId].records[ unMapped[randomIndex]]
-            // console.log(nodeData.details)
             unMapped.splice(randomIndex, 1)
           }
         }
@@ -1267,10 +1266,11 @@ export default {
         this.shouldHideTooltip = false
         // eslint-disable-next-line
         // this.hoveredModel = nodeData.details
-        if (nodeData.details && nodeData.details.values) {
+        if (nodeData.details) {
+
           this.hoveredModel = {
             displayName: nodeData.parent.name,
-            properties: nodeData.details.values ? nodeData.details.values : []
+            properties: nodeData.details ? this.recordForDisplay(nodeData.details) : []
           }
         }
 
@@ -1280,6 +1280,11 @@ export default {
         // there is no nodeData or this nodeData does not have a parent (i.e., it is a model)
         this.hideModelTooltip()
       }
+    },
+
+    recordForDisplay: function(details) {
+      let dontShow = ['recordId', 'modelId', 'datasetId', 'mapped']
+      return Object.fromEntries(Object.entries(details).filter((e) => { return !dontShow.includes(e[0]) }))
     },
 
     fitBin: function(modelId, totalNumberBins, nCols, startingBinIndex ){
@@ -1358,15 +1363,10 @@ export default {
     },
 
     fetchRecords: function(modelId, startIndex=0, numberOfRecords=10) {
-      // eslint-disable-next-line
-      const offset1 = startIndex+(this.recordPool[modelId].nextPage * numberOfRecords)
+      let modelName = this.recordPool[modelId].model
+      const offset = startIndex+(this.recordPool[modelId].nextPage * numberOfRecords)
       this.recordPool[modelId].isPending = true
-      // eslint-disable-next-line
-      this.sendXhr(`${this.recordsUrl}/${modelId}/instances?limit=${numberOfRecords}&offset=${offset1}`, {
-        header: {
-          'Authorization': `bearer ${this.userToken}`
-        }
-      })
+      this.getPaginatedRecords(modelName, offset, numberOfRecords)
         .then(response => {
           response.forEach(r => {
             r.mapped = false
@@ -1380,6 +1380,34 @@ export default {
         })
     },
 
+    getPaginatedRecords: async function(modelName, offset, number) {
+      let metadata = {}
+      switch (modelName){
+        case 'patient':
+          if (this.searchModalSearch.filters == undefined){
+            metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, number, offset)
+          }else{
+            metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, number, offset)
+          }
+          break;
+        case 'visits':
+          if (this.searchModalSearch.filters == undefined){
+            metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, number, offset)
+          }else{
+            metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, number, offset)
+          }
+          break;
+        case 'samples':
+          if (this.searchModalSearch.filters == undefined){
+            metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, [], this.userToken, number, offset)
+          }else{
+            metadata = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, number, offset)
+          }
+          break;
+      }
+      let results = propOr([], 'records', metadata)
+      return results
+    },
 
     getRecordData: function() {
       let nodes = []
