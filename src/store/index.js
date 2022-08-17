@@ -374,7 +374,7 @@ const store = new Vuex.Store({
     fetchDatasetActivity: async ({state, commit}) => {
       commit('UPDATE_IS_LOADING_DATASET_ACTIVITY', true)
       console.log("attempting to fetch organization activity")
-      const datasetId = datasetId
+      const datasetId = state.datasetId
       //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
       const endpoint = `https://api.pennsieve.io/datasets/${IMMUNE_HEALTH_DATASET_ID}/changelog/timeline`
       const apiKey =  propOr('', 'token', state.profile)
