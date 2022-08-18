@@ -370,6 +370,7 @@ export default {
     },
 
     mouseClickModel: function(nodeData, mouseX) {
+      console.log('mouse X is: ',mouseX)
       const vm = this
       const models = vm.custom.selectAll('custom.model');
       // const colKey = nodeData.hiddenCol
@@ -387,20 +388,17 @@ export default {
           yCoord = node.attr('y')
         }
       });
-      /*
-      var yStartPrev = yCoord - 35
-      var  xStartPrev = xCoord +70
-      var  xStopPrev = xCoord +140
-      var  xStopNext = xCoord +250
-      */
-      if (mouseX >= 115 && mouseX <= 215){
+
+      if ((mouseX >= 115 && mouseX <= 215) || (mouseX >= 368 && mouseX <= 477) || (mouseX >= 626 && mouseX <= 726)){
         //if currently clicking prev model attr
         // eslint-disable-next-line
+        console.log("back a page")
         vm.advancePage(nodeData.displayName, 'prev');
       }
       // eslint-disable-next-line
-      else if (mouseX >= 215){
+      else if ((mouseX >= 215 && mouseX <= 297) || (mouseX >= 477 & mouseX <= 553) || (mouseX >= 726 && mouseX <= 809)){
         // eslint-disable-next-line
+        console.log("next page")
         vm.advancePage(nodeData.displayName, 'next');
       }
     },

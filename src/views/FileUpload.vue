@@ -155,7 +155,7 @@ export default {
     //GetFileProperty
   ],
   computed: {
-    ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName']),
+    ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName','itsLinkinTime']),
   ...mapState(['linkingTarget']),
   isLinkingTargetSet() {
     return !isEmpty(this.linkingTarget)
@@ -208,8 +208,18 @@ export default {
     // EventBus.$off('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
     // EventBus.$off('update-external-file', this.onFileRenamed)
   },
+  watch: {
+    itsLinkinTime: function(){
+      console.log("itslinkintime watcher triggered")
+      if (this.itsLinkinTime == true){
+      this.linkToTarget();
+      this.setItsLinkinTime(false)
+      console.log("itslinkintime is false now")
+      }
+    }
+  },
   methods: {
-      ...mapActions(['setSearchPage', 'updateSearchModalVisible','addRelationshipType']),
+      ...mapActions(['setSearchPage', 'updateSearchModalVisible','addRelationshipType','setItsLinkinTime']),
     /**
      * Handle upload menu click event
      * @param {String} command
@@ -573,7 +583,7 @@ export default {
     //  }
     },
     linkToTarget: function() {
-      console.log('linkToTarget()');
+      console.log('linkToTarget() called');
       this.createRelationships();
       //Then move selected files from staging to linked (don't launch modal)
       //OR do it on success...

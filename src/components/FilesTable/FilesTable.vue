@@ -15,28 +15,10 @@
         {{ selectionCountLabel }}
       </span>
       <ul class="selection-actions unstyled">
+
         <li class="mr-24">
           <button
-            v-if="!searchAllDataMenu"
-            class="linked btn-selection-action"
-            :disabled="datasetLocked"
-            @click="$emit('delete')"
-          >
-            <svg-icon
-              class="mr-8"
-              icon="icon-trash"
-              height="16"
-              width="16"
-            />
-            Delete
-          </button>
-        </li>
-        <li class="mr-24">
-          <button
-            v-if="enableFileMove && !searchAllDataMenu"
-            class="linked btn-selection-action"
-            :disabled="datasetLocked"
-            @click="$emit('move')"
+            @click="linkToTarget()"
           >
             <svg-icon
               class="mr-8"
@@ -44,25 +26,10 @@
               height="16"
               width="16"
             />
-            Move to&hellip;
+            Link selected files to record
           </button>
         </li>
-        <li>
-          <button
-            v-if="enableDownload"
-            class="linked btn-selection-action"
-            @click="onDownloadClick"
-          >
-            <svg-icon
-              class="mr-8"
-              icon="icon-upload"
-              dir="down"
-              height="16"
-              width="16"
-            />
-            Download
-          </button>
-        </li>
+
       </ul>
     </div>
 
@@ -175,7 +142,7 @@ import {
 import {
   mapGetters,
   mapState,
-  //mapActions
+  mapActions
 } from 'vuex'
 import EventBus from '@/utils/event-bus'
 
@@ -278,6 +245,12 @@ export default {
   },
 
   methods: {
+    ...mapActions(['setItsLinkinTime']),
+
+    linkToTarget: function(){
+      console.log("setting itslinking time to true")
+      this.setItsLinkinTime(true)
+    },
     /**
      * Select the row
      * @param {Object} row

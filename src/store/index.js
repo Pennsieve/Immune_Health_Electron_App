@@ -130,7 +130,8 @@ const store = new Vuex.Store({
     shadedFiles: [],
     triggerForClearing: false,
     filterApplicationCount: 0,
-    relationshipTypes: []
+    relationshipTypes: [],
+    itsLinkinTime: false
   },
   getters: {
     getRelationshipTypeByName: state => (name) => {
@@ -216,9 +217,15 @@ const store = new Vuex.Store({
     },
     filterApplicationCount(state){
       return state.filterApplicationCount
+    },
+    itsLinkinTime(state){
+      return state.itsLinkinTime
     }
   },
   mutations: {
+    SET_ITS_LINKIN_TIME(state,data){
+      state.itsLinkinTime - data
+    },
     UPDATE_FILTER_APPLICATION_COUNT(state, data){
       state.filterApplicationCount = data
     },
@@ -330,6 +337,9 @@ const store = new Vuex.Store({
   },
   actions: {
     addRelationshipType: ({commit}, evt) => commit('ADD_RELATIONSHIP_TYPE', evt),
+    setItsLinkinTime({commit}, data){
+      commit('SET_ITS_LINKIN_TIME',data)
+    },
     updateFilterApplicationCount({commit}, data){
       commit('UPDATE_FILTER_APPLICATION_COUNT', data)
     },
