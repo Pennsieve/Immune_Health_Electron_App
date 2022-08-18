@@ -122,7 +122,7 @@ export default {
       startIndex: 0,  //used to map colors to nodes
       selectedNode: null,
       datasetId: 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc',
-      interestedModels: ['samples', 'visits', 'patient'],
+      interestedModels: ['patient', 'visits', 'samples'],
       visibleRecordCount: {
         'patient': 0,
         'visits': 0,
@@ -205,6 +205,7 @@ export default {
 
   watch: {
     selectedStudy: function() {
+      console.log("[watch] selectedStudy")
       this.selectedStudyTrigger = true;
       this.updateStudyDataV2().then(() => {
         this.updateView()
@@ -214,16 +215,22 @@ export default {
     },
     visiblePatientRecords: function(){
     if (this.selectedStudyTrigger == false){
+      console.log("[watch] visiblePatientRecords")
+      console.log(this.visiblePatientRecords)
         this.updateView()
       }
     },
     visibleVisitsRecords: function(){
     if (this.selectedStudyTrigger == false){
+      console.log("[watch] visibleVisitsRecords")
+      console.log(this.visibleVisitsRecords)
         this.updateView()
       }
     },
     visibleSamplesRecords: function(){
     if (this.selectedStudyTrigger == false){
+      console.log("[watch] visibleSamplesRecords")
+      console.log(this.visibleSamplesRecords)
         this.updateView()
       }
     },
@@ -465,6 +472,7 @@ export default {
     //When a record is clicked, we want to add that as a local filter and get the related records.
     // We dont want to update the view for the current model (apart from coloring the selected record)
     handleFilterChangeClick: async function(nodeData, clickstatus) {
+      console.log('handleFilterChangeClick()')
       const limit = 100
       const model = nodeData.parent.displayName;
       //const identifier = nodeData.details.values[0].value
@@ -489,16 +497,21 @@ export default {
             this.removeClickedRecordsFiltersWithTarget('visits')
             this.removeClickedRecordsFiltersWithTarget('samples')
             // add the clicked patient record as a filter
-            this.addClickedFilter("externalparticipantid", model, identifier)
+            this.addClickedFilter("name", model, identifier)
             filters = this.searchModalSearch.filters.concat(this.clickedRecordsFilters)
+              console.log("handleFilterChangeClick() Patient clicked, filters:")
+              console.log(filters)
 
             filteredVisitsRecordsResponse = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, visitsOffset)
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
 
             // update the visits and samples records with the new filter being applied
             this.clickedAPatient = true
-            this.visibleVisitsRecords = filteredVisitsRecordsResponse.records
-            this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
+            // this.visibleVisitsRecords = filteredVisitsRecordsResponse.records
+            // this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
+              console.log("handleFilterChangeClick() Patient clicked: updating Visits and Samples")
+              this.updateVisits(filteredVisitsRecordsResponse.records)
+              this.updateSamples(filteredSamplesRecordsResponse.records)
             break;
           case 'visits':
           // eslint-disable-next-line
@@ -515,7 +528,9 @@ export default {
 
             // update the samples records with the new filter being applied
             this.clickedAVisit = true
-            this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
+            // this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
+              console.log("handleFilterChangeClick() Visit clicked: updating Samples")
+              this.updateSamples(filteredSamplesRecordsResponse.records)
             break;
           case 'samples':
           //NOTE:MUST UNCOMMENT
@@ -564,11 +579,13 @@ export default {
         var patients_metadata = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_p)
         var patient_recs = patients_metadata.records;
         console.log('setting patient records')
-        this.visiblePatientRecords = patient_recs;
+        // this.visiblePatientRecords = patient_recs;
+        this.updatePatients(patient_recs)
         //TO DO ORDERING RESULTS flat_arr = flat_arr.sort((a, b) => b.externalparticipantid - a.externalparticipantid)... may need to flatten array
         var visits_metadata = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, 100, offset_v)
         var visit_recs = visits_metadata.records;
-        this.visibleVisitsRecords = visit_recs;
+        // this.visibleVisitsRecords = visit_recs;
+        this.updateVisits(visit_recs)
         console.log('setting related visit records')
         /*
         var results_total_count = page_1_metadata.totalCount
@@ -651,12 +668,19 @@ export default {
 
     //called when a record is clicked
     onClickElement(nodeData, selectedRecord, clearing){
+      console.log("onClickElement()")
+      console.log("onClickElement() nodeData:")
+      console.log(nodeData)
+      console.log("onClickElement() selectedRecord:")
+      console.log(selectedRecord)
+      console.log(`onClickElement() clearing: ${clearing}`)
       //checking that its a record and not a model
       if (nodeData.parent && clearing == false) {
         //parentname will determine what color we change the square to
         var parent = nodeData.parent;
         var parentName = parent.displayName
-        let clickCount = selectedRecord.attr("clickcount") + 1
+        let clickCount = +selectedRecord.attr("clickcount") + 1
+        console.log(`onClickElement() clickCount: ${clickCount}`)
         selectedRecord.attr("clickcount", clickCount)
 
         // set default fill style (when record is unselected)
@@ -716,15 +740,16 @@ export default {
                 //if (vis_arr_len.length == 1 && (samp_arr_len.length == 0 || samp_arr_len.length > 1)){
                 //  console.log(vis_arr_len.length)
                   //console.log(samp_arr_len.length)
-                  var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
-                  console.log(to_be_linked)
+                // TODO: figure this out ~ this will be the target of linking a file (on Uploads page)
+                  console.log(`visit_to_be_linked:`)
+                  console.log(nodeData.details)
                   console.log(this.linkingTarget)
-                  this.setLinkingTarget(to_be_linked)
+                  this.setLinkingTarget(nodeData.details)
                   console.log(this.linkingTarget)
                 //}
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
-                //this.handleFilterChangeClick(nodeData, 'click');
+                this.handleFilterChangeClick(nodeData, 'click');
 
                 break;
             case 'samples':
@@ -745,8 +770,10 @@ export default {
                 //var samp_arr_len = this.shadedSamples;
                 //if (samp_arr_len.length == 1 && (vis_arr_len.length == 0 || vis_arr_len.length > 1)){
                   // eslint-disable-next-line
-                  var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
-                  this.setLinkingTarget(to_be_linked)
+              // TODO: figure this out ~ this will be the target of linking a file (on Uploads page)
+                  console.log('sample to be linked:')
+                  console.log(nodeData.details)
+                  this.setLinkingTarget(nodeData.details)
                   console.log(this.linkingTarget)
                 //}
 
@@ -789,10 +816,11 @@ export default {
         .then(response => {
           vm.hasData = true
           vm.isLoading = false
-          vm.modelData = response.filter(x => x.type === 'concept').filter(x => vm.interestedModels.includes(x.displayName)).sort((a, b) => {
-          // If two elements have different number, then the one who has larger number wins
-          return b.displayName - a.displayName;
-      });
+          let filtered = response.filter(x => x.type === 'concept').filter(x => vm.interestedModels.includes(x.displayName))
+          vm.modelData = []
+          for (let x of vm.interestedModels) {
+            vm.modelData.push(filtered.filter(f => f.displayName === x)[0])
+          }
         })
         .catch(this.handleXhrError.bind(this))
     },
@@ -954,6 +982,7 @@ export default {
 
     //NOTE: In the case where we have clicked on a record, we want to perform updateview for the downstream models only if aplicable
     updateView: function() {
+      console.log('updateView()')
       this.nextCol = 1 //reset hidden Canvas color scheme
       this.colorToNode = {}
       this.startIndex = 0
@@ -964,13 +993,13 @@ export default {
       var model_arr = []
       if (this.clickedAPatient){
         model_arr = ['visits','samples']
-        var model_obj_p = vm.modelData
-        for (var x of model_arr){
+        let model_obj_p = vm.modelData
+        for (let x of model_arr){
         //Need to change this. Turning modeldata obj into an array, filtering by each of the models that we want
         //to apply changes to, and then converting back to an object
         Object.fromEntries(Object.entries(model_obj_p).filter(([key]) => key.includes(x)));
         }
-        vm.model_obj_p.map(x => {
+        model_obj_p.map(x => {
 
           // some fixed width that we will decide on
           // TODO: clean up recordCount and x.count (use just one)
@@ -1009,11 +1038,11 @@ export default {
       }
       else if (this.clickedAVisit){
         model_arr = ['samples']
-        var model_obj_v = vm.modelData
-        for (var y of model_arr){
+        let model_obj_v = vm.modelData
+        for (let y of model_arr){
         Object.fromEntries(Object.entries(model_obj_v).filter(([key]) => key.includes(y)));
         }
-        vm.model_obj_v.map(x => {
+        model_obj_v.map(x => {
 
           // some fixed width that we will decide on
           // TODO: clean up recordCount and x.count (use just one)

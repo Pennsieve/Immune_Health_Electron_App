@@ -1,0 +1,13 @@
+linux:
+    target:
+    - tar.xz
+    - deb
+    - rpm
+    category: Science
+
+snap:
+  publish:
+    - github
+
+publish:
+  - github

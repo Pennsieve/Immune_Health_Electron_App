@@ -285,7 +285,9 @@ export default {
      * Creates relationships with file(s)
      */
     createFileRelationshipRequests: function() {
-      console.log('createrelationshiprequests called')
+      console.log('createFileRelationshipRequests()')
+      console.log('- selectedFiles: ')
+      console.log(this.selectedFiles)
       //change datasetId
       this.isCreating = true
       //const datasetId = this.datasetId;
@@ -299,11 +301,13 @@ export default {
         var i = f.content.id
         selecteditemids.push(i)
       }
+      console.log('- selecteditemids:')
+      console.log(selecteditemids)
       const queues = Array.from(selecteditemids).map(itemId => {
         const recordId = itemId
-        console.log(recordId)
+        console.log(`+ recordId: ${recordId}`)
         const packageId = this.linkingTarget.recordId //the record we are linking to
-        console.log(packageId)
+        console.log(`+ packageId: ${packageId}`)
         //pathOr('', ['params', 'instanceId'], this.$route)
         const linkTarget = {
           'ConceptInstance': {
@@ -341,11 +345,13 @@ export default {
 
     // eslint-disable-next-line no-unused-vars
     createRelationshipsSuccess: function() {
-      console.log('createRElationshipsSuccess called')
+      console.log('createRelationshipsSuccess()')
       //const conceptName = propOr('', 'name', this.concept)
       //const displayName = propOr('', 'displayName', this.concept)
       //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
-      var destination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:42632589-b052-453d-ad03-23701ab595df'
+
+      // the destination is the 'linked' folder
+      let destination = "N:collection:42632589-b052-453d-ad03-23701ab595df"
       this.moveItems(destination, this.selectedFiles);
       const numRequests = this.selectedFiles.size
       const plural = numRequests === 1 ? '' : 's'
@@ -485,12 +491,19 @@ export default {
      * @param {Array} items
      */
     moveItems: function (destination, items) {
-      console.log("moveitems called. moving linked files out of staging and into linked")
+      console.log("moveItems()")
+      console.log(`- destination: ${destination}`)
+      console.log('- items: ')
+      console.log(items)
+      let apiKey = this.userToken
+      let url = `https://api.pennsieve.io/data/move?api_key=${apiKey}`
+      console.log('* url: ')
+      console.log(url)
       if (destination) {
         const things = items.map(item => item.content.id)
-        console.log(destination)
+        console.log('+ things:')
         console.log(things)
-        this.sendXhr(destination, {
+        this.sendXhr(url, {
           method: 'POST',
           body: {
             destination,
@@ -501,12 +514,13 @@ export default {
             //this.onMoveItems(response)
             console.log(response)
             console.log('selected files are: ',this.selectedFiles)
+            this.fetchFiles()
           })
           .catch(response => {
             this.handleXhrError(response)
           })
       }
-      this.removeItems(this.selectedFiles)
+      // this.removeItems(this.selectedFiles)
     },
 
     /**
@@ -545,9 +559,10 @@ export default {
     },
 
     createRelationships: function() {
+      console.log('createRelationships()')
       this.isLoading = true
     //  if (this.isFile) {
-      console.log('createrelationships called')
+
         this.checkBelongsToExists()
         //this.createFileRelationshipRequests()
         .then(() => this.createFileRelationshipRequests())
@@ -558,7 +573,7 @@ export default {
     //  }
     },
     linkToTarget: function() {
-      console.log('linking to target');
+      console.log('linkToTarget()');
       this.createRelationships();
       //Then move selected files from staging to linked (don't launch modal)
       //OR do it on success...

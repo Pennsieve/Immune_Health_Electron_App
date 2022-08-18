@@ -2,7 +2,16 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       preload: 'src/utils/pennsieve/preload.js',
-      protos: 'src/utils/pennsieve/protos/agent.proto'
+      builderOptions: {
+        files: [
+          "**/*",
+          {
+            from: "../../src/utils/pennsieve/protos",
+            to: "./protos",
+            filter: ["**/*"]
+          }
+        ]
+      }
     }
   }
 }
