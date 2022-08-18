@@ -2,6 +2,12 @@
   "name": "immune_health_electron_app",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "author": {
+    "name" : "Pennsieve",
+    "email" : "support@mail.pennsieve.io",
+    "url" : "https://app.pennsieve.io"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
