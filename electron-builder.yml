@@ -1,0 +1,12 @@
+linux:
+    target:
+    - tar.xz
+    - deb
+    - rpm
+
+snap:
+  publish:
+    - github
+
+publish:
+  - github
