@@ -1,5 +1,6 @@
 {
   "name": "immune_health_electron_app",
+  "description": "Application for Immune Health file upload portal",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
