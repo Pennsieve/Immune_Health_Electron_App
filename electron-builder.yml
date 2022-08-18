@@ -3,6 +3,8 @@ linux:
     - tar.xz
     - deb
     - rpm
+    category:
+      - Science
 
 snap:
   publish:
