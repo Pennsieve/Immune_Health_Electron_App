@@ -90,8 +90,8 @@ import Request from '@/mixins/request'
     },
 
     computed: {
-      ...mapGetters(['getOrgMemberByIntId', 'dataset']),
-      ...mapState(['config', 'userToken']),
+      ...mapGetters(['getOrgMemberByIntId', 'dataset', 'userToken']),
+      ...mapState(['config']),
 
       /**
        * Get dataset int id
@@ -105,6 +105,7 @@ import Request from '@/mixins/request'
        * Returns event
        */
       eventsUrl: function() {
+        console.log()
         return `https://api.pennsieve.io/datasets/${this.datasetId}/changelog/events?api_key=${this.userToken}`
       }
     },
@@ -115,6 +116,9 @@ import Request from '@/mixins/request'
        *
        */
       loadCursorEvents: function(cursor) {
+        console.log("HERE is whats calling this")
+        console.log(this.eventsUrl)
+        console.log(cursor)
         this.sendXhr(`${this.eventsUrl}&cursor=${cursor}`).then(resp => {
           this.changelogEvents = resp
         }).catch(this.handleXhrError.bind(this))
