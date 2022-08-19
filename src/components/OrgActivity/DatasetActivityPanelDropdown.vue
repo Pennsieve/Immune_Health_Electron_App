@@ -50,7 +50,7 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex'
-import { pathOr } from 'ramda'
+//import { pathOr } from 'ramda'
 
 import DatasetActivityDialog from './DatasetActivityDialog.vue'
 import DatasetActivityDetail from './DatasetActivityDetail.vue'
@@ -98,14 +98,14 @@ import Request from '@/mixins/request'
        * @returns {Number}
        */
       datasetId: function() {
-        return pathOr(0, ['content', 'id'], this.dataset)
+        return `N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc`
       },
 
       /**
        * Returns event
        */
       eventsUrl: function() {
-        return `${this.config.apiUrl}/datasets/${this.datasetId}/changelog/events?api_key=${this.userToken}`
+        return `https://api.pennsieve.io/datasets/${this.datasetId}/changelog/events?api_key=${this.userToken}`
       }
     },
 

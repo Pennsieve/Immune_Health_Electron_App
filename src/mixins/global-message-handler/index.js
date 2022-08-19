@@ -17,7 +17,7 @@ export default {
   mounted() {
     // Vue event listeners
     EventBus.$on('toast', this.onToast.bind(this))
-    EventBus.$on('logout', this.onLogout.bind(this))
+    //EventBus.$on('logout', this.onLogout.bind(this))
     EventBus.$on('ajaxError', this.onToast.bind(this))
     EventBus.$on('add-to-upload-queue', this.addToUploadQueue.bind(this))
     EventBus.$on('add-input-files-to-upload-queue', this.addInputFilesToUploadQueue.bind(this))
@@ -32,7 +32,7 @@ export default {
 
   beforeDestroy() {
     EventBus.$off('toast', this.onToast.bind(this))
-    EventBus.$off('logout', this.onLogout.bind(this))
+    //EventBus.$off('logout', this.onLogout.bind(this))
     EventBus.$off('ajaxError', this.onToast.bind(this))
     EventBus.$off('add-to-upload-queue', this.addToUploadQueue.bind(this))
     EventBus.$off('add-input-files-to-upload-queue', this.addInputFilesToUploadQueue.bind(this))
@@ -141,6 +141,7 @@ export default {
      * Handle logout
      */
      //NOTE: cannot use async in electron, must use one of lifecycle methods
+     /*
     async onLogout(payload) {
       try {
         await Auth.signOut()
@@ -153,6 +154,7 @@ export default {
         })
       }
     },
+    */
 
     /**
      * Get profile url
@@ -181,7 +183,8 @@ export default {
         })
         .catch((response) => {
           if (response.status !== 200) {
-            this.handleLogout()
+            //this.handleLogout()
+            console.log("couldn't get profile")
           }
         })
     }

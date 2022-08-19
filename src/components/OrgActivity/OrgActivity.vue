@@ -220,10 +220,14 @@ export default {
       immediate: true
     }
   },
+  beforeMount (){
+  this.clearDatasetActivityState()
+  this.fetchDatasetActivity()
+  },
 
   mounted () {
-    this.clearDatasetActivityState()
-    this.fetchDatasetActivity()
+    //this.clearDatasetActivityState()
+    //this.fetchDatasetActivity()
      /*
      used in BfPage
      function() {
@@ -248,7 +252,7 @@ export default {
   },
 
   methods: {
-    //can likely omit datset module
+    //can likely omit dataset module
     ...mapActions([
       'updateDatasetActivityCategory',
       'updateDatasetActivityUserId',

@@ -459,11 +459,12 @@ import { referenceTypeOptions } from '../../utils/constants'
        * Has parent folder
        * @returns {Boolean}
        */
-       /*
+
       hasParent: function() {
+        // eslint-disable-next-line
         return this.eventDetail.detail.hasOwnProperty('parent')
       },
-      */
+
 
       /**
        * Has new parent folder

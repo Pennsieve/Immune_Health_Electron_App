@@ -108,7 +108,8 @@ describe('request Mixin', () => {
   })
 
   it('handleXhrError: handles 401', () => {
-    const spy = jest.spyOn(cmp.vm, 'handleLogout')
+    //const spy = jest.spyOn(cmp.vm, 'handleLogout')
+    console.log("401 Error")
     cmp.vm.handleXhrError({status: 401})
     expect(spy).toBeCalled()
   })

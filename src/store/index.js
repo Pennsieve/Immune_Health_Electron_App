@@ -51,11 +51,16 @@ const getActivityDateRange = (days) => {
 const getQueryParams = (params, apiKey) => {
   const dateRange = getActivityDateRange(params.dateRange.value)
   console.log(dateRange)
-  console.log(apiKey)
+  console.log("the api key is" , apiKey)
   console.log(params.orderDirection)
   console.log(params.category.value)
   console.log(params.userId.value)
   console.log(params.cursor)
+  var one = params.category.value && { category: params.category.value}
+  var two =  params.userId.value && { userId: params.userId.value}
+  var three = params.cursor && { cursor: params.cursor }
+  var four = dateRange
+  console.log("passing this into toQueryParams ",apiKey,params.orderDirection,one, two, three, four)
   return toQueryParams({
     api_key: apiKey,
     orderDirection: params.orderDirection,
@@ -114,6 +119,7 @@ const store = new Vuex.Store({
     datasetActivity: [],
     isLoadingDatasetActivity: false,
     orgMembers: [],
+    /*
     datasetActivityParams: {
       cursor: '',
       orderDirection: 'Asc',
@@ -122,6 +128,7 @@ const store = new Vuex.Store({
       dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
       userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
     },
+    */
     linkingTarget: {},
     searchPage: '',
     shadedParticipants: [],
@@ -338,7 +345,7 @@ const store = new Vuex.Store({
   actions: {
     addRelationshipType: ({commit}, evt) => commit('ADD_RELATIONSHIP_TYPE', evt),
     setItsLinkinTime({commit}, data){
-      commit('SET_ITS_LINKIN_TIME',data)
+      commit('SET_ITS_LINKIN_TIME')
     },
     updateFilterApplicationCount({commit}, data){
       commit('UPDATE_FILTER_APPLICATION_COUNT', data)
@@ -388,8 +395,10 @@ const store = new Vuex.Store({
       //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
       const endpoint = `https://api.pennsieve.io/datasets/${IMMUNE_HEALTH_DATASET_ID}/changelog/timeline`
       const apiKey =  propOr('', 'token', state.profile)
+      console.log(apiKey)
       //const apiKey = this.userToken
       //import below from datasetModule.js in utils and uncomment
+      console.log(state.datasetActivityParams)
       const queryParams = getQueryParams(state.datasetActivityParams, apiKey)
 
       const url = `${endpoint}?${queryParams}`

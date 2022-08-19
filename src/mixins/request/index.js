@@ -90,7 +90,8 @@ export default {
         })
       } // logout
       else if (status === 401) {
-        return this.handleLogout()
+        //return this.handleLogout()
+        console.log("401 error")
       } // unauthorized
       // else if (status === 403) {
       //   return this.$router.replace({name: 'datasets-list'})
