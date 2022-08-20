@@ -250,6 +250,7 @@ export default {
     linkToTarget: function(){
       console.log("setting itslinking time to true")
       this.setItsLinkinTime(true)
+      console.log(this.itsLinkinTime)
     },
     /**
      * Select the row

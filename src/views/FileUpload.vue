@@ -57,9 +57,16 @@
         </template>
       </ih-subheader>
       <h2></h2>
+      <template v-if="!isLinkingTargetSet">
+        <bf-button v-on:click="updateSearchModalVisible(true)">
+          Select Linking Target
+        </bf-button>
+      </template>
+      <template v-else>
       <bf-button v-on:click="updateSearchModalVisible(true)">
-        Select Linking Target
+        Change Linking Target
       </bf-button>
+      </template>
       <div class="logo-container">
         <span>
         <bf-button @click="linkToTarget()">
@@ -155,16 +162,22 @@ export default {
     //GetFileProperty
   ],
   computed: {
-    ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName','itsLinkinTime']),
-  ...mapState(['linkingTarget']),
+    ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName']),
+  ...mapState(['linkingTarget','itsLinkinTime']),
   isLinkingTargetSet() {
     return !isEmpty(this.linkingTarget)
   },
     //returns true if more than 1 select file
     multipleSelected: function () {
       return this.selectedFiles.length > 1
-    }
+    },
+    /*
+    isLinkinTimeTrue: function (){
+      if (this.itsLinkinTime){
 
+      }
+    }
+    */
   },
   data() {
     return {
