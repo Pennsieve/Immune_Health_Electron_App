@@ -18,7 +18,7 @@
 
         <li class="mr-24">
           <button
-            @click="linkToTarget()"
+            @click="onClickButton('test')"
           >
             <svg-icon
               class="mr-8"
@@ -142,7 +142,7 @@ import {
 import {
   mapGetters,
   mapState,
-  mapActions
+  //mapActions
 } from 'vuex'
 import EventBus from '@/utils/event-bus'
 
@@ -245,12 +245,10 @@ export default {
   },
 
   methods: {
-    ...mapActions(['setItsLinkinTime']),
-
-    linkToTarget: function(){
-      console.log("setting itslinking time to true")
-      this.setItsLinkinTime(true)
-      console.log(this.itsLinkinTime)
+    //...mapActions(['setItsLinkinTime']),
+    onClickButton: function(message){
+      console.log("on click button called")
+      this.$emit('clicked-now', message)
     },
     /**
      * Select the row

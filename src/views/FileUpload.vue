@@ -163,7 +163,7 @@ export default {
   ],
   computed: {
     ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName']),
-  ...mapState(['linkingTarget','itsLinkinTime']),
+  ...mapState(['linkingTarget']),
   isLinkingTargetSet() {
     return !isEmpty(this.linkingTarget)
   },
@@ -171,13 +171,7 @@ export default {
     multipleSelected: function () {
       return this.selectedFiles.length > 1
     },
-    /*
-    isLinkinTimeTrue: function (){
-      if (this.itsLinkinTime){
 
-      }
-    }
-    */
   },
   data() {
     return {
@@ -221,18 +215,14 @@ export default {
     // EventBus.$off('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
     // EventBus.$off('update-external-file', this.onFileRenamed)
   },
-  watch: {
-    itsLinkinTime: function(){
-      console.log("itslinkintime watcher triggered")
-      if (this.itsLinkinTime == true){
-      this.linkToTarget();
-      this.setItsLinkinTime(false)
-      console.log("itslinkintime is false now")
-      }
-    }
-  },
+
   methods: {
       ...mapActions(['setSearchPage', 'updateSearchModalVisible','addRelationshipType','setItsLinkinTime']),
+
+    onClickChild: function(){
+      console.log("onClickhild()") //will be somevalue
+
+    },
     /**
      * Handle upload menu click event
      * @param {String} command

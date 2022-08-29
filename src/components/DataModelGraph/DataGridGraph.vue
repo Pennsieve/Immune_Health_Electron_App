@@ -122,7 +122,7 @@ export default {
       startIndex: 0,  //used to map colors to nodes
       selectedNode: null,
       datasetId: 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc',
-      interestedModels: ['patient', 'visits', 'samples'],
+      interestedModels: ['patient', 'visits'],
       visibleRecordCount: {
         'patient': 0,
         'visits': 0,
