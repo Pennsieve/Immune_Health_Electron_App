@@ -222,6 +222,55 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
 }
 
 /**
+ * fetches the filtered experiments records related to the selected study
+ * @param {string} selectedStudyId - retreived from state.selectedStudy
+ * @param {[Object]} filters - retreived from state.searchModalSearch.filters
+ * @param {string} token - retrieved from state.apiKey
+ * @param {int} limit - the upper limit of the list of records returned
+ * @param {int} offset - the offset of the list of records returned
+ */
+ export const fetchFilteredExperimentsMetadataRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
+  // return the records related to the selected study with the filters applied
+  const filteredRecordsUrl = `${GET_FILTERED_METADATA_ENDPOINT}/records?limit=${limit}&offset=${offset}`
+
+  // filter the returned records by the selected study
+  const modifiedFilters = clone(filters)
+  modifiedFilters.push({
+    id: v1(),
+    isInvalid: false,
+    lockTarget: true,
+    operation: "=",
+    operationLabel: "equals",
+    operators: [
+      {
+        label: 'equals',
+        value: '='
+      },
+      {
+        label: 'does not equal',
+        value: '<>'
+      },
+      {
+        label: 'starts with',
+        value: 'STARTS WITH'
+      },
+    ],
+    property: "sstudyid",
+    propertyLabel: "sstudyid",
+    propertyType: {format: null, type: "String"},
+    target: "study",
+    targetLabel: "study",
+    type: "model",
+    value: getStudyName(selectedStudy)
+  })
+  const experimentsQuery = await getQuery('experiments', modifiedFilters, token)
+
+  return await axios.post(filteredRecordsUrl, experimentsQuery, REQUEST_HEADER(token)).then(response => {
+    return handleV2RecordsResponse(propOr([], 'data', response))
+  })
+}
+
+/**
  * fetches the files linked to the filtered visits records that are related to the selected study
  * @param {string} selectedStudyId - retreived from state.selectedStudy
  * @param {[Object]} filters - retreived from state.searchModalSearch.filters
@@ -315,6 +364,55 @@ export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy,
   const samplesQuery = await getQuery('samples', modifiedFilters, token)
 
   return await axios.post(filteredFilesUrl, samplesQuery, REQUEST_HEADER(token)).then(response => {
+    return propOr([], 'data', response)
+  })
+}
+
+/**
+ * fetches the files linked to the filtered experiments records that are related to the selected study
+ * @param {string} selectedStudyId - retreived from state.selectedStudy
+ * @param {[Object]} filters - retreived from state.searchModalSearch.filters
+ * @param {string} token - retrieved from state.apiKey
+ * @param {int} limit - the upper limit of the list of records returned
+ * @param {int} offset - the offset of the list of records returned
+ */
+ export const fetchExperimentsFilesRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
+  // return the files related to the selected study with the filters applied
+  const filteredFilesUrl = `${GET_FILTERED_METADATA_ENDPOINT}/packages?limit=${limit}&offset=${offset}`
+
+  // filter the returned files by the selected study
+  const modifiedFilters = clone(filters) || []
+  modifiedFilters.push({
+    id: v1(),
+    isInvalid: false,
+    lockTarget: true,
+    operation: "=",
+    operationLabel: "equals",
+    operators: [
+      {
+        label: 'equals',
+        value: '='
+      },
+      {
+        label: 'does not equal',
+        value: '<>'
+      },
+      {
+        label: 'starts with',
+        value: 'STARTS WITH'
+      },
+    ],
+    property: "sstudyid",
+    propertyLabel: "sstudyid",
+    propertyType: {format: null, type: "String"},
+    target: "study",
+    targetLabel: "study",
+    type: "model",
+    value: getStudyName(selectedStudy)
+  })
+  const experimentsQuery2 = await getQuery('experiments', modifiedFilters, token)
+
+  return await axios.post(filteredFilesUrl, experimentsQuery2, REQUEST_HEADER(token)).then(response => {
     return propOr([], 'data', response)
   })
 }

@@ -6,7 +6,7 @@
     <span class="selected-content-container">
       <ih-subheader previousRoute="/studies">
         <template slot="text">
-          <template v-if="!isLinkingTargetSet">No Linking Target Selected</template>
+          <template v-if="!isLinkingTargetSet">No Linking Target(s) Selected</template>
            <!--if visit is selected-->
           <template v-else-if="linkingTarget.modelId === '9c579bef-6ce0-4632-be1c-a95aadc982c4'">
             Linking Target:
@@ -319,6 +319,8 @@ export default {
       const queues = Array.from(selecteditemids).map(itemId => {
         const recordId = itemId
         console.log(`+ recordId: ${recordId}`)
+        //NOTE: here we need to iterate through the array of linkingtargets and make the API call for each of them
+        //... can do a for loop or another mapping function.
         const packageId = this.linkingTarget.recordId //the record we are linking to
         console.log(`+ packageId: ${packageId}`)
         //pathOr('', ['params', 'instanceId'], this.$route)
