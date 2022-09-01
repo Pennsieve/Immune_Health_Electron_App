@@ -301,56 +301,56 @@ export default {
       console.log('createFileRelationshipRequests()')
       console.log('- selectedFiles: ')
       console.log(this.selectedFiles)
-      //change datasetId
       this.isCreating = true
-      //const datasetId = this.datasetId;
-      //pathOr('', ['params', 'datasetId'], this.$route)
-      //CHANGE THIS URL
       const url = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/proxy/package/instances`
-      //NOTE: I think selecteditemids == selectedfiles. BUT HOW are selected files uniquely identified???
       var iter = this.selectedFiles;
       var selecteditemids = []
       for (const f of iter){
         var i = f.content.id
         selecteditemids.push(i)
       }
-      console.log('- selecteditemids:')
-      console.log(selecteditemids)
-      const queues = Array.from(selecteditemids).map(itemId => {
-        const recordId = itemId
-        console.log(`+ recordId: ${recordId}`)
-        //NOTE: here we need to iterate through the array of linkingtargets and make the API call for each of them
-        //... can do a for loop or another mapping function.
-        const packageId = this.linkingTarget.recordId //the record we are linking to
-        console.log(`+ packageId: ${packageId}`)
-        //pathOr('', ['params', 'instanceId'], this.$route)
-        const linkTarget = {
-          'ConceptInstance': {
-            id: packageId //again, the file we are currently on
+      //NOTE: verify linkingTargetS  var
+      var iter2 = this.linkingTargets;
+      //iterating through linking target(s). We then map all of the selected files (i.e. link) to the current target
+      for (const j of iter2){
+        var curr_targ = j.recordId
+        console.log('- selecteditemids:')
+        console.log(selecteditemids)
+        const queues = Array.from(selecteditemids).map(itemId => {
+          const recordId = itemId
+          console.log(`+ recordId: ${recordId}`)
+          const packageId = curr_targ //the record we are linking to
+          console.log(`+ packageId: ${packageId}`)
+          //pathOr('', ['params', 'instanceId'], this.$route)
+          const linkTarget = {
+            'ConceptInstance': {
+              id: packageId //again, the file we are currently on
+            }
           }
-        }
 
-        return this.sendXhr(url, {
-          method: 'POST',
-          header: {
-            'Authorization': `bearer ${this.userToken}`
-          },
-          body: {
-            //switch
-            externalId: recordId, //OR MAYBE recordId
-            targets: [{
-              direction: 'FromTarget',
-              linkTarget, //the file
-              relationshipType: 'belongs_to',
-              relationshipData: []
-            }]
-          }
+          return this.sendXhr(url, {
+            method: 'POST',
+            header: {
+              'Authorization': `bearer ${this.userToken}`
+            },
+            body: {
+              //switch
+              externalId: recordId, //OR MAYBE recordId
+              targets: [{
+                direction: 'FromTarget',
+                linkTarget, //the file
+                relationshipType: 'belongs_to',
+                relationshipData: []
+              }]
+            }
+          })
         })
-      })
-      // this maps over all the queued responses to guarantee that all responses are returned regardless of error status
-      return Promise.all(queues.map(q => {
-        return q.catch(err => ({status: err.status}))
-      }))
+        // this maps over all the queued responses to guarantee that all responses are returned regardless of error status
+        return Promise.all(queues.map(q => {
+          return q.catch(err => ({status: err.status}))
+        }))
+
+      }
     },
 
     /**

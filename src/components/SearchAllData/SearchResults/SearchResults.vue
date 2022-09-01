@@ -11,7 +11,7 @@
         size="medium"
       >
         <el-radio-button
-          label="Samples"
+          label="Experiments"
         />
         <el-radio-button
           label="Visits"
@@ -77,7 +77,8 @@ import FormatDate from '@/mixins/format-date'
 import { mergeRight } from 'ramda'
 import {
   fetchFilteredVisitsMetadataRelatedToStudy,
-  fetchFilteredSamplesMetadataRelatedToStudy
+  fetchFilteredSamplesMetadataRelatedToStudy,
+  //fetchFilteredExperimentsMetadataRelatedToStudy
 } from '@/utils/fetchRecords'
 export default {
   name: 'SearchResults',
@@ -208,6 +209,8 @@ export default {
       const metadata = this.selectedButton === 'Visits' ?
         await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset) :
         await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
+        //TO DO: replace above with await fetchFilteredExperimentsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
+
       // TODO: Figure out how to calculate total (records.length is incorrect)
       this.tableResultsTotalCount = metadata.totalCount
       this.recordHeadings = metadata.headings

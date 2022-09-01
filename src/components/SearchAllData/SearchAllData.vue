@@ -105,9 +105,10 @@ const MODELS_LIST = [
     value: 'visits'
   },
   {
-    label: 'samples',
-    value: 'samples'
+    label: 'experiments',
+    value: 'experiments'
   }
+  //formely samples
 ]
 export default {
   name: 'SearchAllData',
