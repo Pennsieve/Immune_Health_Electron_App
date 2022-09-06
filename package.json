@@ -13,7 +13,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "dev-setup": "cp -pr src/utils/pennsieve/protos dist_electron",
+    "dev-setup": "mkdir -p dist_electron/protos && cp -pr src/utils/pennsieve/protos/agent.proto dist_electron/protos",
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "yarn dev-setup && vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
