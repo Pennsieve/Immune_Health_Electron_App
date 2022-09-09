@@ -489,8 +489,10 @@ import { referenceTypeOptions } from '../../utils/constants'
     }
   }
 </script>
-<style  scoped>
-/*@import '/../../assets/css/_variables.scss'; */
+<style  lang="scss" scoped>
+
+@import '../../assets/css/_variables.scss';
+
 .dataset-activity-detail {
    p {
     margin-bottom: -2px;
