@@ -2,7 +2,7 @@
   <div>
     <ih-subheader class="subheader">
       <span slot="text">
-        Penn Immune Health Application
+        Applications
       </span>
       <template slot="buttons">
         <bf-button>

@@ -47,7 +47,7 @@
     <img
       v-if="getFileState !== 'Processing' && getFileState !== 'Uploading'"
       class="svg-icon icon-item mr-16"
-      :src="fileIcon(icon, file.content.packageType)"
+      :src="fileIconStr"
     >
 
     <button
@@ -123,6 +123,14 @@ export default {
      */
     displayName: function() {
       return packageDisplayName(this.file.content.name, this.file.extension, this.file.children)
+    },
+
+    fileIconStr: function () {
+      // let strIcon = this.fileIcon(this.icon, this.file.content.packageType)
+      // console.log(strIcon)
+
+      // return 'file-icons/icon-3d.svg'
+      return this.fileIcon(this.icon, this.file.content.packageType)
     },
 
     /**

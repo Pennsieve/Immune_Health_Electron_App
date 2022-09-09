@@ -1,7 +1,9 @@
 <template>
   <div class="main-container">
-    <div class="study-container heading1 cannot-select">
-      Studies
+    <div class="study-container">
+      <div class="header cannot-select">
+        Studies
+      </div>
     </div>
     <template v-if="studies.length > 0">
       <div v-for="study in studies" class="study-container heading1" :class="getStudyName(study) === getStudyName(selectedStudy) ? 'selected-study' : 'not-selected-study'" :key="study.sstudyid" v-on:click="studySelected">
@@ -57,26 +59,34 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import '@/assets/css/_variables.scss';
+@import '../../assets/css/_variables.scss';
 .main-container {
   border-right: 1px solid $light-gray;
 }
 
 .study-container {
   padding: 1rem;
-  font-weight: 400;
   border-bottom: 1px solid $light-gray;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  .header {
+    font-weight: 700;
+    text-align: center;
+  }
+
 }
 .study-container:hover {
   cursor: pointer;
 }
 
+
+
 .selected-study {
   border-left: .5rem solid orange;
   padding-left: .5rem;
+  background-color: $purple_tint;
 }
 
 .not-selected-study {

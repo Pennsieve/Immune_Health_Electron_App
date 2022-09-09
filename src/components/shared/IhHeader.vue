@@ -81,6 +81,7 @@ export default {
   color: white;
   white-space: nowrap;
   margin-right: 1rem;
+  font-weight: 700;
 }
 .login-icon {
   margin-right: 1rem;
