@@ -59,7 +59,7 @@
       <h2></h2>
       <template v-if="!isLinkingTargetSet">
         <bf-button v-on:click="updateSearchModalVisible(true)">
-          Select Linking Target
+          Select Linking Targets
         </bf-button>
       </template>
       <template v-else>
@@ -163,9 +163,9 @@ export default {
   ],
   computed: {
     ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName']),
-  ...mapState(['linkingTarget']),
+  ...mapState(['linkingTargets']),
   isLinkingTargetSet() {
-    return !isEmpty(this.linkingTarget)
+    return !isEmpty(this.linkingTargets)
   },
     //returns true if more than 1 select file
     multipleSelected: function () {
@@ -309,7 +309,7 @@ export default {
         var i = f.content.id
         selecteditemids.push(i)
       }
-      //NOTE: verify linkingTargetS  var
+      //NOTE: verify linkingTargets  var
       var iter2 = this.linkingTargets;
       //iterating through linking target(s). We then map all of the selected files (i.e. link) to the current target
       for (const j of iter2){

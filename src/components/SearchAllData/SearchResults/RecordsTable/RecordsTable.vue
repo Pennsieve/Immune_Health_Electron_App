@@ -4,9 +4,15 @@
       ref="table"
       :border="true"
       :data="data"
+      @select="handleTableSelectionChange"
       @sort-change="onSortChange"
-      @row-click="onRowClick"
     >
+      <el-table-column
+        type="selection"
+        align="center"
+        fixed
+        width="50"
+      />
       <el-table-column
         v-for="heading in headings"
         :key="heading.name"
@@ -68,9 +74,7 @@
 </template>
 
 <script>
-import {
-  propOr
-} from 'ramda'
+import { propOr } from 'ramda'
 
 import TableMenu from '@/components/TableMenu/TableMenu.vue'
 
@@ -125,28 +129,30 @@ export default {
       default: () => {
         return {}
       }
-    }
+    },
+    recordType: {
+      type: String,
+      default: ''
+    },
   },
 
   data () {
     return {
-      activeRow: {},
-      selection: [],
-      sortOrders: ['ascending', 'descending'],
-      checkAll: false
     }
   },
 
-  methods: {
-    /**
-     * Action when clicking a row
-     */
-    onRowClick: function(row, column) {
-     const columnProperty = propOr('', 'property', column)
-     if (columnProperty !== undefined) {
-       this.$emit('navigate-to-record', row)
-     }
-    },
+  computed: {
+    // return the name of the property of the object that we should be using to identify a row by (the properties available differ between visits, samples, and experiments)
+    rowKeyProp() {
+      if (this.recordType == 'Visits') {
+        return 'visit_event'
+      }
+      if (this.recordType == 'Samples') {
+        return 'study_sample_id'
+      }
+      return ''
+    }
+  },
 
     /**
      * Callback from sort change
@@ -165,7 +171,14 @@ export default {
         ascending,
         orderDirection
       })
-    }
+    },
+    /**
+     * Handle table selection change
+     * @param {Array} selection
+     */
+     handleTableSelectionChange: function(selection, row) {
+      this.$emit('selection-changed', selection)
+    },
   }
 }
 </script>
@@ -223,5 +236,9 @@ export default {
 .record-actions-wrap {
   display: flex;
   justify-content: flex-end;
+}
+
+.el-table--border .el-table__cell:first-child .cell {
+  padding-left: unset;
 }
 </style>

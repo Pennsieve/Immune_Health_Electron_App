@@ -23,12 +23,12 @@ export default {
     ...mapGetters(['selectedStudy', 'searchModalVisible'])
   },
   methods: {
-    ...mapActions(['setLinkingTarget']),
+    ...mapActions(['setLinkingTargets']),
   },
   watch: {
     async selectedStudy() {
       // Clear the linking target when we change what study is selected
-      this.setLinkingTarget({})
+      this.setLinkingTargets([])
     }
   }
 }
