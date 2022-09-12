@@ -134,10 +134,24 @@ export default {
       type: String,
       default: ''
     },
+    selectedRows: {
+      type: Array,
+      default: () => []
+    }
+  },
+
+  watch: {
+    selectedRows: {
+      handler: async function(rows) {
+        this.selectedPreExisting(rows)
+      },
+      immediate: true
+    }
   },
 
   data () {
     return {
+      selectedItems: this.selectedRows,
     }
   },
 
@@ -155,6 +169,49 @@ export default {
   },
 
   methods: {
+    selectedPreExisting (rows) {
+      if (rows.length > 0) {
+        // Use nextTick to prevent trying to get the table ref before rendering is completed
+        this.$nextTick(() => {
+          rows.forEach(row => {
+            let selectedItem = this.data.find(item => item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`])
+            // Check if the item is in the current data being shown and if it is then check it
+            if (selectedItem != undefined) {
+              this.$refs.table.toggleRowSelection(selectedItem, true);
+            }
+          })
+        })      
+      } else {
+        this.$nextTick(() => {
+          this.$refs.table.clearSelection()
+        })
+      }
+    },
+    selectAll (selection) {
+      if (selection.length > 0) {
+        this.addRows(this.data)
+      } else {
+        this.deleteRows(this.data)
+      }
+    },
+    // Add the check 
+    addRows (rows) {
+      rows.forEach(row => {
+        if (this.selectedItems.find(item => item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`])) { 
+          return 
+        }
+        this.selectedItems.push(row)
+      });
+    },
+    // Deselect 
+    deleteRows (rows) {
+      if (this.selectedItems.length == 0) {
+        return 
+      }
+      rows.forEach(row => {
+        this.selectedItems = this.selectedItems.filter(item => item[`${this.rowKeyProp}`] != row[`${this.rowKeyProp}`])
+      })
+    },
     /**
      * Callback from sort change
      * Set new sort order and property
@@ -179,7 +236,13 @@ export default {
      */
     // eslint-disable-next-line no-unused-vars
      handleTableSelectionChange: function(selection, row) {
-      this.$emit('selection-changed', selection)
+      // if selection doesn't contain the row then that means the row was unselected and we can remove it from selectedItems
+      if (selection && selection.find(item => item && (item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`]))) {
+        this.addRows([row])
+      } else {
+        this.deleteRows([row])
+      }
+      this.$emit('selection-changed', this.selectedItems)
     },
   }
 }

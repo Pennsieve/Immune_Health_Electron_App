@@ -1,4 +1,3 @@
-
 <template>
   <div class="search-results">
     <div
@@ -52,6 +51,7 @@
           <records-table
             class="search-results-records-table"
             :data="recordResults"
+            :selected-rows="selections"
             :record-type="recordType"
             :headings="recordHeadings"
             :show-menu-column="showMenuColumn"
@@ -59,6 +59,7 @@
             :search-all-data-records="true"
             :is-sortable="isRecordsSortable"
             :table-search-params="tableSearchParams"
+            @selection-changed="onSelectionChanged"
             @linking-targets-changed="onLinkingTargetsChanged"
             @sort="$emit('sort', $event)"
           />
@@ -138,6 +139,7 @@ export default {
   },
   data() {
     return {
+      selections: [],
       recordResults: [],
       recordHeadings: [],
       selectedButton: 'Visits',
@@ -255,6 +257,9 @@ export default {
       this.setLinkingTargets(records)
       this.updateSearchModalVisible(false)
     },
+    onSelectionChanged: function(rows) {
+      this.selections = rows
+    }
   }
 }
 </script>
