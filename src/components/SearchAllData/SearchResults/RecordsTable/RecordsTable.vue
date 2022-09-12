@@ -154,6 +154,7 @@ export default {
     }
   },
 
+  methods: {
     /**
      * Callback from sort change
      * Set new sort order and property
@@ -176,6 +177,7 @@ export default {
      * Handle table selection change
      * @param {Array} selection
      */
+    // eslint-disable-next-line no-unused-vars
      handleTableSelectionChange: function(selection, row) {
       this.$emit('selection-changed', selection)
     },

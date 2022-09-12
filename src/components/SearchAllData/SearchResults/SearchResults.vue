@@ -60,7 +60,6 @@
             :is-sortable="isRecordsSortable"
             :table-search-params="tableSearchParams"
             @linking-targets-changed="onLinkingTargetsChanged"
-            @selection-changed="onSelectionChanged"
             @sort="$emit('sort', $event)"
           />
         </div>
