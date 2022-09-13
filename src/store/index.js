@@ -107,7 +107,7 @@ const store = new Vuex.Store({
       isModelInvalid: false,
       filters: [],
       model: '',
-      limit: 25,
+      limit: 10,
       offset: 0
     },
     scientificUnits: [],
@@ -129,7 +129,7 @@ const store = new Vuex.Store({
       userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
     },
     */
-    linkingTarget: {},
+    linkingTargets: [],
     searchPage: '',
     shadedParticipants: [],
     shadedVisits: [],
@@ -213,8 +213,8 @@ const store = new Vuex.Store({
     triggerForClearing (state){
       return state.triggerForClearing
     },
-    linkingTarget (state) {
-      return state.linkingTarget
+    linkingTargets (state) {
+      return state.linkingTargets
     },
     datasetNodeId(state) {
       return state.datasetNodeId
@@ -314,8 +314,8 @@ const store = new Vuex.Store({
     SET_SEARCH_PAGE (state, data) {
       state.searchPage = data
     },
-    SET_LINKING_TARGET (state, data) {
-      state.linkingTarget = data
+    SET_LINKING_TARGETS (state, data) {
+      state.linkingTargets = data
     },
     CLEAR_CLICKED_SELECTIONS (state){
       state.shadedParticipants = []
@@ -495,8 +495,8 @@ const store = new Vuex.Store({
     setSearchPage({ commit }, data) {
       commit('SET_SEARCH_PAGE', data)
     },
-    setLinkingTarget({ commit }, data) {
-      commit('SET_LINKING_TARGET', data)
+    setLinkingTargets({ commit }, data) {
+      commit('SET_LINKING_TARGETS', data)
     },
     async setScientificUnits ({ commit }) {
       const apiKey = this.state.profile.token

@@ -162,7 +162,7 @@ export default {
       'shadedParticipants',
       'selectedStudyName'
     ]),
-    ...mapGetters(['userToken','triggerForClearing','linkingTarget']),
+    ...mapGetters(['userToken','triggerForClearing','linkingTargets']),
     /*
     onFilterAdd: function() {
       this.filterStatus = searchModalSearch.filters;
@@ -324,7 +324,7 @@ export default {
 
   methods: {
     //will not use these map actions since all data will be within component
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles','setLinkingTarget','updatefilterApplicationCount']), //include set all files potentially
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch','setAllParticipants','setAllVisits','setAllSamples','setShadedParticipants','setShadedVisits','setShadedSamples','setShadedFiles','setLinkingTargets','updatefilterApplicationCount']), //include set all files potentially
 
     setupMouseOver: function() {
       const vm = this
@@ -822,9 +822,9 @@ export default {
                 // TODO: figure this out ~ this will be the target of linking a file (on Uploads page)
                   console.log(`visit_to_be_linked:`)
                   console.log(nodeData.details)
-                  console.log(this.linkingTarget)
-                  this.setLinkingTarget(nodeData.details)
-                  console.log(this.linkingTarget)
+                  console.log(this.linkingTargets)
+                  //this.setLinkingTargets(nodeData.details)
+                  console.log(this.linkingTargets)
                 //}
                 fillstyle ="#0049d1"
                 // eslint-disable-next-line
@@ -854,8 +854,8 @@ export default {
               // TODO: figure this out ~ this will be the target of linking a file (on Uploads page)
                   console.log('experiment to be linked:')
                   console.log(nodeData.details)
-                  this.setLinkingTarget(nodeData.details)
-                  console.log(this.linkingTarget)
+                  this.setLinkingTargets(nodeData.details)
+                  console.log(this.linkingTargets)
                 //}
 
                 fillstyle ="#f0cc00"

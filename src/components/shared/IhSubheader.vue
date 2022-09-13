@@ -51,7 +51,6 @@ export default {
   display: flex;
   background-color: $purple_2;
   width: 100%;
-  min-width: fit-content;
   background-color: rgba(189, 189, 189, .1);
   font-weight: 400;
   padding: 1rem 1rem;
@@ -59,11 +58,9 @@ export default {
 }
 .text-container {
   color: black;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   margin-right: 1rem;
-  display: flex;
+  display: contents;
+  width: -webkit-fill-available;
 }
 .text-container:hover {
   cursor: default;
@@ -75,7 +72,11 @@ export default {
   }
 }
 .route-info {
+  width: 100%;
   display: flex;
+  white-space: nowrap;
+  text-overflow: clip;
+  overflow: hidden;
 }
 .back-navigation-container {
   margin-right: 1rem;

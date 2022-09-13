@@ -1,4 +1,3 @@
-
 <template>
   <div class="search-results">
     <div
@@ -11,7 +10,7 @@
         size="medium"
       >
         <el-radio-button
-          label="Experiments"
+          label="Samples"
         />
         <el-radio-button
           label="Visits"
@@ -52,29 +51,32 @@
           <records-table
             class="search-results-records-table"
             :data="recordResults"
+            :selected-rows="selections"
+            :record-type="recordType"
             :headings="recordHeadings"
             :show-menu-column="showMenuColumn"
             :search-all-data-menu="true"
             :search-all-data-records="true"
             :is-sortable="isRecordsSortable"
             :table-search-params="tableSearchParams"
-            @navigate-to-record="navigateToRecord"
+            @selection-changed="onSelectionChanged"
             @sort="$emit('sort', $event)"
           />
         </div>
       </div>
+      <bf-button class="close-button" @click="onClose" :disabled="!showResultsState">Close</bf-button>
     </div>
   </div>
 </template>
 
 <script>
-/* eslint-disable */
 import { mapActions, mapGetters, mapState } from 'vuex'
 import RecordsTable from './RecordsTable/RecordsTable.vue'
 import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
 import Request from '@/mixins/request/index'
 import FormatDate from '@/mixins/format-date'
-import { mergeRight } from 'ramda'
+import BfButton from '@/components/shared/BfButton.vue'
+import { mergeRight, clone } from 'ramda'
 import {
   fetchFilteredVisitsMetadataRelatedToStudy,
   fetchFilteredSamplesMetadataRelatedToStudy,
@@ -84,7 +86,8 @@ export default {
   name: 'SearchResults',
   components: {
     RecordsTable,
-    PaginationPageMenu
+    PaginationPageMenu,
+    BfButton
   },
   mixins: [Request, FormatDate],
   props: {
@@ -137,6 +140,7 @@ export default {
   },
   data() {
     return {
+      selections: [],
       recordResults: [],
       recordHeadings: [],
       selectedButton: 'Visits',
@@ -148,7 +152,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['selectedStudy', 'searchModalSearch']),
+    ...mapState(['selectedStudy', 'searchModalSearch', 'linkingTargets', 'searchModalVisible']),
     ...mapGetters(['userToken']),
     /**
      * Returns the current page postion for files table in pagination ticker
@@ -179,9 +183,18 @@ export default {
     showResultsState: function() {
       return this.noResultsFound === false
         && this.isLoadingRecords === false
+    },
+    recordType: function() {
+      return this.selectedButton
     }
   },
   watch: {
+    searchModalVisible(visible){
+      // Whenever the dialog is closed set the linking targets (a user does not have to explicty click a submit button to set the targets)
+      if (!visible) {
+        this.setLinkingTargets(clone(this.selections))
+      }
+    },
     /**
      * Watches for button change in order
      * to reset pagination
@@ -197,9 +210,15 @@ export default {
         this.$emit('reset-search-params')
       }
     },
+    linkingTargets: {
+      handler: async function(targets) {
+        this.selections = targets
+      },
+      immediate: true
+    }
   },
   methods: {
-    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setLinkingTarget']),
+    ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setLinkingTargets']),
     /**
      * Fetches record search results
      */
@@ -236,24 +255,12 @@ export default {
       this.updateSearchModalSearch(newSearch)
       await this.fetchRecords()
     },
-    /**
-     * Navigate to records details route
-     * @param {Object} record
-     */
-    navigateToRecord: function(record) {
-      /*
-      // Set the target when record is clicked
-      var vis_arr_len = this.shadedVisits;
-      var samp_arr_len - this.shadedVisits;
-      //if a single selection has been made for sample or visit via user click, then they need to unselect it before proceeding
-      if (vis_arr_len.length == 1 || samp_arr_len.length == 1){
-        var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
-        this.setLinkingTarget(to_be_linked)
-      }
-      */
-      this.setLinkingTarget(record)
+    onClose: function() {
       this.updateSearchModalVisible(false)
     },
+    onSelectionChanged: function(rows) {
+      this.selections = rows
+    }
   }
 }
 </script>
@@ -333,5 +340,9 @@ h3 {
 }
 .download-icon {
   margin-top: -4px;
+}
+.close-button {
+  float: right;
+  margin-top: 1rem;
 }
 </style>

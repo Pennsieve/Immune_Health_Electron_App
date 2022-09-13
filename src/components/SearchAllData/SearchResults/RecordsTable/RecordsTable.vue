@@ -4,9 +4,16 @@
       ref="table"
       :border="true"
       :data="data"
+      @select="handleTableSelectionChange"
+      @select-all="selectAll"
       @sort-change="onSortChange"
-      @row-click="onRowClick"
     >
+      <el-table-column
+        type="selection"
+        align="center"
+        fixed
+        width="50"
+      />
       <el-table-column
         v-for="heading in headings"
         :key="heading.name"
@@ -68,9 +75,7 @@
 </template>
 
 <script>
-import {
-  propOr
-} from 'ramda'
+import { propOr } from 'ramda'
 
 import TableMenu from '@/components/TableMenu/TableMenu.vue'
 
@@ -125,29 +130,90 @@ export default {
       default: () => {
         return {}
       }
+    },
+    recordType: {
+      type: String,
+      default: ''
+    },
+    selectedRows: {
+      type: Array,
+      default: () => []
+    }
+  },
+
+  watch: {
+    selectedRows: {
+      handler: async function(rows) {
+        this.selectedPreExisting(rows)
+      },
+      immediate: true
     }
   },
 
   data () {
     return {
-      activeRow: {},
-      selection: [],
-      sortOrders: ['ascending', 'descending'],
-      checkAll: false
+      selectedItems: this.selectedRows,
+    }
+  },
+
+  computed: {
+    // return the name of the property of the object that we should be using to identify a row by (the properties available differ between visits, samples, and experiments)
+    rowKeyProp() {
+      if (this.recordType == 'Visits') {
+        return 'visit_event'
+      }
+      if (this.recordType == 'Samples') {
+        return 'study_sample_id'
+      }
+      return ''
     }
   },
 
   methods: {
-    /**
-     * Action when clicking a row
-     */
-    onRowClick: function(row, column) {
-     const columnProperty = propOr('', 'property', column)
-     if (columnProperty !== undefined) {
-       this.$emit('navigate-to-record', row)
-     }
+    selectedPreExisting (rows) {
+      if (rows.length > 0) {
+        // Use nextTick to prevent trying to get the table ref before rendering is completed
+        this.$nextTick(() => {
+          rows.forEach(row => {
+            let selectedItem = this.data.find(item => item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`])
+            // Check if the item is in the current data being shown and if it is then check it
+            if (selectedItem != undefined) {
+              this.$refs.table.toggleRowSelection(selectedItem, true);
+            }
+          })
+        })      
+      } else {
+        this.$nextTick(() => {
+          this.$refs.table.clearSelection()
+        })
+      }
     },
-
+    selectAll (selection) {
+      if (selection.length > 0) {
+        this.addRows(this.data)
+      } else {
+        this.deleteRows(this.data)
+      }
+      this.$emit('selection-changed', this.selectedItems)
+    },
+    // Add the check 
+    addRows (rows) {
+      rows.forEach(row => {
+        if (this.selectedItems.find(item => item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`])) { 
+          return 
+        }
+        this.selectedItems.push(row)
+      });
+    },
+    // Deselect 
+    deleteRows (rows) {
+      if (this.selectedItems.length == 0) {
+        return 
+      }
+      rows.forEach(row => {
+        this.selectedItems = this.selectedItems.filter(item => item[`${this.rowKeyProp}`] != row[`${this.rowKeyProp}`])
+      })
+    },
     /**
      * Callback from sort change
      * Set new sort order and property
@@ -165,7 +231,21 @@ export default {
         ascending,
         orderDirection
       })
-    }
+    },
+    /**
+     * Handle table selection change
+     * @param {Array} selection
+     */
+    // eslint-disable-next-line no-unused-vars
+     handleTableSelectionChange: function(selection, row) {
+      // if selection doesn't contain the row then that means the row was unselected and we can remove it from selectedItems
+      if (selection && selection.find(item => item && (item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`]))) {
+        this.addRows([row])
+      } else {
+        this.deleteRows([row])
+      }
+      this.$emit('selection-changed', this.selectedItems)
+    },
   }
 }
 </script>
@@ -223,5 +303,9 @@ export default {
 .record-actions-wrap {
   display: flex;
   justify-content: flex-end;
+}
+
+.el-table--border .el-table__cell:first-child .cell {
+  padding-left: unset;
 }
 </style>

@@ -155,7 +155,7 @@ export default {
      * Resets table search params for pagination
      */
     resetSearchParams: function() {
-      const newSearch = mergeRight(this.searchModalSearch, { limit: 25, offset: 0 })
+      const newSearch = mergeRight(this.searchModalSearch, { limit: 10, offset: 0 })
       this.updateSearchModalSearch(newSearch)
       this.$nextTick(async () => {
         await this.$refs.searchResults.fetchRecords()

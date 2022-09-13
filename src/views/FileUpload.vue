@@ -7,43 +7,48 @@
       <ih-subheader previousRoute="/studies">
         <template slot="text">
           <template v-if="!isLinkingTargetSet">No Linking Target(s) Selected</template>
-           <!--if visit is selected-->
-          <template v-else-if="linkingTarget.modelId === '9c579bef-6ce0-4632-be1c-a95aadc982c4'">
-            Linking Target:
-            <div class="ml-16">
-              <div class="property-text">
-                Visit Event ID
-              </div>
-              <div>
-                {{linkingTarget.visit_event}}
-              </div>
-            </div>
-            <div class="ml-16">
-              <div class="property-text">
-                Event Name
-              </div>
-              <div>
-                {{linkingTarget.event_name}}
-              </div>
-            </div>
-          </template>
-           <!--if sample is selected-->
-          <template v-else-if="linkingTarget.modelId === 'e1ada387-5401-4409-b9d6-748f3aaddf23'">
-            Linking Target:
-            <div class="ml-16">
-              <div class="property-text">
-                Sample Type ID
-              </div>
-              <div>
-                {{linkingTarget.sample_type_id}}
-              </div>
-            </div>
-            <div class="ml-16">
-              <div class="property-text">
-                Study Sample ID
-              </div>
-              <div>
-                {{linkingTarget.study_sample_id}}
+          <template v-else>
+            Linking Target(s):
+            <div class="targets-container">
+              <div class="target-item" v-for="(target, index) in linkingTargets" :key="index">
+                <!--if visit is selected-->
+                <template v-if="target.modelId === '9c579bef-6ce0-4632-be1c-a95aadc982c4'">
+                  <div class="ml-16" >
+                    <div class="property-text">
+                      Visit Event ID
+                    </div>
+                    <div>
+                      {{target.visit_event}}
+                    </div>
+                  </div>
+                  <div class="ml-16">
+                    <div class="property-text">
+                      Event Name
+                    </div>
+                    <div>
+                      {{target.event_name}}
+                    </div>
+                  </div>
+                </template>
+                <!--if sample is selected-->
+                <template v-else-if="target.modelId === 'e1ada387-5401-4409-b9d6-748f3aaddf23'">
+                  <div class="ml-16">
+                    <div class="property-text">
+                      Sample Type ID
+                    </div>
+                    <div>
+                      {{target.sample_type_id}}
+                    </div>
+                  </div>
+                  <div class="ml-16">
+                    <div class="property-text">
+                      Study Sample ID
+                    </div>
+                    <div>
+                      {{target.study_sample_id}}
+                    </div>
+                  </div>
+                </template>
               </div>
             </div>
           </template>
@@ -59,12 +64,12 @@
       <h2></h2>
       <template v-if="!isLinkingTargetSet">
         <bf-button v-on:click="updateSearchModalVisible(true)">
-          Select Linking Target
+          Select Linking Targets
         </bf-button>
       </template>
       <template v-else>
       <bf-button v-on:click="updateSearchModalVisible(true)">
-        Change Linking Target
+        Select Linking Targets
       </bf-button>
       </template>
       <div class="logo-container">
@@ -163,10 +168,10 @@ export default {
   ],
   computed: {
     ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName']),
-  ...mapState(['linkingTarget']),
-  isLinkingTargetSet() {
-    return !isEmpty(this.linkingTarget)
-  },
+    ...mapState(['linkingTargets']),
+    isLinkingTargetSet() {
+      return !isEmpty(this.linkingTargets)
+    },
     //returns true if more than 1 select file
     multipleSelected: function () {
       return this.selectedFiles.length > 1
@@ -309,7 +314,7 @@ export default {
         var i = f.content.id
         selecteditemids.push(i)
       }
-      //NOTE: verify linkingTargetS  var
+      //NOTE: verify linkingTargets  var
       var iter2 = this.linkingTargets;
       //iterating through linking target(s). We then map all of the selected files (i.e. link) to the current target
       for (const j of iter2){
@@ -668,15 +673,27 @@ export default {
 <style scoped lang="scss">
 @import '@/assets/css/_variables.scss';
 .sidebar-container {
-  width: auto;
-  min-width: 10rem;
-  max-width: 20rem;
+  width: 20%;
 }
 .selected-content-container {
-  flex-grow: 1;
+  width: 80%;
 }
 .container {
   display: flex;
+}
+.target-item {
+  display: inline-block;
+  border-right: 1px solid orange;
+  padding-right: 1rem;
+}
+.targets-container .target-item:last-child {
+  border-right: none;
+}
+.targets-container {
+  white-space: nowrap;
+  overflow: auto;
+  width: -webkit-fill-available;
+  margin-right: 1rem;
 }
 .logo-container {
   gap: 5px;
@@ -696,6 +713,7 @@ export default {
     //padding: 0 2rem;
     color: #2f26ad;
   }
+}
 .property-text {
   color: $app-primary-color;
   font-size: 1rem;
@@ -703,6 +721,5 @@ export default {
 }
 ::v-deep .text-container {
   align-items: flex-end;
-}
 }
 </style>
