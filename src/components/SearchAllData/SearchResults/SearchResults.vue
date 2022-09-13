@@ -185,7 +185,6 @@ export default {
         && this.isLoadingRecords === false
     },
     recordType: function() {
-      console.log("RECORD TYPE", this.selectedButton)
       return this.selectedButton
     }
   },
