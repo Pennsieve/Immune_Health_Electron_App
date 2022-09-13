@@ -51,12 +51,13 @@ export default {
     },
     pageSize: {
       type: Number,
-      default: 25
+      default: 10
     },
     pageSizeOptions: {
       type: Array,
       default: () => {
         return [
+          10,
           25,
           50,
           100

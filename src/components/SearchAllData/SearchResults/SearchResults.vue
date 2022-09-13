@@ -60,11 +60,11 @@
             :is-sortable="isRecordsSortable"
             :table-search-params="tableSearchParams"
             @selection-changed="onSelectionChanged"
-            @linking-targets-changed="onLinkingTargetsChanged"
             @sort="$emit('sort', $event)"
           />
         </div>
       </div>
+      <bf-button class="linking-targets-button" @click="updateLinkingTargets" :disabled="!showResultsState">Set Linking Targets</bf-button>
     </div>
   </div>
 </template>
@@ -76,6 +76,7 @@ import RecordsTable from './RecordsTable/RecordsTable.vue'
 import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
 import Request from '@/mixins/request/index'
 import FormatDate from '@/mixins/format-date'
+import BfButton from '@/components/shared/BfButton.vue'
 import { mergeRight } from 'ramda'
 import {
   fetchFilteredVisitsMetadataRelatedToStudy,
@@ -86,7 +87,8 @@ export default {
   name: 'SearchResults',
   components: {
     RecordsTable,
-    PaginationPageMenu
+    PaginationPageMenu,
+    BfButton
   },
   mixins: [Request, FormatDate],
   props: {
@@ -151,7 +153,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['selectedStudy', 'searchModalSearch']),
+    ...mapState(['selectedStudy', 'searchModalSearch', 'linkingTargets']),
     ...mapGetters(['userToken']),
     /**
      * Returns the current page postion for files table in pagination ticker
@@ -204,6 +206,12 @@ export default {
         this.$emit('reset-search-params')
       }
     },
+    linkingTargets: {
+      handler: async function(targets) {
+        this.selections = targets
+      },
+      immediate: true
+    }
   },
   methods: {
     ...mapActions(['updateSearchModalVisible', 'updateSearchModalSearch', 'setLinkingTargets']),
@@ -243,18 +251,8 @@ export default {
       this.updateSearchModalSearch(newSearch)
       await this.fetchRecords()
     },
-    onLinkingTargetsChanged: function(records) {
-      /*
-      // Set the target when record is clicked
-      var vis_arr_len = this.shadedVisits;
-      var samp_arr_len - this.shadedVisits;
-      //if a single selection has been made for sample or visit via user click, then they need to unselect it before proceeding
-      if (vis_arr_len.length == 1 || samp_arr_len.length == 1){
-        var to_be_linked = this.selectedRecord.details.id //CONFIRM THIS IS THE DATA WE ARE INTERESTED IN!
-        this.setLinkingTargets(to_be_linked)
-      }
-      */
-      this.setLinkingTargets(records)
+    updateLinkingTargets: function() {
+      this.setLinkingTargets(this.selections)
       this.updateSearchModalVisible(false)
     },
     onSelectionChanged: function(rows) {
@@ -339,5 +337,9 @@ h3 {
 }
 .download-icon {
   margin-top: -4px;
+}
+.linking-targets-button {
+  float: right;
+  margin-top: 1rem;
 }
 </style>

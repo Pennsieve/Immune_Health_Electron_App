@@ -5,6 +5,7 @@
       :border="true"
       :data="data"
       @select="handleTableSelectionChange"
+      @select-all="selectAll"
       @sort-change="onSortChange"
     >
       <el-table-column
@@ -193,6 +194,7 @@ export default {
       } else {
         this.deleteRows(this.data)
       }
+      this.$emit('selection-changed', this.selectedItems)
     },
     // Add the check 
     addRows (rows) {

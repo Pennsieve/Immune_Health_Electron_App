@@ -107,7 +107,7 @@ const store = new Vuex.Store({
       isModelInvalid: false,
       filters: [],
       model: '',
-      limit: 25,
+      limit: 10,
       offset: 0
     },
     scientificUnits: [],
