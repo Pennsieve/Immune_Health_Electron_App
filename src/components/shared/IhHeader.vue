@@ -62,7 +62,6 @@ export default {
   padding-right: 20px;
   position: relative;
   width: 100%;
-  min-width: fit-content;
   justify-content: space-between;
 }
 .logo {

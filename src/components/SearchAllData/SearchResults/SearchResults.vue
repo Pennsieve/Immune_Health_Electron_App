@@ -64,20 +64,19 @@
           />
         </div>
       </div>
-      <bf-button class="linking-targets-button" @click="updateLinkingTargets" :disabled="!showResultsState">Set Linking Targets</bf-button>
+      <bf-button class="close-button" @click="onClose" :disabled="!showResultsState">Close</bf-button>
     </div>
   </div>
 </template>
 
 <script>
-/* eslint-disable */
 import { mapActions, mapGetters, mapState } from 'vuex'
 import RecordsTable from './RecordsTable/RecordsTable.vue'
 import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
 import Request from '@/mixins/request/index'
 import FormatDate from '@/mixins/format-date'
 import BfButton from '@/components/shared/BfButton.vue'
-import { mergeRight } from 'ramda'
+import { mergeRight, clone } from 'ramda'
 import {
   fetchFilteredVisitsMetadataRelatedToStudy,
   fetchFilteredSamplesMetadataRelatedToStudy,
@@ -153,7 +152,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['selectedStudy', 'searchModalSearch', 'linkingTargets']),
+    ...mapState(['selectedStudy', 'searchModalSearch', 'linkingTargets', 'searchModalVisible']),
     ...mapGetters(['userToken']),
     /**
      * Returns the current page postion for files table in pagination ticker
@@ -191,6 +190,12 @@ export default {
     }
   },
   watch: {
+    searchModalVisible(visible){
+      // Whenever the dialog is closed set the linking targets (a user does not have to explicty click a submit button to set the targets)
+      if (!visible) {
+        this.setLinkingTargets(clone(this.selections))
+      }
+    },
     /**
      * Watches for button change in order
      * to reset pagination
@@ -251,8 +256,7 @@ export default {
       this.updateSearchModalSearch(newSearch)
       await this.fetchRecords()
     },
-    updateLinkingTargets: function() {
-      this.setLinkingTargets(this.selections)
+    onClose: function() {
       this.updateSearchModalVisible(false)
     },
     onSelectionChanged: function(rows) {
@@ -338,7 +342,7 @@ h3 {
 .download-icon {
   margin-top: -4px;
 }
-.linking-targets-button {
+.close-button {
   float: right;
   margin-top: 1rem;
 }
