@@ -253,10 +253,8 @@ import { ChangelogMessage, PublicationStatus } from '@/utils/constants'
        */
 
       renderActivityType: function(eventType) {
-        if (this.ChangelogMessage.PUBLISHING) {
-          const publishing = this.ChangelogMessage.PUBLISHING
-          return publishing[eventType]
-        } else if (typeof this.ChangelogMessage[eventType] === 'object' && this.ChangelogMessage[eventType] !== null) {
+
+        if (typeof this.ChangelogMessage[eventType] === 'object' && this.ChangelogMessage[eventType] !== null) {
           return this.totalCount > 1
             ? `${this.totalCount} ${this.ChangelogMessage[this.event.eventType].plural}`
             : this.ChangelogMessage[this.event.eventType].singular

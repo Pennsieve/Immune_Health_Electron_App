@@ -11,6 +11,7 @@ const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc
 const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
 //WHAT IS THIS???
 const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
+const IMMUNE_HEALTH_ORG_ID = 'N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2'
 
 const DATASET_ACTIVITY_ALL_CATEGORIES = {
   value: null,
@@ -119,7 +120,6 @@ const store = new Vuex.Store({
     datasetActivity: [],
     isLoadingDatasetActivity: false,
     orgMembers: [],
-    /*
     datasetActivityParams: {
       cursor: '',
       orderDirection: 'Asc',
@@ -441,6 +441,7 @@ const store = new Vuex.Store({
           await dispatch('fetchStudies')
           await dispatch('setSelectedStudy', state.allStudies[0])
           await dispatch('setScientificUnits')
+          await dispatch("fetchOrgMembers")
         })
         .catch(err => {
           // TODO: what to do in case of an error? (perhaps add toast messages?)
@@ -514,8 +515,24 @@ const store = new Vuex.Store({
         responseData = data
       })
       await commit('SET_SCIENTIFIC_UNITS', responseData)
-    }
+    },
+    /**
+     * Retrieves all members of an organization
+     */
+    async fetchOrgMembers ({ commit }) {
+      const apiKey = this.state.profile.token
+      const url = `https://api.pennsieve.io/organizations/${IMMUNE_HEALTH_ORG_ID}/members?api_key=${apiKey}`
+      if (!url) {
+        return
+      }
+      await axios.get(url).then(({data}) => {
+        // const members = this.updateMembers(resp)
+        console.log(data)
+        commit('UPDATE_ORG_MEMBERS', data)
+      })
+    },
   },
+
 });
 
 export default store;

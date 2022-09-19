@@ -2,7 +2,7 @@
   <div>
     <ih-subheader class="subheader">
       <span slot="text">
-        Penn Immune Health Application
+        Applications
       </span>
       <template slot="buttons">
         <bf-button>
@@ -86,7 +86,7 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-@import '@/assets/css/_variables.scss';
+@import '../assets/css/_variables.scss';
 .logo {
   width: auto;
   height: 5rem;

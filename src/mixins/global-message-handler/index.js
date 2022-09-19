@@ -1,5 +1,5 @@
 import { pathOr, propOr } from 'ramda'
-import { mapState, mapActions } from 'vuex'
+import {mapState, mapActions, mapGetters} from 'vuex'
 //mport Auth from '@aws-amplify/auth'
 import EventBus from '../../utils/event-bus.js'
 //import logger from '../../mixins/logger'
@@ -27,7 +27,22 @@ export default {
   },
 
   computed: {
-    ...mapState(['userToken','activeOrganization',])
+    ...mapGetters([
+      'activeOrganization',
+    ]),
+
+    ...mapState(['userToken','activeOrganization',]),
+
+    /**
+     * Generates org members GET url
+     * @returns {String}
+     */
+    orgMembersUrl: function() {
+      if (!this.activeOrgId || !this.userToken) {
+        return
+      }
+      return `${this.config.apiUrl}/organizations/${this.activeOrgId}/members?api_key=${this.userToken}`
+    },
   },
 
   beforeDestroy() {
@@ -187,6 +202,37 @@ export default {
             console.log("couldn't get profile")
           }
         })
-    }
+    },
+    /**
+     * Updates org users object with any missing fields required for sorting
+     * @param {Array} users
+     * @returns {Array}
+     */
+    updateMembers: function(users) {
+      return users.map(member => {
+        const role = this.getOrgRole(member, this.activeOrganization)
+        let newFields = { role }
+        if (!member.storage) {
+          newFields = {
+            storage: 0,
+            role
+          }
+        }
+        return Object.assign({}, newFields, member)
+      })
+    },
+    /**
+     * Retrieves all members of an organization
+     */
+    getOrgMembers: function() {
+      const url = this.orgMembersUrl
+      if (!url) {
+        return
+      }
+      return this.sendXhr(url).then(resp => {
+        const members = this.updateMembers(resp)
+        this.updateOrgMembers(members)
+      })
+    },
   }
 }

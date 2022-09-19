@@ -8,7 +8,7 @@ import { compose, concat, propOr, useWith, find, propEq } from 'ramda'
  * @returns {String}
  */
 const getSvgIcon = compose(
-  concat('/../../static/file-icons/'),
+  concat('file-icons/'),
   propOr('icon-generic.svg', 'SVG'),
   useWith(find, [propEq('Icon')])
 )
@@ -23,11 +23,11 @@ export default {
      */
     fileIcon: function(icon, packageType) {
       if (packageType === 'Collection') {
-        return '/../../static/file-icons/icon-folder.svg'
+        return 'file-icons/icon-folder.svg'
       }
 
       if (packageType === 'ExternalFile') {
-        return '/../../static/file-icons/icon-linked-file.svg'
+        return 'file-icons/icon-linked-file.svg'
       }
 
       const list = Array.isArray(files) ? files : files.default

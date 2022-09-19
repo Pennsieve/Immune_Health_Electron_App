@@ -90,8 +90,6 @@ export default {
   components: {
     BfButton,
     BfEmptyPageState,
-    //BfRafter,
-    //BfStage,
     FilterMenu,
     DatasetActivityPanel
   },
@@ -104,7 +102,8 @@ export default {
   data() {
     return {
       datasetCategoryOptions: [
-      /*  {
+        DATASET_ACTIVITY_ALL_CATEGORIES,
+        {
           value: 'DATASET',
           label: 'Dataset Metadata',
         },
@@ -117,14 +116,9 @@ export default {
           label: 'Permissions',
         },
         {
-          value: 'PUBLISHING',
-          label: 'Publishing',
-        },
-        {
           value: 'MODELS_AND_RECORDS',
           label: 'Records/Models',
-        }, */
-        DATASET_ACTIVITY_ALL_CATEGORIES
+        },
       ],
       datasetDateRangeOptions: [
         DATASET_ACTIVITY_DATE_RANGE_30,

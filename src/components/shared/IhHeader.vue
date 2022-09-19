@@ -1,10 +1,12 @@
 <template>
   <div class="header">
     <div class="logo-wrap">
-      <img
-        src="@/assets/images/pennsieve-logo-white.svg"
-        class="logo"
-      >
+      <router-link to="/" exact>
+        <img
+          src="@/assets/images/pennsieve-logo-white.svg"
+          class="logo"
+        >
+      </router-link>
     </div>
     <span class="title heading1">Penn Immune Health Application</span>
     <span>
@@ -78,6 +80,7 @@ export default {
   color: white;
   white-space: nowrap;
   margin-right: 1rem;
+  font-weight: 700;
 }
 .login-icon {
   margin-right: 1rem;

@@ -61,8 +61,10 @@
           </bf-button>
         </template>
       </ih-subheader>
-      <h2></h2>
-      <template v-if="!isLinkingTargetSet">
+
+      <div class="upload-content">
+
+              <template v-if="!isLinkingTargetSet">
         <bf-button v-on:click="updateSearchModalVisible(true)">
           Select Linking Targets
         </bf-button>
@@ -88,14 +90,14 @@
           <hr>
           <h2 class="orgtext">Staged Files</h2>
           <files-table
-            v-if="hasFiles"
-            :data="files"
-            :multiple-selected="multipleSelected"
-            @delete="deleteIt"
-            @process="processFile"
-            @copy-url="getPresignedUrl"
-            @selection-change="setSelectedFiles"
-            @click-file-label="onClickLabel">
+              v-if="hasFiles"
+              :data="files"
+              :multiple-selected="multipleSelected"
+              @delete="deleteIt"
+              @process="processFile"
+              @copy-url="getPresignedUrl"
+              @selection-change="setSelectedFiles"
+              @click-file-label="onClickLabel">
           </files-table>
           <!--
           <bf-drop-info
@@ -106,15 +108,15 @@
           -->
 
           <bf-upload
-          :open.sync="uploadDialogOpen"
-          :isAddingFiles = "isAddingFiles"
-          @close-upload-dialog = "closeUploadDialog"
+              :open.sync="uploadDialogOpen"
+              :isAddingFiles = "isAddingFiles"
+              @close-upload-dialog = "closeUploadDialog"
           />
 
           <bf-drop-info
-            v-if="showDropInfo"
-            :show-drop-info.sync="showDropInfo"
-            :file="file"
+              v-if="showDropInfo"
+              :show-drop-info.sync="showDropInfo"
+              :file="file"
           />
 
           <!--
@@ -125,8 +127,10 @@
           />
           -->
         </span>
-      <div>
       </div>
+
+
+
     </span>
   </div>
 </template>
@@ -674,7 +678,10 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-@import '@/assets/css/_variables.scss';
+@import '../assets/css/_variables.scss';
+.upload-content {
+  margin: 0 16px
+}
 .sidebar-container {
   width: 20%;
 }

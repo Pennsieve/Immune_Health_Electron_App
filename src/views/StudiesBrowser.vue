@@ -32,7 +32,9 @@
           </bf-button>
         </template>
       </ih-subheader>
-      <div v-if="Object.keys(selectedStudy).length != 0">
+
+      <div class="browser-content">
+              <div v-if="Object.keys(selectedStudy).length != 0" >
 
         <div class="mb-16">
           <bf-button  @click="clearAllSelections()">
@@ -62,65 +64,69 @@
       <br>
       <div>
         <graph-browser
-          @record-clicked="updateClickedRecordsFilters"
+            @record-clicked="updateClickedRecordsFilters"
         />
       </div>
       <div class="results-toggle">
         <p class="mr-16">View files for </p>
         <el-radio-group
-          v-model="selectedButton"
-          size="medium"
+            v-model="selectedButton"
+            size="medium"
         >
           <el-radio-button
-            class="records-radio-button"
-            label="Samples"
+              class="records-radio-button"
+              label="Samples"
           />
           <el-radio-button
-            class="files-radio-button"
-            label="Visits"
+              class="files-radio-button"
+              label="Visits"
           />
         </el-radio-group>
       </div>
       <div v-loading="isLoadingFiles">
         <div
-          v-if="showNoFileResultsState"
-          class="no-results-container"
+            v-if="showNoFileResultsState"
+            class="no-results-container"
         >
           <h3>No results found</h3>
         </div>
         <div
-          v-if="showFileResultsState"
-          class="results-container"
+            v-if="showFileResultsState"
+            class="results-container"
         >
           <div class="results-table">
             <div class="file-pagination">
               <div>
                 <pagination-page-menu
-                  class="mr-24"
-                  pagination-item-label="Results"
-                  :page-size="filesTableLimit"
-                  @update-page-size="updateFilesTableLimit"
+                    class="mr-24"
+                    pagination-item-label="Results"
+                    :page-size="filesTableLimit"
+                    @update-page-size="updateFilesTableLimit"
                 />
               </div>
               <el-pagination
-                :page-size="filesTableLimit"
-                :pager-count="5"
-                :current-page="curFileSearchPage"
-                layout="prev, pager, next"
-                :total="tableResultsTotalCount"
-                @current-change="onFilesTablePageChange"
+                  :page-size="filesTableLimit"
+                  :pager-count="5"
+                  :current-page="curFileSearchPage"
+                  layout="prev, pager, next"
+                  :total="tableResultsTotalCount"
+                  @current-change="onFilesTablePageChange"
               />
             </div>
             <files-table
-              :data="fileResults"
-              :multiple-selected="multipleSelected"
-              :is-search-results="true"
-              :non-sortable-columns="['content.name', 'subtype', 'storage', 'content.createdAt', 'datasetName']"
-              @selection-change="setSelectedFiles"
+                :data="fileResults"
+                :multiple-selected="multipleSelected"
+                :is-search-results="true"
+                :non-sortable-columns="['content.name', 'subtype', 'storage', 'content.createdAt', 'datasetName']"
+                @selection-change="setSelectedFiles"
             />
           </div>
         </div>
       </div>
+
+      </div>
+
+
     </span>
   </div>
 </template>
@@ -328,7 +334,7 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-@import '@/assets/css/_variables.scss';
+@import '../assets/css/_variables.scss';
 .sidebar-container {
   width: auto;
   min-width: 10rem;
@@ -344,6 +350,10 @@ export default {
   color: $app-primary-color;
   font-size: 1rem;
   font-weight: 500;
+}
+
+.browser-content {
+  margin: 0 16px;
 }
 .results-toggle {
   display: inline-flex;
