@@ -316,11 +316,14 @@ export default {
       }
       //NOTE: verify linkingTargets  var
       var iter2 = this.linkingTargets;
+      console.log('LINKING TARGETS ARE: ', this.linkingTargets)
       //iterating through linking target(s). We then map all of the selected files (i.e. link) to the current target
       for (const j of iter2){
+        console.log("CURRENT LINKING TARGET IS ", j)
         var curr_targ = j.recordId
         console.log('- selecteditemids:')
         console.log(selecteditemids)
+        // eslint-disable-next-line no-unused-vars
         const queues = Array.from(selecteditemids).map(itemId => {
           const recordId = itemId
           console.log(`+ recordId: ${recordId}`)
@@ -351,9 +354,9 @@ export default {
           })
         })
         // this maps over all the queued responses to guarantee that all responses are returned regardless of error status
-        return Promise.all(queues.map(q => {
-          return q.catch(err => ({status: err.status}))
-        }))
+        //return Promise.all(queues.map(q => {
+          //return q.catch(err => ({status: err.status}))
+        //}))
 
       }
     },
