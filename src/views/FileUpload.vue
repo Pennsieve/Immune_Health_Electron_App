@@ -54,11 +54,9 @@
           </template>
         </template>
         <template slot="buttons">
-          <bf-button>
-            <router-link to="/" exact>
-              Main Menu
-            </router-link>
-          </bf-button>
+        <bf-button @click="onUploadMenuClick">
+          Upload Files
+        </bf-button>
         </template>
       </ih-subheader>
 
@@ -82,13 +80,27 @@
         </span>
         </div>
         <span>
+        <!--
           <div>
           <bf-button @click="onUploadMenuClick">
             Upload Files
           </bf-button>
           </div>
+          -->
           <hr>
           <h2 class="orgtext">Staged Files</h2>
+
+          <div
+            class="bf-dataset-breadcrumbs"
+          >
+            <breadcrumb-navigation
+              :ancestors="ancestors"
+              :file="file"
+              :file-id="$route.params.fileId"
+              @navigate-breadcrumb="handleNavigateBreadcrumb"
+            />
+          </div>
+
           <files-table
               v-if="hasFiles"
               :data="files"
@@ -136,6 +148,7 @@
 </template>
 
 <script>
+import BreadcrumbNavigation from '@components/shared/BreadcrumbNavigation/BreadcrumbNavigation.vue'
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
@@ -171,8 +184,9 @@ export default {
     //GetFileProperty
   ],
   computed: {
+    //delete instance of selectedStudayName
     ...mapGetters(['allStudies', 'selectedStudyName','userToken','uploadDestination','datasetId','getRelationshipTypeByName']),
-    ...mapState(['linkingTargets']),
+    ...mapState(['linkingTargets','selectedStudyName']),
     isLinkingTargetSet() {
       return !isEmpty(this.linkingTargets)
     },
@@ -182,6 +196,13 @@ export default {
     },
 
   },
+
+  watch: {
+    selectedStudyName: {
+      handler: function() {
+        this.fetchFiles()
+      }
+      },
   data() {
     return {
       file: {
@@ -228,6 +249,14 @@ export default {
   methods: {
       ...mapActions(['setSearchPage', 'updateSearchModalVisible','addRelationshipType','setItsLinkinTime']),
 
+      handleNavigateBreadcrumb: function (id = '') {
+        if (id) {
+          this.navigateToFile(id)
+        } else {
+          this.navigateToDataset()
+        }
+      },
+
     onClickChild: function(){
       console.log("onClickhild()") //will be somevalue
 
@@ -268,6 +297,26 @@ export default {
 
     onClickLabel: function() {
       console.log("onClickLabel()")
+        const id = pathOr('', ['content', 'id'], file)
+        const packageType = pathOr('', ['content', 'packageType'], file)
+
+        if (id === '') {
+          return
+        }
+
+        if (packageType === 'Collection') {
+          this.navigateToFile(id)
+        } else {
+          this.$router.push({
+            name: 'file-record',
+            params: {
+              conceptId: this.filesProxyId,
+              instanceId: id
+            }
+          })
+        }
+
+
     },
 
     setPlaceholder: function(){
@@ -378,7 +427,76 @@ export default {
       //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
 
       // the destination is the 'linked' folder
-      let destination = "N:collection:42632589-b052-453d-ad03-23701ab595df"
+      //NOTE: here we need to get the UUID of the study specific collection and stuff that into the destination
+
+
+      switch(this.selectedStudyName){
+        case 'COVAXX':
+        // eslint-disable-next-line no-redeclare
+          var destination = "N:collection:a9e58d46-22cd-4664-8523-896da5550ac7"
+        break;
+        case 'Immune Health Multiple Sclerosis':
+        // eslint-disable-next-line no-redeclare
+          var destination  = "N:collection:5ae3fcd0-c337-4afa-8359-3acf9e56e162"
+        case 'MESSI COVID-19':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3Aac6c99e6-3a66-477a-ac86-0b64c63c912f?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'MESSI Sepsis':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3Ac118aa8f-e2cb-4da3-8a22-c7583367cc97?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'METRIC':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3A36eb3b7e-4146-47f6-a2bd-40f1484bb0ee?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Meyer iSpy COVID':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3A6977e0c2-6cb3-4148-b3ac-eb20bdf49a84?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Allen IBD':
+        // eslint-disable-next-line no-redeclare
+        var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A983ed537-961c-4689-9d91-ee32a207c241?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Allen Melanoma':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3A57cfdd94-3d05-43c9-8990-c85200c2fef8?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry CHIP':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3A9dd73709-13b1-4e36-84f3-b3d0795318ba?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry COVEND':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3A683c76e5-2ff9-42e2-848e-93659d616c12?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry COVID Vaccine':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3Ad209e36a-a70f-4324-821d-06bc6ebb6384?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry HD in-lab':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3Afc35c65f-69eb-4bd5-83c5-2d18f0ab4559?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Healthy Donor Flu Vaccine':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3Ac779548d-d79b-42f3-b0fc-2610799c5ee1?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Melanoma AntiPD1':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3A04ae0bc0-4435-4eb8-a269-7e8acf36af01?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Recov Donors':
+        // eslint-disable-next-line no-redeclare
+          var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        default:
+          //end
+          // eslint-disable-next-line no-redeclare
+        var destination  = `https://api.pennsieve.io/packages/N%3Acollection%3Adaa2ee61-2684-42af-b052-db2aa8937c99?api_key=${this.userToken}&includeAncestors=true`;
+      }
+
+      //let destination = "N:collection:42632589-b052-453d-ad03-23701ab595df"
       this.moveItems(destination, this.selectedFiles);
       const numRequests = this.selectedFiles.size
       const plural = numRequests === 1 ? '' : 's'
@@ -404,7 +522,6 @@ export default {
       //this.closeSideDrawer()
       this.isCreating = false
     },
-
     /**
      * Create relationship
      */
@@ -605,13 +722,6 @@ export default {
       //Then move selected files from staging to linked (don't launch modal)
       //OR do it on success...
     },
-
-    /**
-    EDIT THIS
-     * Set subtype of file, defaulting to package type
-     * @param {Object} file
-     * @returns {String}
-     */
     getSubType: function (file) {
       const subtype = this.getFilePropertyVal(file.properties, 'subtype')
 
@@ -644,7 +754,79 @@ export default {
 
     //gets all files in the dataset within the staged directory on mount
     fetchFiles: function () {
-      var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
+      //NOTE: here we need to get the UUID of the study specific collection and stuff that into the api_url
+
+      // eslint-disable-next-line no-undef
+      switch(this.selectedStudyName){
+        case 'COVAXX':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Aa6299140-4392-4f37-9490-df0399f4c2c8?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Immune Health Multiple Sclerosis':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A3f6086c9-e5a6-4d23-a776-be6a738016f0?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'MESSI COVID-19':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Aac6c99e6-3a66-477a-ac86-0b64c63c912f?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'MESSI Sepsis':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Ac118aa8f-e2cb-4da3-8a22-c7583367cc97?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'METRIC':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A36eb3b7e-4146-47f6-a2bd-40f1484bb0ee?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Meyer iSpy COVID':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A6977e0c2-6cb3-4148-b3ac-eb20bdf49a84?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Allen IBD':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A983ed537-961c-4689-9d91-ee32a207c241?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Allen Melanoma':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A57cfdd94-3d05-43c9-8990-c85200c2fef8?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry CHIP':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A9dd73709-13b1-4e36-84f3-b3d0795318ba?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry COVEND':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A683c76e5-2ff9-42e2-848e-93659d616c12?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry COVID Vaccine':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Ad209e36a-a70f-4324-821d-06bc6ebb6384?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry HD in-lab':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afc35c65f-69eb-4bd5-83c5-2d18f0ab4559?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Healthy Donor Flu Vaccine':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Ac779548d-d79b-42f3-b0fc-2610799c5ee1?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Melanoma AntiPD1':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3A04ae0bc0-4435-4eb8-a269-7e8acf36af01?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        case 'Wherry Recov Donors':
+        // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
+        break;
+        default:
+          //end
+          // eslint-disable-next-line no-redeclare
+          var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Adaa2ee61-2684-42af-b052-db2aa8937c99?api_key=${this.userToken}&includeAncestors=true`;
+      }
+
+      // eslint-disable-next-line no-redeclare
+      //var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Adaa2ee61-2684-42af-b052-db2aa8937c99?api_key=${this.userToken}&includeAncestors=true`;
+
       this.sendXhr(api_url)
         .then(response => {
           this.file = response
