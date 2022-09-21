@@ -708,7 +708,6 @@ export default {
     //  if (this.isFile) {
 
         this.checkBelongsToExists()
-        //this.createFileRelationshipRequests()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
         .finally(() => this.isLoading === false)
