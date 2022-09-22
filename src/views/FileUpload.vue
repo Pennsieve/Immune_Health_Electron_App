@@ -89,7 +89,6 @@
           -->
           <hr>
           <h2 class="orgtext">Staged Files</h2>
-
           <div
             class="bf-dataset-breadcrumbs"
           >
@@ -100,7 +99,7 @@
               @navigate-breadcrumb="handleNavigateBreadcrumb"
             />
           </div>
-
+          <br/>
           <files-table
               v-if="hasFiles"
               :data="files"
@@ -160,7 +159,7 @@ import BfUpload from '../components/BfUpload/BfUpload.vue'
 import Sorter from '../mixins/sorter/index.js'
 import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
-import {findIndex, pathEq, isEmpty} from 'ramda'
+import {findIndex, pathEq, isEmpty, pathOr, file} from 'ramda'
 import { mapGetters,
          mapActions,
          mapState
@@ -175,7 +174,8 @@ export default {
     IhSubheader,
     BfButton,
     BfUpload,
-    FilesTable
+    FilesTable,
+    BreadcrumbNavigation
     //BfDeleteDialog
   },
   mixins: [
@@ -186,7 +186,7 @@ export default {
   computed: {
     //delete instance of selectedStudayName
     ...mapGetters(['allStudies', 'selectedStudyName', 'userToken', 'uploadDestination', 'datasetId', 'getRelationshipTypeByName']),
-    ...mapState(['linkingTargets', 'selectedStudyName']),
+    ...mapState(['linkingTargets']),
     isLinkingTargetSet() {
       return !isEmpty(this.linkingTargets)
     },
@@ -200,6 +200,7 @@ export default {
   watch: {
     selectedStudyName: {
       handler: function () {
+        console.log('fetching study files')
         this.fetchFiles()
       }
     },
@@ -298,14 +299,19 @@ export default {
 
     onClickLabel: function () {
       console.log("onClickLabel()")
+      // eslint-disable-next-line
+      console.log('file is ',file)
       const id = pathOr('', ['content', 'id'], file)
+      console.log('id is ', id)
+      // eslint-disable-next-line
       const packageType = pathOr('', ['content', 'packageType'], file)
-
+      console.log('package type is ', packageType)
       if (id === '') {
         return
       }
 
       if (packageType === 'Collection') {
+        console.log('we are in the collection case')
         this.navigateToFile(id)
       } else {
         this.$router.push({
@@ -439,6 +445,7 @@ export default {
         case 'Immune Health Multiple Sclerosis':
           // eslint-disable-next-line no-redeclare
           var destination = "N:collection:5ae3fcd0-c337-4afa-8359-3acf9e56e162"
+          break;
         case 'MESSI COVID-19':
           // eslint-disable-next-line no-redeclare
           var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Aac6c99e6-3a66-477a-ac86-0b64c63c912f?api_key=${this.userToken}&includeAncestors=true`;
@@ -492,7 +499,6 @@ export default {
           var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
           break;
         default:
-          //end
           // eslint-disable-next-line no-redeclare
           var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Adaa2ee61-2684-42af-b052-db2aa8937c99?api_key=${this.userToken}&includeAncestors=true`;
       }
@@ -818,6 +824,11 @@ export default {
           // eslint-disable-next-line no-redeclare
           var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
           break;
+          case 'CEIRR_flu':
+            console.log('in CEIRR flu case')
+            // eslint-disable-next-line no-redeclare
+            var  api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Adaa2ee61-2684-42af-b052-db2aa8937c99?api_key=${this.userToken}&includeAncestors=true`;
+            break;
         default:
           //end
           // eslint-disable-next-line no-redeclare
@@ -826,7 +837,7 @@ export default {
 
       // eslint-disable-next-line no-redeclare
       //var api_url = `https://api.pennsieve.io/packages/N%3Acollection%3Adaa2ee61-2684-42af-b052-db2aa8937c99?api_key=${this.userToken}&includeAncestors=true`;
-
+      console.log('api url is ', api_url)
       this.sendXhr(api_url)
           .then(response => {
             this.file = response
@@ -841,6 +852,7 @@ export default {
               //file.subtype = this.getSubType(file)
               return file
             })
+            console.log('files are', this.files)
             this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)
             this.ancestors = response.ancestors
 

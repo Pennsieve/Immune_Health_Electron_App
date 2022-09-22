@@ -81,7 +81,7 @@ export default {
       type: Array,
       default: () => []
     },
-
+    // eslint-disable-next-line
     directoryName: {
       type: String,
       default: ''
@@ -132,6 +132,7 @@ export default {
           // this is right before Root
           finalObj = {
             pathName: obj.pathName,
+            // eslint-disable-next-line
             directoryName: obj.pathName,
             index: obj.index
           }
@@ -148,6 +149,7 @@ export default {
           directoryPath = directoryPath.concat(obj.pathName)
           finalObj = {
             pathName: directoryPath,
+            // eslint-disable-next-line
             directoryName: obj.pathName,
             index: obj.index
           }
@@ -165,12 +167,16 @@ export default {
      * @param {String} directoryName
      * @returns {String}
      */
+     // eslint-disable-next-line
     truncateBreadcrumb(directoryName) {
+    // eslint-disable-next-line
       const length = directoryName.length
       // this means its 24 characters or more
       // eg length is 25, 26, 27, 28
       if (length > 24) {
+      // eslint-disable-next-line
         // return `${directoryName.slice(0, 24)} ... `
+        // eslint-disable-next-line
         const shortenedName = directoryName.slice(0, 25)
         this.truncatedDirectoryName = `${shortenedName.slice(
           0,
@@ -185,6 +191,7 @@ export default {
      * @param {String} directoryName
      * @returns {String}
      */
+     // eslint-disable-next-line
     truncatePreviousBreadcrumb(directoryName) {
       if (this.truncatedDirectoryName !== '') {
         const truncatedName = this.truncatedDirectoryName
@@ -208,6 +215,7 @@ export default {
         tempPath.push(this.lastThreeDirPath[index - 1])
         tempPath.push(dir)
         directoryPath = tempPath
+        // eslint-disable-next-line
         obj = { pathName: directoryPath, directoryName: dir, index }
         this.$emit('navigate-breadcrumb', obj, directoryPath)
       } else {
@@ -217,6 +225,7 @@ export default {
         tempPath.reverse()
         tempPath.push(this.lastThreeDirPath[index])
         directoryPath = tempPath
+        // eslint-disable-next-line
         obj = { pathName: directoryPath, directoryName: dir, index }
         this.$emit('navigate-breadcrumb', obj, directoryPath)
       }
@@ -226,7 +235,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import '../../assets/css/_variables.scss';
+@import '../../../assets/css/_variables.scss';
 
 .breadcrumb-navigation {
   align-items: center;

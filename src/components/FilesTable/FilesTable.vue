@@ -309,6 +309,7 @@ export default {
      * @param {Object} file
      */
     onFileLabelClick: function(file) {
+      console.log('file is ',file)
       this.$emit('click-file-label', file)
     },
 
