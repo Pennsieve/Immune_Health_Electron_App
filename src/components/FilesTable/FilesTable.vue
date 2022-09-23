@@ -248,7 +248,7 @@ export default {
     //...mapActions(['setItsLinkinTime']),
     onClickButton: function(message){
       console.log("on click button called")
-      this.$emit('clicked-now', message)
+      this.$emit('link-selected-files', message)
     },
     /**
      * Select the row
