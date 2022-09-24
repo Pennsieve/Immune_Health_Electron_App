@@ -246,11 +246,23 @@ export default {
   methods: {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
+    /**
+     * Navigate to file
+     * @param {String} id
+     */
+    navigateToFile: function (id) {
+      //files == collection-files
+      console.log("id is ",id)
+      console.log("ROUTER: ",this.$router)
+      this.$router.push({name: 'files', params: {fileId: id}})
+    },
+
     handleNavigateBreadcrumb: function (id = '') {
       if (id) {
+        console.log("in id case")
         this.navigateToFile(id)
       } else {
-        this.navigateToDataset()
+        return
       }
     },
 
