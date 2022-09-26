@@ -87,10 +87,10 @@
             class="bf-dataset-breadcrumbs"
           >
             <breadcrumb-navigation
-              :ancestors="ancestors"
-              :file="file"
-              :file-id="$route.params.fileId"
-              @navigate-breadcrumb="handleNavigateBreadcrumb"
+              :ancestors="this.ancestors"
+              :file="this.file"
+              :file-id="this.file.content.id"
+              @navigate-breadcrumb="handleNavigateBreadcrumb(this.file.content.id)"
             />
           </div>
           <br/>
@@ -253,11 +253,10 @@ export default {
     navigateToFile: function (id) {
       //files == collection-files
       console.log("id is ",id)
-      console.log("ROUTER: ",this.$router)
-      this.$router.push({name: 'files', params: {fileId: id}})
+      this.$route.push({name: 'files', params: {fileId: id}})
     },
 
-    handleNavigateBreadcrumb: function (id = '') {
+    handleNavigateBreadcrumb: function (id) {
       if (id) {
         console.log("in id case")
         this.navigateToFile(id)
