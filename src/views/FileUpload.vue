@@ -87,10 +87,10 @@
             class="bf-dataset-breadcrumbs"
           >
             <breadcrumb-navigation
-              :ancestors="this.ancestors"
-              :file="this.file"
-              :file-id="this.file.content.id"
-              @navigate-breadcrumb="handleNavigateBreadcrumb(this.file.content.id)"
+              :ancestors="ancestors"
+              :file="file"
+              :file-id="file.content.id"
+              @navigate-breadcrumb="handleNavigateBreadcrumb"
             />
           </div>
           <br/>
@@ -219,7 +219,8 @@ export default {
       isAddingFiles: false,
       hasFiles: true,
       uploadDialogOpen: false,
-      isCreating: false
+      isCreating: false,
+      fileId: ''
     }
   },
   mounted: function () {
@@ -252,17 +253,14 @@ export default {
      */
     navigateToFile: function (id) {
       //files == collection-files
-      console.log("id is ",id)
-      this.$route.push({name: 'files', params: {fileId: id}})
+      console.log(`navigateToFile() id: ${id}`)
+      //this.$router.push({name: 'files', params: {fileId: id}})
+      this.fetchFiles(id)
     },
 
     handleNavigateBreadcrumb: function (id) {
-      if (id) {
-        console.log("in id case")
-        this.navigateToFile(id)
-      } else {
-        return
-      }
+      console.log(`handleNavigateBreadcrumb() id: ${id}`)
+      this.navigateToFile(id)
     },
 
     onClickChild: function () {
@@ -318,8 +316,8 @@ export default {
 
       if (packageType === 'Collection') {
         console.log('we are in the collection case')
-        // this.navigateToFile(id)
-        this.fetchFiles(id)
+        this.navigateToFile(id)
+        //this.fetchFiles(id)
       } else {
         // this.$router.push({
         //   name: 'file-record',
@@ -833,6 +831,7 @@ export default {
             console.log('response')
             console.log(response)
             this.file = response
+            this.fileId = response.content.id
             this.files = response.children.map(file => {
               /**
                if (!file.storage) {

@@ -1,70 +1,47 @@
 <template>
   <div class="breadcrumb-navigation">
-    <template>
+    <template v-if="!ancestors || !fileId">
+      Files
+    </template>
+    <template v-else>
       <el-dropdown
-        trigger="click"
-        placement="bottom-start"
-        @command="breadcrumbNavigate"
+          trigger="click"
+          placement="bottom-start"
+          @command="breadcrumbNavigate"
       >
         <span class="el-dropdown-link button-icon">
-          <svg-icon name="icon-menu" height="17" width="17" />
+          <svg-icon
+              name="icon-menu"
+              height="20"
+              width="20"
+          />
         </span>
         <el-dropdown-menu
-          slot="dropdown"
-          class="breadcrumb-menu bf-menu"
-          :arrow-offset="10"
+            slot="dropdown"
+            class="breadcrumb-menu bf-menu"
+            :arrow-offset="0"
         >
           <el-dropdown-item
-            v-for="(dir, index) in remainingDirPath"
-            :key="`${dir}-${index}`"
-            :command="{ pathName: dir, index: index }"
+              v-for="breadcrumb in breadcrumbs"
+              :key="breadcrumb.content.id"
+              :command="breadcrumb.content.id"
           >
-            {{ dir }}
+            {{ breadcrumb.content.name }}
           </el-dropdown-item>
+          <!--<el-dropdown-item>Files</el-dropdown-item>-->
         </el-dropdown-menu>
       </el-dropdown>
 
       <svg-icon
-        class="breadcrumb-caret"
-        name="icon-arrow-up"
-        dir="right"
-        height="10"
-        width="10"
+          class="breadcrumb-caret"
+          name="icon-arrow-up"
+          dir="right"
+          height="12"
+          width="12"
       />
 
-      <span
-        v-for="(dir, index) in lastThreeDirPath"
-        :key="`${dir}-${index}`"
-        class="collection-name"
-      >
-        <div v-if="index === lastThreeDirPath.length - 1">
-          <div v-if="lastThreeDirPath[index].length < characterLimit">
-            <strong> {{ dir }} </strong>
-          </div>
-          <div v-else>
-            <el-tooltip
-              class="item"
-              effect="dark"
-              :content="dir"
-              placement="top"
-              :visible-arrow="false"
-            >
-              <strong> {{ truncateBreadcrumb(dir) }} </strong>
-            </el-tooltip>
-          </div>
-        </div>
-        <div v-else>
-          <div v-if="dir.length > characterLimit">
-            <a href="#" @click.prevent="getDatasetDirectory(dir, index)">
-              {{ truncatePreviousBreadcrumb(dir) }}</a
-            >/
-          </div>
-          <div v-else>
-            <a href="#" @click.prevent="getDatasetDirectory(dir, index)">
-              {{ dir }}</a
-            >/
-          </div>
-        </div>
+      <span class="collection-name">
+        {{ file.content.name }}
       </span>
     </template>
   </div>
@@ -77,174 +54,59 @@ export default {
   name: 'BreadcrumbNavigation',
 
   props: {
-    directoryList: {
+    fileId: {
+      type: String,
+      default: ''
+    },
+    ancestors: {
       type: Array,
       default: () => []
     },
-    // eslint-disable-next-line
-    directoryName: {
-      type: String,
-      default: ''
-    }
-  },
-
-  data() {
-    return {
-      characterLimit: 24,
-      truncatedDirectoryName: ''
+    file: {
+      type: Object,
+      default: () => {}
     }
   },
 
   computed: {
     /**
-     * Returns first part of directory path to populate dropdown menu
+     * Reverse ancestors to show in correct order
      * @returns {Array}
      */
-    remainingDirPath() {
-      const thirdElement = this.directoryList.length - 3
-      const remainder = this.directoryList.slice(0, thirdElement)
-      return defaultTo([], remainder).reverse()
-    },
-
-    /**
-     * Returns last three elements in directory path to
-     * display next to breadcrumb menu
-     * @returns {Array}
-     */
-    lastThreeDirPath() {
-      const thirdElement = this.directoryList.length - 3
-      const last = this.directoryList.length
-
-      return this.directoryList.slice(thirdElement, last)
+    breadcrumbs: function() {
+      let x = this.ancestors
+      let y = x.slice(1)
+      console.log('y')
+      console.log(y)
+      return defaultTo([], y).reverse()
     }
   },
 
   methods: {
     /**
      * Handler for breadcrumb overflow navigation
-     * @param {Object} obj
+     * @param {String} id
      */
-    breadcrumbNavigate(obj = {}) {
-      if (obj) {
-        let directoryPath = ''
-        let finalObj = {}
-        if (obj.index === this.remainingDirPath.length - 2) {
-          // this is right before Root
-          finalObj = {
-            pathName: obj.pathName,
-            // eslint-disable-next-line
-            directoryName: obj.pathName,
-            index: obj.index
-          }
-        } else {
-          // it's a long list
-          // loop through index count
-          for (
-            let i = this.remainingDirPath.length - 2;
-            i >= obj.index + 1;
-            i--
-          ) {
-            directoryPath = directoryPath.concat(`${this.remainingDirPath[i]}/`)
-          }
-          directoryPath = directoryPath.concat(obj.pathName)
-          finalObj = {
-            pathName: directoryPath,
-            // eslint-disable-next-line
-            directoryName: obj.pathName,
-            index: obj.index
-          }
-        }
-        return this.$emit(
-          'navigate-breadcrumb',
-          finalObj,
-          this.remainingDirPath
-        )
+    breadcrumbNavigate: function(id = '') {
+      if (id) {
+        return this.$emit('navigate-breadcrumb', id)
       }
+      this.$emit('navigate-breadcrumb')
     },
-
-    /**
-     * Truncates directory path name if longer than 24 characters
-     * @param {String} directoryName
-     * @returns {String}
-     */
-     // eslint-disable-next-line
-    truncateBreadcrumb(directoryName) {
-    // eslint-disable-next-line
-      const length = directoryName.length
-      // this means its 24 characters or more
-      // eg length is 25, 26, 27, 28
-      if (length > 24) {
-      // eslint-disable-next-line
-        // return `${directoryName.slice(0, 24)} ... `
-        // eslint-disable-next-line
-        const shortenedName = directoryName.slice(0, 25)
-        this.truncatedDirectoryName = `${shortenedName.slice(
-          0,
-          12
-        )} ... ${shortenedName.slice(13, shortenedName.length)}`
-      }
-      return this.truncatedDirectoryName
-    },
-
-    /**
-     * Checks to see if the previous name in the path needs to be shortened
-     * @param {String} directoryName
-     * @returns {String}
-     */
-     // eslint-disable-next-line
-    truncatePreviousBreadcrumb(directoryName) {
-      if (this.truncatedDirectoryName !== '') {
-        const truncatedName = this.truncatedDirectoryName
-        return truncatedName
-      }
-    },
-
-    /**
-     * Used to navigate to a specific directory when
-     * clicking on a file path name
-     * @param {String} dir
-     * @param {Number} index
-     */
-    getDatasetDirectory(dir, index) {
-      // got to get the previous directory before passing it
-      let directoryPath = ''
-      let obj = {}
-      if (index === 1) {
-        const tempPath = this.remainingDirPath
-        tempPath.reverse()
-        tempPath.push(this.lastThreeDirPath[index - 1])
-        tempPath.push(dir)
-        directoryPath = tempPath
-        // eslint-disable-next-line
-        obj = { pathName: directoryPath, directoryName: dir, index }
-        this.$emit('navigate-breadcrumb', obj, directoryPath)
-      } else {
-        // index is 0
-        // tack on the previous path
-        const tempPath = this.remainingDirPath
-        tempPath.reverse()
-        tempPath.push(this.lastThreeDirPath[index])
-        directoryPath = tempPath
-        // eslint-disable-next-line
-        obj = { pathName: directoryPath, directoryName: dir, index }
-        this.$emit('navigate-breadcrumb', obj, directoryPath)
-      }
-    }
   }
 }
 </script>
 
 <style lang="scss">
-@import '../../../assets/css/_variables.scss';
+@import '../../../assets/_variables.scss';
 
 .breadcrumb-navigation {
   align-items: center;
   display: flex;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 40px;
   margin: 0;
-  margin-top: 3px;
   white-space: nowrap;
 
   .breadcrumb-menu {
