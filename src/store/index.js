@@ -128,7 +128,6 @@ const store = new Vuex.Store({
       dateRange: DATASET_ACTIVITY_DATE_RANGE_30,
       userId: DATASET_ACTIVITY_ALL_CONTRIBUTORS //MIGHT NEED TO CHANGE THIS
     },
-    */
     linkingTargets: [],
     searchPage: '',
     shadedParticipants: [],
