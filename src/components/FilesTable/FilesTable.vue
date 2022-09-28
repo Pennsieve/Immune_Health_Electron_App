@@ -248,7 +248,7 @@ export default {
     //...mapActions(['setItsLinkinTime']),
     onClickButton: function(message){
       console.log("on click button called")
-      this.$emit('clicked-now', message)
+      this.$emit('link-selected-files', message)
     },
     /**
      * Select the row
@@ -309,6 +309,7 @@ export default {
      * @param {Object} file
      */
     onFileLabelClick: function(file) {
+      console.log('file is ',file)
       this.$emit('click-file-label', file)
     },
 

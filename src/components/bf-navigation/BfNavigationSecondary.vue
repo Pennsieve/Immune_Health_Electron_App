@@ -9,7 +9,7 @@
       <div v-for="study in studies" class="study-container heading1" :class="getStudyName(study) === getStudyName(selectedStudy) ? 'selected-study' : 'not-selected-study'" :key="study.sstudyid" v-on:click="studySelected">
         {{ getStudyName(study) }}
       </div>
-    </template> 
+    </template>
   </div>
 </template>
 
@@ -20,7 +20,7 @@ import { mapActions, mapGetters } from 'vuex'
 export default {
   name: 'BfNavigationSecondary',
   components: {
-    
+
   },
   data() {
     return {
