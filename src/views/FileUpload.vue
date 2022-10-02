@@ -220,7 +220,9 @@ export default {
       hasFiles: true,
       uploadDialogOpen: false,
       isCreating: false,
-      fileId: ''
+      fileId: '',
+      stagingLookup: {},
+      linkedLookup: {}
     }
   },
   mounted: function () {
@@ -235,6 +237,12 @@ export default {
     // EventBus.$on('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
     // EventBus.$on('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
     // EventBus.$on('update-external-file', this.onFileRenamed)
+
+    //checks length of both staging and linked lookup tables and populates them if they're empty
+    if (!Object.keys(this.stagingLookup).length && !Object.keys(this.linkedLookup).length){
+      this.fetchPackageIds()
+    }
+
   },
   destroyed: function () {
     // this.$el.removeEventListener('dragenter', this.onDragEnter.bind(this))
@@ -247,6 +255,30 @@ export default {
   methods: {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
+    /*
+      creates a lookup table consisting of mappings from a given study name to its staging and linked collections
+    */
+    fetchPackageIds: function (){
+      var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
+
+      const options = {method: 'GET', headers: {accept: '*/*'}};
+var temp_dict = {}
+fetch(url, options)
+  .then(response => response.json())
+  //.then(temp = response) //check this
+  .then(response => console.log(response))
+  .catch(err => console.error(err));
+  //for each obj , get displayName and make that the key, make value a tuple, where pos 1 = staging and pos 2 = linked. OR make value of first list staging and
+  //2nd linked
+  temp_dict = response.content.children
+  temp_dict_master = {}
+  for (child in temp_dict){
+    //will just gather top level for now, when you can naviagte to the children, just make 2 dictionary entries with the same process
+    temp_dict_master[child.content.name] = child.content.nodeId
+    //this.stagingLookup[name] = nodeIdStaging
+    //this/linkedLookup[name] = nodeIdLinked
+  }
+    },
     /**
      * Navigate to file
      * @param {String} id
