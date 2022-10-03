@@ -220,7 +220,9 @@ export default {
       hasFiles: true,
       uploadDialogOpen: false,
       isCreating: false,
-      fileId: ''
+      fileId: '',
+      stagingLookup: {},
+      linkedLookup: {}
     }
   },
   mounted: function () {
@@ -235,6 +237,12 @@ export default {
     // EventBus.$on('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
     // EventBus.$on('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
     // EventBus.$on('update-external-file', this.onFileRenamed)
+
+    //checks length of both staging and linked lookup tables and populates them if they're empty
+    if (!Object.keys(this.stagingLookup).length && !Object.keys(this.linkedLookup).length){
+      this.fetchPackageIds()
+    }
+
   },
   destroyed: function () {
     // this.$el.removeEventListener('dragenter', this.onDragEnter.bind(this))
@@ -247,6 +255,41 @@ export default {
   methods: {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
+    /*
+      creates a lookup table consisting of mappings from a given study name to its staging and linked collections
+    */
+    fetchPackageIds: function (){
+      var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
+
+      const options = {method: 'GET', headers: {accept: '*/*'}};
+    var temp_dict = {}
+    fetch(url, options)
+    .then(response => response.json())
+    .then(response => console.log(response))
+    .catch(err => console.error(err));
+    temp_dict = response.content.children
+    for (var child in temp_dict){
+      //will just gather top level for now, when you can naviagte to the children, just make 2 dictionary entries with the same process
+      var master_name = child.content.name
+      //need to make a call to url and make entry
+      var le_url = `https://api.pennsieve.io/packages/${child.content.nodeId}?api_key=${this.userToken}`
+      const le_options = {method: 'GET', headers: {accept: '*/*'}};
+      fetch(le_url, le_options)
+      .then(response => response.json())
+      .then(response => console.log(response))
+      .catch(err => console.error(err));
+      var temp2 = response.content.children
+      for (var child2 in temp2){
+        if (child2.content.name == 'staging'){
+          this.stagingLookup[master_name] = child2.content.id
+        }
+        else if (child2.content.name == 'linked') {
+          this.linkedLookup[master_name] = child2.content.id
+        }
+      }
+
+    }
+  },
     /**
      * Navigate to file
      * @param {String} id
@@ -435,79 +478,8 @@ export default {
     createRelationshipsSuccess: function () {
       console.log('createRelationshipsSuccess()')
       //const conceptName = propOr('', 'name', this.concept)
-      //const displayName = propOr('', 'displayName', this.concept)
-      //NOTE: need to figure out how to pass in selectedfiles and set the target to the staging folder of the dataset
 
-      // the destination is the 'linked' folder
-      //NOTE: here we need to get the UUID of the study specific collection and stuff that into the destination
-
-
-      switch (this.selectedStudyName) {
-        case 'COVAXX':
-          // eslint-disable-next-line no-redeclare
-          var destination = "N:collection:a9e58d46-22cd-4664-8523-896da5550ac7"
-          break;
-        case 'Immune Health Multiple Sclerosis':
-          // eslint-disable-next-line no-redeclare
-          var destination = "N:collection:5ae3fcd0-c337-4afa-8359-3acf9e56e162"
-          break;
-        case 'MESSI COVID-19':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Aac6c99e6-3a66-477a-ac86-0b64c63c912f?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'MESSI Sepsis':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Ac118aa8f-e2cb-4da3-8a22-c7583367cc97?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'METRIC':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A36eb3b7e-4146-47f6-a2bd-40f1484bb0ee?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Meyer iSpy COVID':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A6977e0c2-6cb3-4148-b3ac-eb20bdf49a84?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry Allen IBD':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A983ed537-961c-4689-9d91-ee32a207c241?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry Allen Melanoma':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A57cfdd94-3d05-43c9-8990-c85200c2fef8?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry CHIP':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A9dd73709-13b1-4e36-84f3-b3d0795318ba?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry COVEND':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A683c76e5-2ff9-42e2-848e-93659d616c12?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry COVID Vaccine':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Ad209e36a-a70f-4324-821d-06bc6ebb6384?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry HD in-lab':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Afc35c65f-69eb-4bd5-83c5-2d18f0ab4559?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry Healthy Donor Flu Vaccine':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Ac779548d-d79b-42f3-b0fc-2610799c5ee1?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry Melanoma AntiPD1':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3A04ae0bc0-4435-4eb8-a269-7e8acf36af01?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        case 'Wherry Recov Donors':
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Afda8d13c-658f-475a-b90a-cd7a79ef7b87?api_key=${this.userToken}&includeAncestors=true`;
-          break;
-        default:
-          // eslint-disable-next-line no-redeclare
-          var destination = `https://api.pennsieve.io/packages/N%3Acollection%3Adaa2ee61-2684-42af-b052-db2aa8937c99?api_key=${this.userToken}&includeAncestors=true`;
-      }
-
+      var destination = this.linkedLookup[this.selectedStudyName]
       this.moveItems(destination, this.selectedFiles);
       const numRequests = this.selectedFiles.size
       const plural = numRequests === 1 ? '' : 's'
@@ -525,12 +497,7 @@ export default {
           type: 'success'
         }
       })
-      // check for onboarding event state for creating a relationship
-      //if (this.onboardingEvents.indexOf('CreatedRelationshipType') === -1){
-      // make post request
-      //  this.sendOnboardingEventsRequest()
-      //}
-      //this.closeSideDrawer()
+
       this.isCreating = false
     },
     /**
@@ -696,15 +663,12 @@ export default {
     createRelationships: function () {
       console.log('createRelationships()')
       this.isLoading = true
-      //  if (this.isFile) {
 
         this.checkBelongsToExists()
         .then(() => this.createFileRelationshipRequests())
         .then(() => this.createRelationshipsSuccess())
         .finally(() => this.isLoading === false)
-      //} else {
-      //  this.createRecordRelationships().finally(() => this.isLoading = false)
-      //  }
+
     },
     linkToTarget: function () {
       console.log('linkToTarget() called');
@@ -717,7 +681,6 @@ export default {
 
       let defaultType = ''
       //NOTE: must get this by other means
-      //const packageType = pathOr('', ['content', 'packageType'], file)
       var packageType = 'file';
       switch (packageType) {
         case 'Collection':
@@ -743,81 +706,8 @@ export default {
     },
 
     fetchFilesForStudy: function() {
-      // NOTE: build lookup table on study name when list of studies > 13
-      // eslint-disable-next-line no-undef
-       switch (this.selectedStudyName) {
-         case 'COVAXX':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:a6299140-4392-4f37-9490-df0399f4c2c8`;
-           break;
-         case 'Immune Health Multiple Sclerosis':
-           // eslint-disable-next-line no-redeclare
-          var packageId = `N:collection:3f6086c9-e5a6-4d23-a776-be6a738016f0`;
-           break;
-        case 'MESSI COVID-19':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:ac6c99e6-3a66-477a-ac86-0b64c63c912f`;
-           break;
-         case 'MESSI Sepsis':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:c118aa8f-e2cb-4da3-8a22-c7583367cc97`;
-           break;
-         case 'METRIC':
-          // eslint-disable-next-line no-redeclare
-          var packageId = `N:collection:36eb3b7e-4146-47f6-a2bd-40f1484bb0ee`;
-           break;
-         case 'Meyer iSpy COVID':
-           // eslint-disable-next-line no-redeclare
-             var packageId = `N:collection:6977e0c2-6cb3-4148-b3ac-eb20bdf49a84`;
-           break;
-         case 'Wherry Allen IBD':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:983ed537-961c-4689-9d91-ee32a207c241`;
-          break;
-         case 'Wherry Allen Melanoma':
-           // eslint-disable-next-line no-redeclare
-            var packageId = `N:collection:57cfdd94-3d05-43c9-8990-c85200c2fef8`;
-           break;
-         case 'Wherry CHIP':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:9dd73709-13b1-4e36-84f3-b3d0795318ba`;
-           break;
-         case 'Wherry COVEND':
-           // eslint-disable-next-line no-redeclare
-          var packageId = `N:collection:683c76e5-2ff9-42e2-848e-93659d616c12`;
-           break;
-         case 'Wherry COVID Vaccine':
-           // eslint-disable-next-line no-redeclare
-          var packageId = `N:collection:d209e36a-a70f-4324-821d-06bc6ebb6384`;
-           break;
-         case 'Wherry HD in-lab':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:fc35c65f-69eb-4bd5-83c5-2d18f0ab4559`;
-           break;
-         case 'Wherry Healthy Donor Flu Vaccine':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:c779548d-d79b-42f3-b0fc-2610799c5ee1`;
-           break;
-         case 'Wherry Melanoma AntiPD1':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:04ae0bc0-4435-4eb8-a269-7e8acf36af01`;
-           break;
-         case 'Wherry Recov Donors':
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:fda8d13c-658f-475a-b90a-cd7a79ef7b87`;
-           break;
-           case 'CEIRR_flu':
-      //       console.log('in CEIRR flu case')
-             // eslint-disable-next-line no-redeclare
-            var packageId = `N:collection:daa2ee61-2684-42af-b052-db2aa8937c99`;
-             break;
-         default:
-           //end
-           // eslint-disable-next-line no-redeclare
-           var packageId = `N:collection:daa2ee61-2684-42af-b052-db2aa8937c99`;
-       }
-
-
+      //should just add this step to fetchFiles
+      var packageId = this.stagingLookup[this.selectedStudyName]
       this.fetchFiles(packageId)
     },
 
@@ -833,27 +723,14 @@ export default {
             this.file = response
             this.fileId = response.content.id
             this.files = response.children.map(file => {
-              /**
-               if (!file.storage) {
-              file.storage = 0
-            }
-               */
-              //file.icon = file.icon //|| this.getFilePropertyVal(file.properties, 'icon')
-              //UNCOMMENT WHEN YOU KNOW WHAT IT DOES
-              //file.subtype = this.getSubType(file)
+
               return file
             })
             console.log('files are', this.files)
             this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)
             this.ancestors = response.ancestors
 
-            //NOTE: need to change this
-            /*
-          const pkgId = pathOr('', ['query', 'pkgId'], this.$route)
-          if (pkgId) {
-            this.scrollToFile(pkgId)
-          }
-          */
+
           })
           .catch(response => {
             this.handleXhrError(response)
