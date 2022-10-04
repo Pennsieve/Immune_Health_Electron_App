@@ -231,17 +231,19 @@ export default {
     if (!this.files.length) {
       this.fetchFiles()
     }
+    console.log("lookup tables are empty, need to populate")
+    this.fetchPackageIds()
+    /*
+     this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
+     EventBus.$on('add-uploaded-file', this.onAddUploadedFile.bind(this))
+     EventBus.$on('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
+     EventBus.$on('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
+     EventBus.$on('update-external-file', this.onFileRenamed)
 
-    // this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
-    // EventBus.$on('add-uploaded-file', this.onAddUploadedFile.bind(this))
-    // EventBus.$on('dismiss-upload-info', this.onDismissUploadInfo.bind(this))
-    // EventBus.$on('update-uploaded-file-state', this.onUpdateUploadedFileState.bind(this))
-    // EventBus.$on('update-external-file', this.onFileRenamed)
-
-    //checks length of both staging and linked lookup tables and populates them if they're empty
+    checks length of both staging and linked lookup tables and populates them if they're empty
     if (!Object.keys(this.stagingLookup).length && !Object.keys(this.linkedLookup).length){
-      this.fetchPackageIds()
     }
+    */
 
   },
   destroyed: function () {
@@ -259,15 +261,12 @@ export default {
       creates a lookup table consisting of mappings from a given study name to its staging and linked collections
     */
     fetchPackageIds: function (){
-      var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
-
-      const options = {method: 'GET', headers: {accept: '*/*'}};
-    var temp_dict = {}
+    console.log("we are getting the packages IDs for all the studies")
+    var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
+    const options = {method: 'GET', headers: {accept: '*/*'}};
     fetch(url, options)
-    .then(response => response.json())
-    .then(response => console.log(response))
-    .catch(err => console.error(err));
-    temp_dict = response.content.children
+    .then(response => { response.json()
+    var temp_dict = response.content.children
     for (var child in temp_dict){
       //will just gather top level for now, when you can naviagte to the children, just make 2 dictionary entries with the same process
       var master_name = child.content.name
@@ -275,9 +274,7 @@ export default {
       var le_url = `https://api.pennsieve.io/packages/${child.content.nodeId}?api_key=${this.userToken}`
       const le_options = {method: 'GET', headers: {accept: '*/*'}};
       fetch(le_url, le_options)
-      .then(response => response.json())
-      .then(response => console.log(response))
-      .catch(err => console.error(err));
+      .then(response => {response.json()
       var temp2 = response.content.children
       for (var child2 in temp2){
         if (child2.content.name == 'staging'){
@@ -287,8 +284,11 @@ export default {
           this.linkedLookup[master_name] = child2.content.id
         }
       }
-
+    })
+      .catch(err => console.error(err));
     }
+  })
+    .catch(err => console.error(err));
   },
     /**
      * Navigate to file
