@@ -18,6 +18,7 @@
 
         <li class="mr-24">
           <button
+            :disabled="linkingTargets.length == 0"
             @click="onClickButton('test')"
           >
             <svg-icon
@@ -216,7 +217,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters([]),
+    ...mapGetters(['linkingTargets']),
 
     ...mapState([
       'dataset',

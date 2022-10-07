@@ -103,7 +103,7 @@
               @copy-url="getPresignedUrl"
               @selection-change="setSelectedFiles"
               @click-file-label="onClickLabel"
-              @link-selected-files="createFileRelationshipRequests">
+              @link-selected-files="createRelationships">
           </files-table>
           <!--
           <bf-drop-info
@@ -134,14 +134,12 @@
           -->
         </span>
       </div>
-
-
-
     </span>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 import BreadcrumbNavigation from '@/components/shared/BreadcrumbNavigation/BreadcrumbNavigation.vue'
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
@@ -195,8 +193,9 @@ export default {
   watch: {
     selectedStudyName: {
       handler: function () {
-        console.log('fetching study files')
-        this.fetchFilesForStudy()
+        // clear the current files in case fetchFiles errors out due to there being no files present (otherwise the files from the previously selected study will still be showing)
+        this.clearFiles()
+        this.fetchFiles()
       }
     },
   },
@@ -228,10 +227,6 @@ export default {
   mounted: function () {
     //if no files yet
     this.setSearchPage('FileUpload')
-    if (!this.files.length) {
-      this.fetchFiles()
-    }
-    console.log("lookup tables are empty, need to populate")
     this.fetchPackageIds()
     /*
      this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
@@ -260,36 +255,36 @@ export default {
     /*
       creates a lookup table consisting of mappings from a given study name to its staging and linked collections
     */
-    fetchPackageIds: function (){
-    console.log("we are getting the packages IDs for all the studies")
-    var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
-    const options = {method: 'GET', headers: {accept: '*/*'}};
-    fetch(url, options)
-    .then(response => { response.json()
-    var temp_dict = response.content.children
-    for (var child in temp_dict){
-      //will just gather top level for now, when you can naviagte to the children, just make 2 dictionary entries with the same process
-      var master_name = child.content.name
-      //need to make a call to url and make entry
-      var le_url = `https://api.pennsieve.io/packages/${child.content.nodeId}?api_key=${this.userToken}`
-      const le_options = {method: 'GET', headers: {accept: '*/*'}};
-      fetch(le_url, le_options)
-      .then(response => {response.json()
-      var temp2 = response.content.children
-      for (var child2 in temp2){
-        if (child2.content.name == 'staging'){
-          this.stagingLookup[master_name] = child2.content.id
-        }
-        else if (child2.content.name == 'linked') {
-          this.linkedLookup[master_name] = child2.content.id
-        }
-      }
-    })
-      .catch(err => console.error(err));
-    }
-  })
-    .catch(err => console.error(err));
-  },
+    fetchPackageIds: function () {
+      var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
+      axios.get(url).then(async ( { data }) => {
+        var temp_dict = data.children
+        await Promise.all(temp_dict.map(async (child) => {
+          //will just gather top level for now, when you can naviagte to the children, just make 2 dictionary entries with the same process
+          var master_name = pathOr('', ['content', 'name'], child)
+          var node_id = pathOr('', ['content', 'nodeId'], child)
+          //need to make a call to url and make entry
+          var le_url = `https://api.pennsieve.io/packages/${node_id}?api_key=${this.userToken}`
+          await axios.get(le_url).then(( { data } ) => {
+            var temp2 = data.children
+            temp2.forEach(child2 => {
+              const child2Name = pathOr('', ['content', 'name'], child2)
+              const child2Id = pathOr('', ['content', 'id'], child2)
+              if (child2Name == 'staging'){
+                this.stagingLookup[master_name] = child2Id
+              }
+              else if (child2Name == 'linked') {
+                this.linkedLookup[master_name] = child2Id
+              }
+            })
+          })
+        }))
+        .finally(() => {
+          this.fetchFiles()
+        })
+      })
+    },
+
     /**
      * Navigate to file
      * @param {String} id
@@ -298,7 +293,7 @@ export default {
       //files == collection-files
       console.log(`navigateToFile() id: ${id}`)
       //this.$router.push({name: 'files', params: {fileId: id}})
-      this.fetchFiles(id)
+      //this.fetchFiles(id)
     },
 
     handleNavigateBreadcrumb: function (id) {
@@ -380,7 +375,7 @@ export default {
     },
     createDefaultRelationship: function () {
       const datasetId = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
-      const url = `${this.config.conceptsUrl}/datasets/${datasetId}/relationships`
+      const url = `https://api.pennsieve.io/models/v1/datasets/${datasetId}/relationships`
       return this.sendXhr(url, {
         method: 'POST',
         header: {
@@ -410,7 +405,7 @@ export default {
     /**
      * Creates relationships with file(s)
      */
-    createFileRelationshipRequests: function () {
+    createFileRelationshipRequests: async function () {
       console.log('createFileRelationshipRequests()')
       console.log('- selectedFiles: ')
       console.log(this.selectedFiles)
@@ -426,13 +421,14 @@ export default {
       var iter2 = this.linkingTargets;
       console.log('LINKING TARGETS ARE: ', this.linkingTargets)
       //iterating through linking target(s). We then map all of the selected files (i.e. link) to the current target
+      const promises = []
       for (const j of iter2) {
         console.log("CURRENT LINKING TARGET IS ", j)
         var curr_targ = j.recordId
         console.log('- selecteditemids:')
         console.log(selecteditemids)
         // eslint-disable-next-line no-unused-vars
-        const queues = Array.from(selecteditemids).map(itemId => {
+        promises.push[Promise.all(Array.from(selecteditemids).map(itemId => {
           const recordId = itemId
           console.log(`+ recordId: ${recordId}`)
           const packageId = curr_targ //the record we are linking to
@@ -460,13 +456,14 @@ export default {
               }]
             }
           })
-        })
+        }))]
         // this maps over all the queued responses to guarantee that all responses are returned regardless of error status
         //return Promise.all(queues.map(q => {
         //return q.catch(err => ({status: err.status}))
         //}))
 
       }
+      return Promise.all(promises)
     },
 
     /**
@@ -552,6 +549,16 @@ export default {
           .catch(response => {
             this.handleXhrError(response)
           })
+    },
+
+    clearFiles() {
+      this.file = {
+        content: {
+          name: ''
+        }
+      }
+      this.fileId = ''
+      this.files = []
     },
     /**
      * Reset selected files state
@@ -663,11 +670,9 @@ export default {
     createRelationships: function () {
       console.log('createRelationships()')
       this.isLoading = true
-
-        this.checkBelongsToExists()
-        .then(() => this.createFileRelationshipRequests())
+      this.createFileRelationshipRequests()
         .then(() => this.createRelationshipsSuccess())
-        .finally(() => this.isLoading === false)
+        .finally(() => this.isLoading = false)
 
     },
     linkToTarget: function () {
@@ -705,32 +710,22 @@ export default {
       this.selectedFiles = selection
     },
 
-    fetchFilesForStudy: function() {
-      //should just add this step to fetchFiles
-      var packageId = this.stagingLookup[this.selectedStudyName]
-      this.fetchFiles(packageId)
-    },
-
     //gets all files in the dataset within the staged directory on mount
-    fetchFiles: function (packageId) {
+    fetchFiles: function () {
+      var packageId = this.stagingLookup[this.selectedStudyName]
       var api_url = `https://api.pennsieve.io/packages/${packageId}?api_key=${this.userToken}&includeAncestors=true`;
 
       console.log('api url is ', api_url)
       this.sendXhr(api_url)
           .then(response => {
-            console.log('response')
-            console.log(response)
             this.file = response
             this.fileId = response.content.id
             this.files = response.children.map(file => {
 
               return file
             })
-            console.log('files are', this.files)
             this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)
             this.ancestors = response.ancestors
-
-
           })
           .catch(response => {
             this.handleXhrError(response)
