@@ -2,7 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import axios from 'axios'
 import moment from 'moment'
-import { pathOr, propOr, isEmpty, defaultTo, find, filter, propEq } from 'ramda'
+import { compose, pathOr, propOr, isEmpty, defaultTo, find, propEq } from 'ramda'
 import toQueryParams from '@/utils/toQueryParams.js'
 import PennsieveClient from '@/utils/pennsieve/client.js'
 Vue.use(Vuex);
