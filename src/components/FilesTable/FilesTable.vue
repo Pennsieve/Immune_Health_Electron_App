@@ -225,7 +225,7 @@ export default {
     console.log("the parent is",this.$parent)
   },
   computed: {
-    ...mapGetters([]),
+    ...mapGetters(['linkingTargets']),
 
     ...mapState([
       'dataset',
