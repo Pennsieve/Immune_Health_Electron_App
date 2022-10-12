@@ -120,6 +120,7 @@
               v-if="searchAllDataMenu"
               :file="scope.row"
               :multiple-selected="multipleSelected"
+              :within-upload-menu="withinUploadMenu"
               :search-all-data-menu="searchAllDataMenu"
               @delete="deleteFile"
               @move="moveFile"
@@ -177,6 +178,10 @@ export default {
       default: () => []
     },
     multipleSelected: {
+      type: Boolean,
+      default: false
+    },
+    withinUploadMenu: {
       type: Boolean,
       default: false
     },
