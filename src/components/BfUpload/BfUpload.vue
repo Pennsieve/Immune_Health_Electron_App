@@ -240,7 +240,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         selectedFiles: null,
         datasetIdInUse: '',
         uploadTargetFolder: 'staging',
-        withinUploadMenu: 'false'
+        withinUploadMenu: 'true'
       }
     },
 
