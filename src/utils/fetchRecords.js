@@ -3,9 +3,44 @@ import { clone, propOr, isEmpty } from "ramda"
 import { getFormatter } from '@/mixins/data-type/utils';
 import { v1 } from 'uuid';
 
+/*
+NEW ENDPOINT:
+
+const options = {
+  method: 'POST',
+  headers: {accept: 'application/json', 'content-type': 'application/json'},
+  body: JSON.stringify({
+    datasets: ['Immune_health_dataset'],
+    filters: [
+      {
+        model: 'model1',
+        property: 'model_property1',
+        operator: 'EQUALS',
+        value: 'value'
+      },
+      {
+        model: 'model2',
+        property: 'model_property2',
+        operator: 'EQUALS',
+        value: 'value'
+      }
+    ],
+    model: 'model_to_return'
+  })
+};
+
+fetch('https://api2.pennsieve.io/metadata/query', options)
+  .then(response => response.json())
+  .then(response => console.log(response))
+  .catch(err => console.error(err));
+*/
+
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 // pennsieve endpoint for retrieving a list of filtered records or files
-const GET_FILTERED_METADATA_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search'
+//const GET_FILTERED_METADATA_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search'
+
+//new endpoint
+const GET_FILTERED_METADATA_ENDPOINT = 'https://api2.pennsieve.io/metadata/query'
 
 const REQUEST_HEADER = (token) => {
   return {
@@ -84,6 +119,7 @@ const getStudyName = function(study) {
  */
 export const fetchFilteredPatientsMetadataRelatedToStudy = async (selectedStudy, filters, token, limit, offset) => {
   // return the records related to the selected study with the filters applied
+  //DETERMINE IF PAGINATED
   const filteredRecordsUrl = `${GET_FILTERED_METADATA_ENDPOINT}/records?limit=${limit}&offset=${offset}`
 
   // filter the returned records by the selected study
