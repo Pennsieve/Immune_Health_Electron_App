@@ -237,7 +237,7 @@ export default {
         console.log(this.visibleExperimentsRecords)
         this.updateView()
       }
-    }
+    },
     /*
     'searchModalSearch.filters': function(){
       //whenever a filter is added or subtracted from list it will update the downstream elements
@@ -594,7 +594,7 @@ export default {
             this.visibleExperimentRecords = filteredExperimentsRecordsResponse.records
             break;
           case 'visits':
-            fetchFilteredPatientsRecordsResponse = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, patientsOffset)
+            fetchFilteredPatientsRecordsResponse = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, participantsOffset)
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
             filteredExperimentsRecordsResponse = await fetchFilteredExperimentsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, experimentsOffset)
             this.clickedAVisit = true
@@ -603,7 +603,7 @@ export default {
             this.visibleSamplesRecords = filteredSamplesRecordsResponse.records
             break;
           case 'experiments':
-            fetchFilteredPatientsRecordsResponse = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, patientsOffset)
+            fetchFilteredPatientsRecordsResponse = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, participantsOffset)
             filteredVisitsRecordsResponse = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, visitsOffset)
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
             this.clickedAnExperiment = true
@@ -621,8 +621,7 @@ export default {
     //Must put in correct metadata url
     //NOTE: stand in for 'nonlinear' filtering. Need to implement an new API endpoint to do this
     handleFilterChangeNonlinear: async function(){
-      var model = this.searchModalSearch.model;
-        case 'patient':
+        //var model = this.searchModalSearch.model;
         //this.clearPatientRecordData()
         //this.clearVisitRecordData()
         console.log('filtering all')
