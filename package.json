@@ -45,8 +45,7 @@
     "vue": "^2.6.14",
     "vue-outside-events": "^1.1.3",
     "vue-router": "3.0.1",
-    "vuex": "3.4.0",
-    "yarn": "^1.22.19"
+    "vuex": "3.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

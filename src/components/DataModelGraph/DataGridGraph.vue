@@ -549,13 +549,13 @@ export default {
             break;
           case 'experiments':
           // eslint-disable-next-line
-          var identifier = nodeData.details.TBD
+          var identifier = nodeData.details.workitemid
           //this.clearSamplesRecordData()
             // We will first remove any previous filters that might no longer apply
             // i.e. the user has already clicked a sample record and then clicked a visit record after
             this.removeClickedRecordsFiltersWithTarget('samples')
             // add the clicked visit record as a filter
-            this.addClickedFilter("TBD", model, identifier)
+            this.addClickedFilter("workitemid", model, identifier)
             filters = this.searchModalSearch.filters.concat(this.clickedRecordsFilters)
 
             filteredSamplesRecordsResponse = await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, samplesOffset)
@@ -572,9 +572,12 @@ export default {
           case 'samples':
           //NOTE: DONT NEED TO HANDLE THIS CASE
           // eslint-disable-next-line
-          //var identifier = nodeData.details.name
+          var identifier = nodeData.details.name
             // add the clicked sample record as a filter
             this.addClickedFilter("study_sample_id", model, identifier)
+            fetchFilteredPatientsRecordsResponse = await fetchFilteredPatientsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, participantsOffset)
+            filteredVisitsRecordsResponse = await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, visitsOffset)
+            filteredExperimentsRecordsResponse = await fetchFilteredExperimentsMetadataRelatedToStudy(this.selectedStudy, filters, this.userToken, limit, experimentsOffset)
             break;
         }
       } else if (clickstatus == 'unclick') {
