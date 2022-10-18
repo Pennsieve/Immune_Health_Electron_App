@@ -104,9 +104,9 @@
         </template>
 
         <!-- This is the template for when we are done adding files -->
-          <!-- TODO: refactor the !isAddingFiles case (done adding files)
-               TODO: when upload is started isAddingFiles should be set to false
-               TODO: when isAddingFiles is false, we can show the upload progress
+          <!-- TODO: refactor the !isAddingFiles case (done adding files) -->
+          <!-- TODO: when upload is started isAddingFiles should be set to false -->
+          <!-- TODO: when isAddingFiles is false, we can show the upload progress -->
         <template v-if="!isAddingFiles">
           <div
             ref="uploadWrap"
@@ -125,7 +125,6 @@
             />
           </div>
         </template>
-        -->
       </div>
 
       <template
@@ -194,6 +193,7 @@ import {
 import EventBus from '../../utils/event-bus.js';
 import PennsieveClient from '@/utils/pennsieve/client.js'
 import FilesTable from "@/components/FilesTable/FilesTable";
+import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
 
   const transformPath = compose(
     init,
@@ -208,6 +208,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       FilesTable,
       BfButton,
       BfDialog,
+      BfUploadPackage
     },
 
     mixins: [Sorter, CheckOverflow, Request,
@@ -337,6 +338,19 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     methods: {
       ...mapActions(['updateOnboardingEvents']),
 
+
+      /**
+       * Cancel package upload
+       * @param {Object} item
+       */
+      cancelPackageUpload: function(item) {
+        const uploads = this.uploader.getUploads()
+        const files = propOr([], 'files', item)
+        files.forEach(file => {
+          const uploadId = this.getFineUploaderId(file, uploads)
+          this.uploader.cancel(uploadId)
+        })
+      },
       /**
        * Compute if array has items
        */
@@ -715,6 +729,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             .then(response => {
               let manifestId = response.manifest_id
               // start upload
+              this.isAddingFiles = false
               ps.uploadManifest(manifestId)
                 .catch(err => {
                   console.log('error:')
