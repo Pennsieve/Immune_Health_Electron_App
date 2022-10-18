@@ -89,6 +89,7 @@
                 v-if="hasItems(fileListMap)"
                 :data="uploadFileList()"
                 :multiple-selected="false"
+                :within-upload-menu="true"
                 :enable-download="false"
                 :enable-file-move="false"
                 @delete="uploadRemoveFile"
@@ -238,7 +239,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         ps: null,
         selectedFiles: null,
         datasetIdInUse: '',
-        uploadTargetFolder: 'staging'
+        uploadTargetFolder: 'staging',
+        withinUploadMenu: 'true'
       }
     },
 

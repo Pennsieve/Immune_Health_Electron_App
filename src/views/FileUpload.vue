@@ -148,7 +148,6 @@ import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecond
 import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
 import BfUpload from '../components/BfUpload/BfUpload.vue'
-//MAY NEED ONE LESS UP DIR
 import Sorter from '../mixins/sorter/index.js'
 import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'

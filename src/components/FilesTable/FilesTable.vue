@@ -15,22 +15,23 @@
         {{ selectionCountLabel }}
       </span>
       <ul class="selection-actions unstyled">
-
-        <li class="mr-24">
-          <button
-            :disabled="linkingTargets.length == 0"
-            @click="onClickButton('test')"
-          >
-            <svg-icon
-              class="mr-8"
-              icon="icon-move-file"
-              height="16"
-              width="16"
-            />
-            Link selected files to record
-          </button>
-        </li>
-
+      <template v-if="withinUploadMenu">
+      </template>
+      <template v-else>
+      <li class="mr-24">
+        <button
+          @click="onClickButton('test')"
+        >
+          <svg-icon
+            class="mr-8"
+            icon="icon-move-file"
+            height="16"
+            width="16"
+          />
+          Link selected files to record
+        </button>
+      </li>
+      </template>
       </ul>
     </div>
 
@@ -121,6 +122,7 @@
               v-if="searchAllDataMenu"
               :file="scope.row"
               :multiple-selected="multipleSelected"
+              :within-upload-menu="withinUploadMenu"
               :search-all-data-menu="searchAllDataMenu"
               @delete="deleteFile"
               @move="moveFile"
@@ -181,6 +183,10 @@ export default {
       type: Boolean,
       default: false
     },
+    withinUploadMenu: {
+      type: Boolean,
+      default: false
+    },
     searchAllDataMenu: {
       type: Boolean,
       default: false
@@ -215,7 +221,9 @@ export default {
       checkAll: false
     }
   },
-
+  mounted: function(){
+    console.log("the parent is",this.$parent)
+  },
   computed: {
     ...mapGetters(['linkingTargets']),
 
@@ -248,6 +256,7 @@ export default {
   methods: {
     //...mapActions(['setItsLinkinTime']),
     onClickButton: function(message){
+
       console.log("on click button called")
       this.$emit('link-selected-files', message)
     },
@@ -297,6 +306,7 @@ export default {
      * @param {Object} evt
      */
     onSortChange: function(evt) {
+
       const order = propOr('', 'order', evt)
       const property = propOr('', 'prop', evt)
       this.sortBy = property
@@ -310,6 +320,7 @@ export default {
      * @param {Object} file
      */
     onFileLabelClick: function(file) {
+
       console.log('file is ',file)
       this.$emit('click-file-label', file)
     },
