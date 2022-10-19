@@ -34,7 +34,10 @@
       </template>
       </ul>
     </div>
-
+    <div  v-if="data.length == 0">
+    <h2> No files have been added to this location </h2>
+    </div>
+    <div v-else>
     <el-table
       ref="table"
       :border="true"
@@ -134,6 +137,7 @@
         </template>
       </el-table-column>
     </el-table>
+  </div>
   </div>
 </template>
 
