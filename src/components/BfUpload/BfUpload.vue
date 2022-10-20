@@ -722,6 +722,16 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
       startUpload: function() {
         // check that there are files in the fileListMap
         let ps = new PennsieveClient()
+        // Add to uploadList
+        const packageList = this.packageList.slice()
+        packageList.forEach(thePackage => {
+          thePackage.uploadDestination = this.uploadDestination
+          // Set recordId and modelId properties on the package
+          if (this.modelId && this.recordId) {
+            thePackage.recordId = this.recordId
+            thePackage.modelId = this.modelId
+          }
+        })
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
           let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
