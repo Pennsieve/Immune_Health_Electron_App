@@ -314,11 +314,11 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
       },
 
       packageList: function() {
-        // this.checkOverflow(this.$refs.packageWrap)
+         this.checkOverflow(this.$refs.packageWrap)
       },
 
       uploadList: function() {
-        // this.checkOverflow(this.$refs.uploadWrap)
+         this.checkOverflow(this.$refs.uploadWrap)
       },
 
       isOpen: function() {
