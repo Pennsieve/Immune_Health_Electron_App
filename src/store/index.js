@@ -137,9 +137,15 @@ const store = new Vuex.Store({
     triggerForClearing: false,
     filterApplicationCount: 0,
     relationshipTypes: [],
-    itsLinkinTime: false
+    itsLinkinTime: false,
+    uploadCount: 0,
+    uploading: false,
+    uploadRemaining: 0
   },
   getters: {
+    uploadRemaining: state => state.uploadRemaining,
+    uploadCount: state => state.uploadCount,
+    uploading: state => state.uploading,
     getRelationshipTypeByName: state => (name) => {
       return compose(
         defaultTo({}),
@@ -229,6 +235,18 @@ const store = new Vuex.Store({
     }
   },
   mutations: {
+    UPLOAD_COUNT_ADD (state, count) {
+    const totalCount = propOr(0, 'uploadCount', state) + count;
+    Vue.set(state, 'uploadCount', totalCount)
+  },
+    UPDATE_TOTAL_UPLOAD_SIZE (state, data) {
+    const updatedSize = propOr(0, 'totalUploadSize', state) + data
+    Vue.set(state, 'totalUploadSize', updatedSize)
+  },
+    UPDATE_UPLOAD_REMAINING_ADD (state, size) {
+    const totalRemaining = propOr(0, 'uploadRemaining', state) + size;
+    Vue.set(state, 'uploadRemaining', totalRemaining)
+  },
     SET_ITS_LINKIN_TIME(state,data){
       state.itsLinkinTime - data
     },

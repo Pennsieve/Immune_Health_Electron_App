@@ -188,7 +188,9 @@ import {
   prop,
   propEq,
   propOr,
-  split
+  split,
+  pluck,
+  sum
 } from 'ramda';
 import EventBus from '../../utils/event-bus.js';
 import PennsieveClient from '@/utils/pennsieve/client.js'
@@ -729,7 +731,7 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
             .then(response => {
               let manifestId = response.manifest_id
               // start upload
-              this.isAddingFiles = false
+
               ps.uploadManifest(manifestId)
                 .catch(err => {
                   console.log('error:')
@@ -741,6 +743,18 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
               console.log(err)
             })
 
+            // Set uploading state
+        this.$store.dispatch('updateUploadStatus', true)
+
+        // Add file size
+        const totalSize = sum(pluck('groupSize', packageList))
+        this.$store.dispatch('updateUploadRemainingAdd', totalSize)
+        this.$store.dispatch('updateTotalUploadSize', totalSize)
+
+        // Add file count
+        this.$store.dispatch('uploadCountAdd', this.fileList.length)
+
+            this.isAddingFiles = false
         }
         // close the upload dialog
         this.onClose()
