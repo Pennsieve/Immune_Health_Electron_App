@@ -37,10 +37,10 @@ fetch('https://api2.pennsieve.io/metadata/query', options)
 
 const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
 // pennsieve endpoint for retrieving a list of filtered records or files
-//const GET_FILTERED_METADATA_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search'
+const GET_FILTERED_METADATA_ENDPOINT = 'https://api.pennsieve.io/models/v2/organizations/655/search'
 
 //new endpoint
-const GET_FILTERED_METADATA_ENDPOINT = 'https://api2.pennsieve.io/metadata/query'
+//const GET_FILTERED_METADATA_ENDPOINT = 'https://api2.pennsieve.io/metadata/query'
 
 const REQUEST_HEADER = (token) => {
   return {

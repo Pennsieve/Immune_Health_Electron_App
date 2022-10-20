@@ -9,11 +9,14 @@
         v-model="selectedButton"
         size="medium"
       >
-        <el-radio-button
+      <el-radio-button
           label="Samples"
         />
         <el-radio-button
           label="Visits"
+        />
+        <el-radio-button
+          label="Experiments"
         />
       </el-radio-group>
     </div>
@@ -80,7 +83,7 @@ import { mergeRight, clone } from 'ramda'
 import {
   fetchFilteredVisitsMetadataRelatedToStudy,
   fetchFilteredSamplesMetadataRelatedToStudy,
-  //fetchFilteredExperimentsMetadataRelatedToStudy
+  fetchFilteredExperimentsMetadataRelatedToStudy
 } from '@/utils/fetchRecords'
 export default {
   name: 'SearchResults',
@@ -225,11 +228,25 @@ export default {
     fetchRecords: async function() {
       this.isLoadingRecords = true
 
+      switch(this.selectedButton){
+        case "Visits":
+          // eslint-disable-next-line
+          const metadata =  await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset);
+        break;
+        case "Samples":
+          // eslint-disable-next-line
+          const metadata =  await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset);
+        break;
+          case "Experiments":
+            // eslint-disable-next-line
+            const metadata = await fetchFilteredExperimentsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
+      }
+      /*
       const metadata = this.selectedButton === 'Visits' ?
         await fetchFilteredVisitsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset) :
         await fetchFilteredSamplesMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
         //TO DO: replace above with await fetchFilteredExperimentsMetadataRelatedToStudy(this.selectedStudy, this.searchModalSearch.filters, this.userToken, this.searchModalSearch.limit, this.searchModalSearch.offset)
-
+      */
       // TODO: Figure out how to calculate total (records.length is incorrect)
       this.tableResultsTotalCount = metadata.totalCount
       this.recordHeadings = metadata.headings

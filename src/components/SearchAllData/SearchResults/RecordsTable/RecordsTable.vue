@@ -165,6 +165,9 @@ export default {
       if (this.recordType == 'Samples') {
         return 'study_sample_id'
       }
+      if (this.recordType == 'Experiments'){
+        return 'workitemid'
+      }
       return ''
     }
   },
@@ -181,7 +184,7 @@ export default {
               this.$refs.table.toggleRowSelection(selectedItem, true);
             }
           })
-        })      
+        })
       } else {
         this.$nextTick(() => {
           this.$refs.table.clearSelection()
@@ -196,19 +199,19 @@ export default {
       }
       this.$emit('selection-changed', this.selectedItems)
     },
-    // Add the check 
+    // Add the check
     addRows (rows) {
       rows.forEach(row => {
-        if (this.selectedItems.find(item => item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`])) { 
-          return 
+        if (this.selectedItems.find(item => item[`${this.rowKeyProp}`] == row[`${this.rowKeyProp}`])) {
+          return
         }
         this.selectedItems.push(row)
       });
     },
-    // Deselect 
+    // Deselect
     deleteRows (rows) {
       if (this.selectedItems.length == 0) {
-        return 
+        return
       }
       rows.forEach(row => {
         this.selectedItems = this.selectedItems.filter(item => item[`${this.rowKeyProp}`] != row[`${this.rowKeyProp}`])
