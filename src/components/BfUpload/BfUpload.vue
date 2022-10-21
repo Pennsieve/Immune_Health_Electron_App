@@ -218,7 +218,12 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       open: {
         type: Boolean,
         default: false
-      }
+      },
+      //Define this in the parent if it doesnt work here
+     currUploadDest: {
+       type: String,
+       default: ''
+     }
     },
 
     data: function() {
@@ -239,7 +244,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         ps: null,
         selectedFiles: null,
         datasetIdInUse: '',
-        uploadTargetFolder: 'staging',
+        //uploadTargetFolder: 'staging',
         withinUploadMenu: 'true'
       }
     },
@@ -337,6 +342,9 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     methods: {
       ...mapActions(['updateOnboardingEvents']),
 
+      sendRefreshMessage: function(){
+        this.$emit('refreshMessageFromChild')
+      },
       /**
        * Compute if array has items
        */
@@ -383,6 +391,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         this.showInfo = false
         this.modelId = ''
         this.recordId = ''
+        //want to refresh displayed files after upload executes
+        this.sendRefreshMessage()
         this.clearUploadedFiles()
         this.$emit('close-upload-dialog')
       },
@@ -705,13 +715,15 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        */
       startUpload: function() {
         // check that there are files in the fileListMap
+        var uploadTargetFolder = this.currUploadDest+'/staging'
         let ps = new PennsieveClient()
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
           let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
 
           // create a manifest passing in the list of files
-          ps.createManifest(fileList, this.uploadTargetFolder)
+          //this.uploadTargetFolder
+          ps.createManifest(fileList, uploadTargetFolder)
             .then(response => {
               let manifestId = response.manifest_id
               // start upload
