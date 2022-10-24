@@ -116,6 +116,7 @@
           <bf-upload
               :open.sync="uploadDialogOpen"
               :isAddingFiles = "isAddingFiles"
+              :currUploadDest = "selectedStudyName"
               @close-upload-dialog = "closeUploadDialog"
               @refreshMessageFromChild ="refreshMessageRecieved"
           />
