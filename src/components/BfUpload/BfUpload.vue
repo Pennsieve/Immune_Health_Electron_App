@@ -103,10 +103,10 @@
 
         </template>
 
-        <!-- This is the template for when we are done adding files -->
           <!-- TODO: refactor the !isAddingFiles case (done adding files) -->
           <!-- TODO: when upload is started isAddingFiles should be set to false -->
           <!-- TODO: when isAddingFiles is false, we can show the upload progress -->
+        <!--
         <template v-if="!isAddingFiles">
           <div
             ref="uploadWrap"
@@ -125,6 +125,7 @@
             />
           </div>
         </template>
+        -->
       </div>
 
       <template
@@ -195,7 +196,7 @@ import {
 import EventBus from '../../utils/event-bus.js';
 import PennsieveClient from '@/utils/pennsieve/client.js'
 import FilesTable from "@/components/FilesTable/FilesTable";
-import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
+//import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
 
   const transformPath = compose(
     init,
@@ -210,7 +211,7 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
       FilesTable,
       BfButton,
       BfDialog,
-      BfUploadPackage
+      //BfUploadPackage
     },
 
     mixins: [Sorter, CheckOverflow, Request,
@@ -731,6 +732,9 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
             thePackage.modelId = this.modelId
           }
         })
+
+        this.uploadList.push(...packageList)
+
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
           let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
@@ -890,7 +894,24 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
       },
       // eslint-disable-next-line no-unused-vars
       uploadOnClickLabel: function(file) {
+      },
+      actionOnUploadSuccess: function(type, message){
+        console.log(`type: ${type} message:`)
+        console.log(message)
+        if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
+        EventBus.$emit('toast', {
+          detail: {
+            msg: 'Your files have successfully uploaded',
+            type: 'success'
+          }
+        })
+      this.ps.unsubscribe(this.subscribeId)
       }
+    },
+    // eslint-disable-next-line no-unused-vars
+    default: function(type, message){
+      console.log(`unsubscribing from: ${this.subscribeId}`)
+    }
     },
 
     mounted: function() {
@@ -907,23 +928,28 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
         })
      //initiating subscription
      // eslint-disable-next-line
-     this.ps.subscribe(this.subscribeId,callback)
+     this.ps.subscribe(this.subscribeId, actionOnUploadSuccess)
+     console.log(`subscribing to ${this.subscribeId}`)
+     /*
      // eslint-disable-next-line
       .then(response => {
+        //DEFINE THESE ACTIONS IN THE PROPER SYNTAX
+        /*
+        onComplete: (succeeded, failed) => {
+          this.$store.dispatch('updateUploadStatus', false)
+        },
 
-        //FIGURE OUT WHAT TO DO HERE... also must figure out how to tell when upload is complete
-        //and then unsubscribe.
-        /* response looks like this
-        {
-        type: 'EVENT',
-          event_info: { details: 'Finished Adding 17 files to Manifest.' },
-          message_data: 'event_info'
-        }
-        */
+        onInProgress: (id, name, uploadedBytes, totalBytes) => {
+          const uploadListFile = this.getUploadListFile(id)
+
+          Vue.set(uploadListFile, 'totalUploaded', uploadedBytes)
+        },
+
       }).catch(err => {
         console.log('subscribe() faliure: ')
         console.log(err)
       })
+      */
     }
   }
 </script>
