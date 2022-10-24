@@ -25,7 +25,7 @@ class Pennsieve {
     constructor(target='localhost:9000') { 
         //creating a connection stub
         const routeguide = grpc.loadPackageDefinition(packageDefinition);
-        this.client = new routeguide.protos.Agent('localhost:9000', grpc.credentials.createInsecure());
+        this.client = new routeguide.v1.Agent('localhost:9000', grpc.credentials.createInsecure());
     }
 
 
@@ -153,13 +153,25 @@ class Pennsieve {
 
     // Server Endpoints  // TODO: figure out subscribe/unsubscribe
     subscribe(id, callback) {
-        var payload = { id : id };
-        this.client.subscribe(payload, callback);
+        let payload = {id: id};
+        let readable = this.client.subscribe(payload);
+        readable.on('data', (message) => {
+            callback('data', message)
+        });
+        readable.on('close', (message) => {
+            callback('close', message)
+        });
+        readable.on('end', (message) => {
+            callback('end', message)
+        });
+        readable.on('error', (message) => {
+            callback('error', message)
+        });
     }
 
     unsubscribe(id, callback) {
         var payload = { id : id };
-        this.client.unsubscribe(payload, callback);
+        this.client.unsubscribe(payload);
     }
 
 
@@ -202,6 +214,20 @@ class Pennsieve {
                 resolve(data)
             })
         })
+    }
+
+    // version() {
+    //     let payload = {};
+    //     return new Promise ((resolve, reject) => {
+    //         this.client.version(payload, (err, data) => {
+    //             if (err) return reject(err)
+    //             resolve(data)
+    //         })
+    //     })
+    // }
+
+    version(callback) {
+        this.client.version({}, callback);
     }
 
 }

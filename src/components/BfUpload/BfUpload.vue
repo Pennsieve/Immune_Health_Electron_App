@@ -248,7 +248,7 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
     },
 
     computed: {
-      ...mapGetters(['config', 'userToken', 'uploadDestination', 'datasetNodeId']),
+      ...mapGetters(['config', 'userToken', 'uploadDestination', 'datasetNodeId','subscribeId']),
       ...mapState(['onboardingEvents', 'activeOrganization', 'dataset']),
 
       /**
@@ -764,7 +764,7 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
         // Add file count
         this.$store.dispatch('uploadCountAdd', this.fileList.length)
 
-            this.isAddingFiles = false
+        this.isAddingFiles = false
         }
         // close the upload dialog
         this.onClose()
@@ -905,6 +905,25 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
           console.log('useDatset() failure:')
           console.log(err)
         })
+     //initiating subscription
+     // eslint-disable-next-line
+     this.ps.subscribe(this.subscribeId,callback)
+     // eslint-disable-next-line
+      .then(response => {
+
+        //FIGURE OUT WHAT TO DO HERE... also must figure out how to tell when upload is complete
+        //and then unsubscribe.
+        /* response looks like this
+        {
+        type: 'EVENT',
+          event_info: { details: 'Finished Adding 17 files to Manifest.' },
+          message_data: 'event_info'
+        }
+        */
+      }).catch(err => {
+        console.log('subscribe() faliure: ')
+        console.log(err)
+      })
     }
   }
 </script>

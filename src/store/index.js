@@ -140,9 +140,12 @@ const store = new Vuex.Store({
     itsLinkinTime: false,
     uploadCount: 0,
     uploading: false,
-    uploadRemaining: 0
+    uploadRemaining: 0,
+    //Returns random number between 0 and 100. Used to assign subscribe ID for a given user session
+    subscribeId: Math.floor(Math.random() * 100)
   },
   getters: {
+    subscribeId: state => state.subscribeId,
     uploadRemaining: state => state.uploadRemaining,
     uploadCount: state => state.uploadCount,
     uploading: state => state.uploading,
