@@ -116,6 +116,7 @@
           <bf-upload
               :open.sync="uploadDialogOpen"
               :isAddingFiles = "isAddingFiles"
+              :currUploadDest = "selectedStudyName"
               @close-upload-dialog = "closeUploadDialog"
               @refreshMessageFromChild ="refreshMessageRecieved"
           />
@@ -192,10 +193,11 @@ export default {
 
   watch: {
     selectedStudyName: {
-      handler: function () {
+      handler: function (value) {
         // clear the current files in case fetchFiles errors out due to there being no files present (otherwise the files from the previously selected study will still be showing)
         this.clearFiles()
-        this.fetchFiles()
+        let packageId = this.stagingLookup[value]
+        this.fetchFiles(packageId)
       }
     },
   },
@@ -226,9 +228,11 @@ export default {
     }
   },
   mounted: function () {
+    console.log(`mounted() selectedStudyName: ${this.selectedStudyName}`)
     //if no files yet
     this.setSearchPage('FileUpload')
-    this.fetchPackageIds()
+    //this.fetchPackageIds()
+    this.setupFileTable()
     /*
      this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
      EventBus.$on('add-uploaded-file', this.onAddUploadedFile.bind(this))
@@ -254,12 +258,23 @@ export default {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
     refreshMessageRecieved: function(){
-      this.fetchPackageIds()
+      //this.fetchPackageIds()
+      this.setupFileTable()
     },
+
+    setupFileTable: function() {
+      console.log('setupFileTable()')
+      this.fetchPackageIds()
+      let packageId = this.stagingLookup[this.selectedStudyName]
+      console.log(`setupFileTable() packageId: ${packageId}`)
+      this.fetchFiles(packageId)
+    },
+
     /*
       creates a lookup table consisting of mappings from a given study name to its staging and linked collections
     */
     fetchPackageIds: function () {
+      console.log('fetchPackageIds()')
       var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
       axios.get(url).then(async ( { data }) => {
         var temp_dict = data.children
@@ -284,9 +299,17 @@ export default {
             })
           })
         }))
-        .finally(() => {
-          this.fetchFiles()
-        })
+        // .then(() => {
+        //   console.log('fetchPackageIds() /then/ this.stagingLookup:')
+        //   console.log(this.stagingLookup)
+        // })
+        // .finally(() => {
+        //   console.log('fetchPackageIds() /finally/ this.stagingLookup:')
+        //   console.log(this.stagingLookup)
+        //   // let packageId = this.stagingLookup[this.selectedStudyName]
+        //   // console.log(`fetchPackageIds() [finally] packageId: ${packageId}`)
+        //   // this.fetchFiles(packageId)
+        // })
       })
     },
 
@@ -298,7 +321,7 @@ export default {
       //files == collection-files
       console.log(`navigateToFile() id: ${id}`)
       //this.$router.push({name: 'files', params: {fileId: id}})
-      //this.fetchFiles(id)
+      this.fetchFiles(id)
     },
 
     handleNavigateBreadcrumb: function (id) {
@@ -716,13 +739,16 @@ export default {
     },
 
     //gets all files in the dataset within the staged directory on mount
-    fetchFiles: function () {
-      var packageId = this.stagingLookup[this.selectedStudyName]
+    fetchFiles: function (packageId) {
+      console.log(`fetchFiles() packageId: ${packageId}`)
+      //var packageId = this.stagingLookup[this.selectedStudyName]
       var api_url = `https://api.pennsieve.io/packages/${packageId}?api_key=${this.userToken}&includeAncestors=true`;
 
-      console.log('api url is ', api_url)
+      console.log('fetchFiles() api_url: ', api_url)
       this.sendXhr(api_url)
           .then(response => {
+            console.log('fetchFiles() response:')
+            console.log(response)
             this.file = response
             this.fileId = response.content.id
             this.files = response.children.map(file => {

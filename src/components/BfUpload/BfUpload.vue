@@ -718,7 +718,8 @@ import BfUploadPackage from './bf-upload-package/bf-upload-package.vue'
        */
       startUpload: function() {
         // check that there are files in the fileListMap
-        var uploadTargetFolder = this.currUploadDest+'/staging'
+        let uploadTargetFolder = this.currUploadDest+'/staging'
+        console.log(`startUpload() uploadTargetFolder: ${uploadTargetFolder}`)
         let ps = new PennsieveClient()
         // Add to uploadList
         const packageList = this.packageList.slice()
