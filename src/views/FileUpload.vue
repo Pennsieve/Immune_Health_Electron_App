@@ -117,6 +117,7 @@
               :open.sync="uploadDialogOpen"
               :isAddingFiles = "isAddingFiles"
               @close-upload-dialog = "closeUploadDialog"
+              @refreshMessageFromChild ="refreshMessageRecieved"
           />
 
           <bf-drop-info
@@ -220,7 +221,8 @@ export default {
       isCreating: false,
       fileId: '',
       stagingLookup: {},
-      linkedLookup: {}
+      linkedLookup: {},
+      currUploadDest: ''
     }
   },
   mounted: function () {
@@ -251,6 +253,9 @@ export default {
   methods: {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
+    refreshMessageRecieved: function(){
+      this.fetchPackageIds()
+    },
     /*
       creates a lookup table consisting of mappings from a given study name to its staging and linked collections
     */
@@ -261,6 +266,7 @@ export default {
         await Promise.all(temp_dict.map(async (child) => {
           //will just gather top level for now, when you can naviagte to the children, just make 2 dictionary entries with the same process
           var master_name = pathOr('', ['content', 'name'], child)
+          this.currUploadDest = master_name
           var node_id = pathOr('', ['content', 'nodeId'], child)
           //need to make a call to url and make entry
           var le_url = `https://api.pennsieve.io/packages/${node_id}?api_key=${this.userToken}`
