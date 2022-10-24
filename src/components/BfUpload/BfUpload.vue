@@ -715,7 +715,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
        */
       startUpload: function() {
         // check that there are files in the fileListMap
-        var uploadTargetFolder = this.currUploadDest+'/staging'
+        let uploadTargetFolder = this.currUploadDest+'/staging'
+        console.log(`startUpload() uploadTargetFolder: ${uploadTargetFolder}`)
         let ps = new PennsieveClient()
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
