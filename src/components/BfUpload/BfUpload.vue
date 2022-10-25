@@ -768,7 +768,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         // Add file count
         this.$store.dispatch('uploadCountAdd', this.fileList.length)
 
-        this.isAddingFiles = false
+        //this.isAddingFiles = false
         }
         // close the upload dialog
         this.onClose()
@@ -900,6 +900,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       actionOnUploadSuccess: function(type, message){
         console.log(` SUBSCRIBE type: ${type} message:`)
         console.log(message)
+        if (message){
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
         EventBus.$emit('toast', {
           detail: {
@@ -911,6 +912,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       this.ps.unsubscribe(this.subscribeId)
       console.log(`unsubscribing from: ${this.subscribeId}`)
       }
+    }
     },
     // eslint-disable-next-line no-unused-vars
     default: function(type, message){
@@ -919,6 +921,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     },
 
     mounted: function() {
+      console.log("confirmation that mounted block executes")
       this.resetQueue()
       this.ps = new PennsieveClient()
       this.ps.useDatset(this.datasetNodeId)
@@ -932,7 +935,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         })
      //initiating subscription
      // eslint-disable-next-line
-     this.ps.subscribe(this.subscribeId, actionOnUploadSuccess)
+     console.log(`THE SUBSCRIBE ID IS: ${this.subscribeId}`)
+     this.ps.subscribe(this.subscribeId, this.actionOnUploadSuccess())
      console.log(`subscribing to ${this.subscribeId}`)
      /*
      // eslint-disable-next-line
