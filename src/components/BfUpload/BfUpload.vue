@@ -733,7 +733,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
           }
         })
 
-        this.uploadList.push(...packageList)
+        //this.uploadList.push(...packageList)
 
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
@@ -895,8 +895,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       // eslint-disable-next-line no-unused-vars
       uploadOnClickLabel: function(file) {
       },
+      //function detects when subscribe stream returns a 'complete' message and notifies the user
+
       actionOnUploadSuccess: function(type, message){
-        console.log(`type: ${type} message:`)
+        console.log(` SUBSCRIBE type: ${type} message:`)
         console.log(message)
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
         EventBus.$emit('toast', {
@@ -905,7 +907,9 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             type: 'success'
           }
         })
+      //stop listening after success
       this.ps.unsubscribe(this.subscribeId)
+      console.log(`unsubscribing from: ${this.subscribeId}`)
       }
     },
     // eslint-disable-next-line no-unused-vars

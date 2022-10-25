@@ -197,6 +197,7 @@ export default {
         // clear the current files in case fetchFiles errors out due to there being no files present (otherwise the files from the previously selected study will still be showing)
         this.clearFiles()
         let packageId = this.stagingLookup[value]
+        this.currId = packageId
         this.fetchFiles(packageId)
       }
     },
@@ -224,7 +225,8 @@ export default {
       fileId: '',
       stagingLookup: {},
       linkedLookup: {},
-      currUploadDest: ''
+      currUploadDest: '',
+      currId: ''
     }
   },
   mounted: function () {
@@ -266,6 +268,7 @@ export default {
       console.log('setupFileTable()')
       this.fetchPackageIds()
       let packageId = this.stagingLookup[this.selectedStudyName]
+      this.currId = packageId
       console.log(`setupFileTable() packageId: ${packageId}`)
       this.fetchFiles(packageId)
     },
@@ -319,6 +322,7 @@ export default {
      */
     navigateToFile: function (id) {
       //files == collection-files
+      this.currId = id
       console.log(`navigateToFile() id: ${id}`)
       //this.$router.push({name: 'files', params: {fileId: id}})
       this.fetchFiles(id)
@@ -326,6 +330,8 @@ export default {
 
     handleNavigateBreadcrumb: function (id) {
       console.log(`handleNavigateBreadcrumb() id: ${id}`)
+      this.currId = id
+      console.log(`setting Curr ID to ${id}`)
       this.navigateToFile(id)
     },
 
@@ -671,7 +677,8 @@ export default {
               //this.onMoveItems(response)
               console.log(response)
               console.log('selected files are: ', this.selectedFiles)
-              this.fetchFiles()
+
+              this.fetchFiles(this.currId)
             })
             .catch(response => {
               this.handleXhrError(response)
@@ -696,7 +703,7 @@ export default {
     },
 
     createRelationships: function () {
-      console.log('createRelationships()')
+      console.log('createRelastionships()')
       this.isLoading = true
       this.createFileRelationshipRequests()
         .then(() => this.createRelationshipsSuccess())
