@@ -898,7 +898,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       //function detects when subscribe stream returns a 'complete' message and notifies the user
 
       actionOnUploadSuccess: function(type, message){
-        console.log(` SUBSCRIBE type: ${type} message:`)
+        console.log(`actionOnUploadSuccess() type: ${type} message:`)
         console.log(message)
         if (message){
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
@@ -908,9 +908,9 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             type: 'success'
           }
         })
-      //stop listening after success
-      this.ps.unsubscribe(this.subscribeId)
-      console.log(`unsubscribing from: ${this.subscribeId}`)
+      //TODO: stop listening after success
+      //this.ps.unsubscribe(this.subscribeId)
+      //console.log(`unsubscribing from: ${this.subscribeId}`)
       }
     }
     },
@@ -935,29 +935,19 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         })
      //initiating subscription
      // eslint-disable-next-line
-     console.log(`THE SUBSCRIBE ID IS: ${this.subscribeId}`)
-     this.ps.subscribe(this.subscribeId, this.actionOnUploadSuccess())
-     console.log(`subscribing to ${this.subscribeId}`)
-     /*
-     // eslint-disable-next-line
+     console.log(`BfUpload.mounted() subscribeId: ${this.subscribeId}`)
+     this.ps.subscribe(this.subscribeId, function(type, message) {
+       console.log(`BfUpload.agent-message => type: ${type} message:`)
+       console.log(message)
+     })
       .then(response => {
-        //DEFINE THESE ACTIONS IN THE PROPER SYNTAX
-        /*
-        onComplete: (succeeded, failed) => {
-          this.$store.dispatch('updateUploadStatus', false)
-        },
-
-        onInProgress: (id, name, uploadedBytes, totalBytes) => {
-          const uploadListFile = this.getUploadListFile(id)
-
-          Vue.set(uploadListFile, 'totalUploaded', uploadedBytes)
-        },
-
-      }).catch(err => {
-        console.log('subscribe() faliure: ')
+        console.log('BfUpload.mounted() SUCCESS: subscribed to Agent, response:')
+        console.log(response)
+      })
+      .catch(err => {
+        console.log('BfUpload.mounted() FAILURE: subscribe to Agent failed, err:')
         console.log(err)
       })
-      */
     }
   }
 </script>

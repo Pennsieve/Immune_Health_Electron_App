@@ -55,6 +55,14 @@ class PennsieveAgent {
                 )
         })
 
+        ipcMain.on("pennsieveSubscribeRequest", (event, args) => {
+            this.ps.subscribe(args.subscribeId, (type, message) => {
+                let subscriber = event
+                subscriber.sender.send("pennsieveAgentMessage", {status: 'success', result: {type: type, message: message}})
+            })
+            event.sender.send("pennsieveSubscribeResponse", {status: 'success', result: {}})
+        })
+
     }
 
     answer(err, response) {

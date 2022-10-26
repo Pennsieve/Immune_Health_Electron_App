@@ -1,5 +1,7 @@
 // (c) 2022, The University of Pennsylvania
 
+// import {ipcRenderer} from "electron";
+
 /**
  * @classdesc
  * PennsieveClient - an Electron renderer-side interface to the Pennsieve Agent.
@@ -63,6 +65,23 @@ class PennsieveClient {
                 }
             })
             window.api.pennsieveUploadManifestRequest(manifestId)
+        })
+    }
+
+    subscribe(subscribeId, callback) {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveSubscribeResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveAgentMessage(function(event, response) {
+                callback(response.result.type, response.result.message)
+            })
+            window.api.pennsieveSubscribeRequest(subscribeId)
         })
     }
 }
