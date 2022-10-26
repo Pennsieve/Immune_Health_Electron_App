@@ -936,10 +936,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
      //initiating subscription
      // eslint-disable-next-line
      console.log(`BfUpload.mounted() subscribeId: ${this.subscribeId}`)
-     this.ps.subscribe(this.subscribeId, function(type, message) {
-       console.log(`BfUpload.agent-message => type: ${type} message:`)
-       console.log(message)
-     })
+     this.ps.subscribe(this.subscribeId, this.actionOnUploadSuccess)
       .then(response => {
         console.log('BfUpload.mounted() SUCCESS: subscribed to Agent, response:')
         console.log(response)
