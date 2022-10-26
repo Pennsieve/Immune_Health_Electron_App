@@ -246,6 +246,13 @@ export default {
     if (!Object.keys(this.stagingLookup).length && !Object.keys(this.linkedLookup).length){
     }
     */
+    EventBus.$emit('toast', {
+      detail: {
+        msg: 'this is the File Upload page',
+        type: 'success'
+      }
+    })
+
 
   },
   destroyed: function () {
