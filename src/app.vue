@@ -12,6 +12,7 @@
 import IhHeader from '@/components/shared/IhHeader.vue'
 import SearchAllData from '@/components/SearchAllData/SearchAllData.vue'
 import { mapGetters, mapActions } from 'vuex'
+import globalMessageHandler from "@/mixins/global-message-handler";
 
 export default {
   name: 'app',
@@ -19,6 +20,9 @@ export default {
     IhHeader,
     SearchAllData
   },
+  mixins: [
+    globalMessageHandler
+  ],
   computed: {
     ...mapGetters(['selectedStudy', 'searchModalVisible'])
   },
