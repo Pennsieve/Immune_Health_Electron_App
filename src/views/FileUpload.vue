@@ -202,7 +202,14 @@ export default {
         this.fetchFiles(packageId)
         //console.log("fetching files")
       }
-    }
+    },
+    loadingPackageIds: {
+      handler: function(value) {
+        if (value === false) {
+          this.setupFileTable()
+        }
+      }
+    },    
   },
   data() {
     return {
@@ -228,7 +235,8 @@ export default {
       stagingLookup: {},
       linkedLookup: {},
       currUploadDest: '',
-      currId: ''
+      currId: '',
+      loadingPackageIds: true
     }
   },
   mounted: function () {
@@ -236,7 +244,7 @@ export default {
     //if no files yet
     this.setSearchPage('FileUpload')
     //this.fetchPackageIds()
-    this.setupFileTable()
+    this.fetchPackageIds()
     /*
      this.$el.addEventListener('dragenter', this.onDragEnter.bind(this))
      EventBus.$on('add-uploaded-file', this.onAddUploadedFile.bind(this))
@@ -272,7 +280,6 @@ export default {
     setupFileTable: function() {
       this.clearFiles()
       console.log('setupFileTable()')
-      this.fetchPackageIds()
       let packageId = this.stagingLookup[this.selectedStudyName]
       this.currId = packageId
       console.log(`setupFileTable() packageId: ${packageId}`)
@@ -284,6 +291,7 @@ export default {
     */
     fetchPackageIds: function () {
       console.log('fetchPackageIds()')
+      this.loadingPackageIds = true
       var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
       axios.get(url).then(async ( { data }) => {
         var temp_dict = data.children
@@ -308,6 +316,7 @@ export default {
             })
           })
         }))
+        this.loadingPackageIds = false
         // .then(() => {
         //   console.log('fetchPackageIds() /then/ this.stagingLookup:')
         //   console.log(this.stagingLookup)
