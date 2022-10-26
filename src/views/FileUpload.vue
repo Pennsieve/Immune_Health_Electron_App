@@ -196,11 +196,13 @@ export default {
       handler: function (value) {
         // clear the current files in case fetchFiles errors out due to there being no files present (otherwise the files from the previously selected study will still be showing)
         this.clearFiles()
+        //console.log("clearing files")
         let packageId = this.stagingLookup[value]
         this.currId = packageId
         this.fetchFiles(packageId)
+        //console.log("fetching files")
       }
-    },
+    }
   },
   data() {
     return {
@@ -274,6 +276,7 @@ export default {
     },
 
     setupFileTable: function() {
+      this.clearFiles()
       console.log('setupFileTable()')
       this.fetchPackageIds()
       let packageId = this.stagingLookup[this.selectedStudyName]
