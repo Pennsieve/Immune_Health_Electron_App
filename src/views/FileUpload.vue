@@ -196,9 +196,11 @@ export default {
       handler: function (value) {
         // clear the current files in case fetchFiles errors out due to there being no files present (otherwise the files from the previously selected study will still be showing)
         this.clearFiles()
+        //console.log("clearing files")
         let packageId = this.stagingLookup[value]
         this.currId = packageId
         this.fetchFiles(packageId)
+        //console.log("fetching files")
       }
     },
     loadingPackageIds: {
@@ -207,7 +209,7 @@ export default {
           this.setupFileTable()
         }
       }
-    },
+    },    
   },
   data() {
     return {
@@ -255,13 +257,7 @@ export default {
     }
     */
 
-    // TODO: remove this after we get upload complete messages 'toasting'
-    EventBus.$emit('toast', {
-      detail: {
-        msg: 'this is the File Upload page',
-        type: 'success'
-      }
-    })
+
 
 
   },
@@ -282,6 +278,7 @@ export default {
     },
 
     setupFileTable: function() {
+      this.clearFiles()
       console.log('setupFileTable()')
       let packageId = this.stagingLookup[this.selectedStudyName]
       this.currId = packageId

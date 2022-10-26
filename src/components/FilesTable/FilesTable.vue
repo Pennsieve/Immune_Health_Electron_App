@@ -16,6 +16,22 @@
       </span>
       <ul class="selection-actions unstyled">
       <template v-if="withinUploadMenu">
+      <li class="mr-24">
+        <button
+          v-if="!searchAllDataMenu"
+          class="linked btn-selection-action"
+          :disabled="datasetLocked"
+          @click="$emit('delete')"
+        >
+          <svg-icon
+            class="mr-8"
+            icon="icon-trash"
+            height="16"
+            width="16"
+          />
+          Delete
+        </button>
+      </li>
       </template>
       <template v-else>
       <li class="mr-24">
