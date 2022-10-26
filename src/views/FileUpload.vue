@@ -246,6 +246,8 @@ export default {
     if (!Object.keys(this.stagingLookup).length && !Object.keys(this.linkedLookup).length){
     }
     */
+
+    // TODO: remove this after we get upload complete messages 'toasting'
     EventBus.$emit('toast', {
       detail: {
         msg: 'this is the File Upload page',

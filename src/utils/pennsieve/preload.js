@@ -24,5 +24,14 @@ contextBridge.exposeInMainWorld("api", {
     },
     pennsieveUploadManifestResponse: function(func) {
         ipcRenderer.on("pennsieveUploadManifestResponse", (event, ...args) => func(event, ...args))
-    }
+    },
+    pennsieveSubscribeRequest: function(subscribeId) {
+        ipcRenderer.send("pennsieveSubscribeRequest", {subscribeId: subscribeId});
+    },
+    pennsieveSubscribeResponse: function(func) {
+        ipcRenderer.on("pennsieveSubscribeResponse", (event, ...args) => func(event, ...args))
+    },
+    pennsieveAgentMessage: function(func) {
+        ipcRenderer.on("pennsieveAgentMessage", (event, ...args) => func(event, ...args))
+    },
 });
