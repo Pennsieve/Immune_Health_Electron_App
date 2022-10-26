@@ -249,13 +249,7 @@ export default {
     }
     */
 
-    // TODO: remove this after we get upload complete messages 'toasting'
-    EventBus.$emit('toast', {
-      detail: {
-        msg: 'this is the File Upload page',
-        type: 'success'
-      }
-    })
+
 
 
   },
