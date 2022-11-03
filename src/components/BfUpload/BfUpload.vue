@@ -905,14 +905,14 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
           EventBus.$emit('toast', {
             detail: {
-              msg: 'Your files are being uplaoded',
+              msg: 'Your files are being uploaded',
               type: 'success'
             }
           })
         }
         //need to verify that substring is captured
         else if (message.type == 'EVENT' && txt.includes("Closing stream for client ID:")){
-
+        console.log('finished upload')
         EventBus.$emit('toast', {
           detail: {
             msg: 'Your files have successfully uploaded',

@@ -150,6 +150,7 @@ import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecond
 import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
 import BfUpload from '../components/BfUpload/BfUpload.vue'
+import ProgressModal from '../components/BfUpload/ProgressModal.vue'
 import Sorter from '../mixins/sorter/index.js'
 import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
@@ -169,7 +170,8 @@ export default {
     BfButton,
     BfUpload,
     FilesTable,
-    BreadcrumbNavigation
+    BreadcrumbNavigation,
+    ProgressModal
     //BfDeleteDialog
   },
   mixins: [
