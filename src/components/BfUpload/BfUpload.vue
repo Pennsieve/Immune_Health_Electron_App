@@ -254,7 +254,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     },
 
     computed: {
-      ...mapGetters(['config', 'userToken', 'uploadDestination', 'datasetNodeId','subscribeId']),
+      ...mapGetters(['config', 'userToken', 'uploadDestination', 'subscribeId']),
       ...mapState(['onboardingEvents', 'activeOrganization', 'dataset']),
 
       /**
@@ -924,7 +924,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       console.log("confirmation that mounted block executes")
       this.resetQueue()
       this.ps = new PennsieveClient()
-      this.ps.useDatset(this.datasetNodeId)
+      this.ps.useDatset(this.config.datasetId)
         .then(response => {
           this.datasetIdInUse = response.dataset_id
         })

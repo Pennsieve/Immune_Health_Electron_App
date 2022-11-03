@@ -1,0 +1,7 @@
+{
+  "apiUrl": "https://api.pennsieve.io",
+  "api2Url": "https://api2.pennsieve.io",
+  "environment": "prod",
+  "datasetId": "N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc",
+  "studyModelId": "33a61ee7-fce9-4f0c-823c-78368ed8dc42"
+}

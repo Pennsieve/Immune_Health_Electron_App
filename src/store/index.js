@@ -1,14 +1,16 @@
 import Vue from "vue";
 import Vuex from "vuex";
+import * as site from '../../site-config/site.json'
 import axios from 'axios'
 import moment from 'moment'
+import graphBrowseModule from './modules/graphBrowseModule'
 import { compose, pathOr, propOr, isEmpty, defaultTo, find, propEq } from 'ramda'
 import toQueryParams from '@/utils/toQueryParams.js'
 import PennsieveClient from '@/utils/pennsieve/client.js'
 Vue.use(Vuex);
 
-const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
-const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
+// const IMMUNE_HEALTH_DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
+// const STUDY_CONCEPT_ID = '33a61ee7-fce9-4f0c-823c-78368ed8dc42'
 //WHAT IS THIS???
 const DATASET_ID = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4'
 const IMMUNE_HEALTH_ORG_ID = 'N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2'
@@ -73,6 +75,7 @@ const getQueryParams = (params, apiKey) => {
 }
 
 const initialState = () => ({
+  config: site,
   datasetSearchParams: {
     limit: 25,
     offset: 0,
@@ -99,6 +102,7 @@ const initialState = () => ({
 //const uploadDestination = 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/files/N:collection:fda8d13c-658f-475a-b90a-cd7a79ef7b87'
 const store = new Vuex.Store({
   state: {
+    config: site,
     profile: null,
     allStudies: [],
     selectedStudy: {},
@@ -112,9 +116,6 @@ const store = new Vuex.Store({
       offset: 0
     },
     scientificUnits: [],
-    //hardcoded value for testing...random record to link files to'
-    datasetId: DATASET_ID,
-    datasetNodeId: IMMUNE_HEALTH_DATASET_ID,
     dataset: {},
     uploadDestination: 'https://app.pennsieve.io/N:organization:aab5058e-25a4-43f9-bdb1-18396b6920f2/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/records/9c579bef-6ce0-4632-be1c-a95aadc982c4/30096499-ccd3-4af3-8cb2-1ef9fba359f4',
     datasetActivity: [],
@@ -413,7 +414,7 @@ const store = new Vuex.Store({
       console.log("attempting to fetch organization activity")
       const datasetId = state.datasetId
       //const endpoint = `${rootState.config.apiUrl}/datasets/${datasetId}/changelog/timeline`
-      const endpoint = `https://api.pennsieve.io/datasets/${IMMUNE_HEALTH_DATASET_ID}/changelog/timeline`
+      const endpoint = `${state.config.apiUrl}/datasets/${state.config.datasetId}/changelog/timeline`
       const apiKey =  propOr('', 'token', state.profile)
       console.log(apiKey)
       //const apiKey = this.userToken
@@ -494,9 +495,9 @@ const store = new Vuex.Store({
     async setSelectedStudy({ commit }, data) {
       await commit('SET_SELECTED_STUDY', data)
     },
-    async fetchStudies({ commit }) {
+    async fetchStudies({state, commit }) {
       const apiKey = this.state.profile.token
-      const studiesUrl = `https://api.pennsieve.io/models/datasets/${IMMUNE_HEALTH_DATASET_ID}/concepts/${STUDY_CONCEPT_ID}/instances?api_key=${apiKey}`
+      const studiesUrl = `${state.config.apiUrl}/models/datasets/${state.config.datasetId}/concepts/${state.config.studyModelId}/instances?api_key=${apiKey}`
 
       let responseData = []
       await axios.get(studiesUrl).then(response => {
@@ -519,9 +520,9 @@ const store = new Vuex.Store({
     setLinkingTargets({ commit }, data) {
       commit('SET_LINKING_TARGETS', data)
     },
-    async setScientificUnits ({ commit }) {
+    async setScientificUnits ({state, commit }) {
       const apiKey = this.state.profile.token
-      const scientificUnitsUrl = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/properties/units?api_key=${apiKey}`
+      const scientificUnitsUrl = `${state.config.apiUrl}/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/properties/units?api_key=${apiKey}`
       let responseData = []
       await axios.get(scientificUnitsUrl).then(({data}) => {
         data.push({
@@ -539,9 +540,9 @@ const store = new Vuex.Store({
     /**
      * Retrieves all members of an organization
      */
-    async fetchOrgMembers ({ commit }) {
+    async fetchOrgMembers ({state, commit }) {
       const apiKey = this.state.profile.token
-      const url = `https://api.pennsieve.io/organizations/${IMMUNE_HEALTH_ORG_ID}/members?api_key=${apiKey}`
+      const url = `${state.config.apiUrl}/organizations/${state.config.datasetId}/members?api_key=${apiKey}`
       if (!url) {
         return
       }
@@ -552,6 +553,9 @@ const store = new Vuex.Store({
       })
     },
   },
+  modules: {
+    graphBrowseModule
+  }
 
 });
 

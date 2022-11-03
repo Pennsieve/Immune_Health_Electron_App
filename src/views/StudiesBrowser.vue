@@ -63,7 +63,7 @@
 
       <br>
       <div>
-        <graph-browser
+        <graph-browser2
             @record-clicked="updateClickedRecordsFilters"
         />
       </div>
@@ -135,7 +135,9 @@
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
 import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
-import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
+// import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
+import GraphBrowser2 from '@/components/GraphBrowser2/GraphBrowser2.vue'
+
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
 import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
 import GetFileProperty from '@/mixins/get-file-property'
@@ -150,11 +152,12 @@ export default {
   name: 'StudiesBrowser',
   components: {
     IhSubheader,
-    GraphBrowser,
+    // GraphBrowser,
     BfButton,
     BfNavigationSecondary,
     FilesTable,
-    PaginationPageMenu
+    PaginationPageMenu,
+    GraphBrowser2
   },
   mixins: [GetFileProperty, Request, FormatDate],
   mounted() {
