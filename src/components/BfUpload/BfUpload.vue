@@ -901,7 +901,18 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
         console.log(message)
         if (message){
+        var txt = message.event_info
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
+          EventBus.$emit('toast', {
+            detail: {
+              msg: 'Your files are being uplaoded',
+              type: 'success'
+            }
+          })
+        }
+        //need to verify that substring is captured
+        else if (message.type == 'EVENT' && txt.includes("Closing stream for client ID:")){
+
         EventBus.$emit('toast', {
           detail: {
             msg: 'Your files have successfully uploaded',

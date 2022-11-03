@@ -209,7 +209,7 @@ export default {
           this.setupFileTable()
         }
       }
-    },    
+    },
   },
   data() {
     return {
