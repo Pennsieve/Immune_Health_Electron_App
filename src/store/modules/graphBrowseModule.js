@@ -1,12 +1,8 @@
+
 const initialState = () => ({
-    showModels: ['patient', 'visits', 'samples'],
+    showModels: ['experiment','patient', 'visits', 'samples'],
     models: [],
-    filters: [{
-        "model": "study",
-        "property": "sstudyid",
-        "operator": "STARTS WITH",
-        "value": "CEIRR_flu"
-    }],
+    filters: [],
     records: {},
 })
   
@@ -25,6 +21,23 @@ export const mutations = {
     SET_FILTER(state, filter){
         state.filters = filter
     },
+    REMOVE_FILTER(state, id) {
+        const objIndex = state.filters.findIndex((obj => obj.id == id));
+        state.filters.splice(objIndex, 1)
+
+    },
+    CREATE_FILTER(state, filter) {
+        state.filters.push(filter)
+    },
+    UPDATE_FILTER(state, filter) {
+        const objIndex = state.filters.findIndex((obj => obj.id == filter.id));
+
+        state.filters[objIndex].model = filter.model
+        state.filters[objIndex].property = filter.property
+        state.filters[objIndex].operator = filter.operator
+        state.filters[objIndex].value = filter.value
+
+    }
 
 }
 
@@ -52,14 +65,23 @@ export const actions = {
             return Promise.reject(err)
         }
     },
-    fetchRecords: async({commit, rootState}, modelName) => {
+    fetchRecords: async({commit, rootState, state}, modelName) => {
         try {
 
             const url = `${rootState.config.api2Url}/metadata/query?dataset_id=${rootState.config.datasetId}`
 
+            let filters = state.filters.map(value => {
+                return {
+                    "model": value.model,
+                    "property": value.property,
+                    "operator": value.operator,
+                    "value": value.value
+                }
+            })
+
             let queryBody = {
                 model: modelName,
-                filters: rootState.graphBrowseModule.filters
+                filters: filters
             }
 
             const resp = await fetch(url, {
@@ -88,6 +110,20 @@ export const actions = {
     },
     setFilters: ({commit}, filter) => {
         commit('SET_FILTER', filter)
+    },
+    createOrUpdateFilter: ({commit, state}, filter) => {
+        const objIndex = state.filters.findIndex((obj => obj.id == filter.id));
+        if (objIndex >= 0) {
+            commit('UPDATE_FILTER', filter)
+        } else {
+            commit('CREATE_FILTER', filter)
+        }
+    },
+    removeFilter: ({commit, state}, id) => {
+        const objIndex = state.filters.findIndex((obj => obj.id == id));
+        if (objIndex >= 0) {
+            commit('REMOVE_FILTER', id)
+        }
     }
 }
 

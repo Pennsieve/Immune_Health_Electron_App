@@ -34,34 +34,34 @@
       </ih-subheader>
 
       <div class="browser-content">
-              <div v-if="Object.keys(selectedStudy).length != 0" >
+<!--              <div v-if="Object.keys(selectedStudy).length != 0" >-->
 
-        <div class="mb-16">
-          <bf-button  @click="clearAllSelections()">
-            Clear selections
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 0">
-          <bf-button v-on:click="filterSearch('patient')">
-            Filter Search Patients
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 1">
-          <bf-button v-on:click="filterSearch('visits')">
-            Filter Search Visits
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 2">
-          <bf-button v-on:click="filterSearch('samples')">
-            Filter Search Samples
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 3">
-          <h2>Clear filters and selections to start another search</h2>
-        </div>
-      </div>
+<!--        <div class="mb-16">-->
+<!--          <bf-button  @click="clearAllSelections()">-->
+<!--            Clear selections-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 0">-->
+<!--          <bf-button v-on:click="filterSearch('patient')">-->
+<!--            Filter Search Patients-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 1">-->
+<!--          <bf-button v-on:click="filterSearch('visits')">-->
+<!--            Filter Search Visits-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 2">-->
+<!--          <bf-button v-on:click="filterSearch('samples')">-->
+<!--            Filter Search Samples-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 3">-->
+<!--          <h2>Clear filters and selections to start another search</h2>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <br>
+<!--      <br>-->
       <div>
         <graph-browser2
             @record-clicked="updateClickedRecordsFilters"

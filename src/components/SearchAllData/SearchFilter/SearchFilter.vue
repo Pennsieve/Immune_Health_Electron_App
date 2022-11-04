@@ -510,11 +510,13 @@ export default {
       // Set properties loading state
       this.isLoadingProperties = true
 
-      const baseUrl = `https://api.pennsieve.io/models/v2/organizations/655/autocomplete/models/${this.filter.target}`
+      const baseUrl = `${this.config.apiUrl}/models/v2/organizations/${this.config.organizationId}/autocomplete/models/${this.filter.target}`
 
-      const url = this.filter.datasetIntId
-        ? `${baseUrl}?datasetId=${this.filter.datasetIntId}`
-        : baseUrl
+      // const url = this.filter.datasetIntId
+      //   ? `${baseUrl}?datasetId=${this.filter.datasetIntId}`
+      //   : baseUrl
+
+      const url = `${baseUrl}?datasetId=${this.config.datasetIntId}`
 
       const header = {
         headers: { Authorization: `Bearer ${this.userToken}`}
@@ -638,16 +640,14 @@ export default {
 
       // Reset current value suggestions
       this.valueSuggestions = []
-      let url = `https://api.pennsieve.io/models/v2/organizations/655/autocomplete/${this.filter.target}/${this.filter.property}/values?prefix=${prefix}`
+      let url = `${this.config.apiUrl}/models/v2/organizations/${this.config.organizationId}/autocomplete/${this.filter.target}/${this.filter.property}/values?prefix=${prefix}`
       const unit = this.propertyHasUnit(this.filter.propertyType)
 
       if ( unit !== '' && unit !== null) {
         url += `&unit=${unit}`
       }
 
-      if(this.filter.datasetIntId) {
-        url += `&datasetId=${this.filter.datasetIntId}`
-      }
+      url += `&datasetId=${this.config.datasetIntId}`
 
       const header = {
         headers: { Authorization: `Bearer ${this.userToken}`}

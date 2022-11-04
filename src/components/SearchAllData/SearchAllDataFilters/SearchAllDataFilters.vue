@@ -131,7 +131,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/css/_variables.scss';
+@import '../../../assets/css/_variables.scss';
 
 .filter-actions {
   display: flex;

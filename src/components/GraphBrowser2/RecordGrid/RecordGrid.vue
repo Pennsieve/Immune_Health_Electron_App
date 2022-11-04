@@ -2,6 +2,10 @@
       <div
           class="data-model-graph"
           element-loading-background="#fff">
+
+        <div class="header">
+          {{model.name}}
+        </div>
         <div ref="canvas_wrapper" class="chart-wrapper">
           <canvas ref="mainCanvas" class="mainCanvas"/>
           <canvas ref="hiddenCanvas" class="hiddenCanvas"/>
@@ -66,7 +70,14 @@
       watch: {
         studyName: function () {
           this.fetchRecords(this.model.name)
-        }
+        },
+        filters: {
+          deep: true,
+          handler: function() {
+            console.log("new filters")
+            this.fetchRecords(this.model.name)
+          }
+        },
       },
   
       computed: {
@@ -75,6 +86,9 @@
         ]),
         ...mapState([
           'selectedStudy',
+        ]),
+        ...mapState('graphBrowseModule',[
+            'filters'
         ]),
 
 

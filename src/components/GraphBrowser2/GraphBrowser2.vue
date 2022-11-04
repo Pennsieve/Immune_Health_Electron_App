@@ -1,6 +1,29 @@
 <template>
+    <div>
 
-    <div class="model-grid-array">
+      <search-all-data-filters
+          ref="filters"
+          v-model="filterOptions"
+          class="mb-16"
+          :models="modelOptions"
+          @delete-filter="deleteFilter"
+      />
+
+      <div class="mb-24">
+        <button
+            class="linked"
+            @click="addFilter"
+        >
+          <svg-icon
+              name="icon-plus"
+              height="24"
+              width="24"
+          />
+          Add Filter
+        </button>
+      </div>
+
+      <div class="model-grid-array">
         <RecordGrid
             v-for="model in filteredModels"
             :key="model.name"
@@ -9,7 +32,11 @@
             :study-name="selectedStudy.values[0].value"
         >
         </RecordGrid>
+      </div>
+
     </div>
+
+
 </template>
   
 <script>
@@ -17,12 +44,15 @@
   import { mapActions, mapState, mapGetters } from 'vuex'
   
   import RecordGrid from '@/components/GraphBrowser2/RecordGrid/RecordGrid.vue'
-  
+  import SearchAllDataFilters from "@/components/SearchAllData/SearchAllDataFilters/SearchAllDataFilters";
+  import {v1} from "uuid";
+
     export default {
       name: 'GraphBrowser2',
   
       components: {
         RecordGrid,
+        SearchAllDataFilters,
       },
   
       data() {
@@ -31,6 +61,8 @@
           isFullscreen: false,
           modelsListVisible: true,
           resetModelsList: false,
+          filterOptions: [],
+          studyFilter: null,
           recordConfig:{
             nrElemPerCol: 10,
             recordSize: 15,
@@ -60,6 +92,15 @@
         filteredModels: function() {
           return this.models.filter(model => this.showModels.includes(model.name))
         },
+
+        modelOptions: function() {
+          let options =  this.models.map(model => {
+                const record = {value: model.name, label: model.name}
+                return record
+              }
+          )
+          return options
+        }
       },
 
       watch: {
@@ -72,12 +113,37 @@
         selectedStudy: {
           handler: function(newValue) {
             console.log("UPDATE SELECTED STUDY")
-            this.setFilters([{
-              "model": "study",
-              "property": "sstudyid",
-              "operator": "STARTS WITH",
-              "value": newValue.values[0].value
-            }])
+            if (this.studyFilter) {
+              this.studyFilter.value = newValue.values[0].value
+            } else {
+              this.studyFilter = {
+                id: v1(),
+                model: "study",
+                property: "sstudyid",
+                operator: "STARTS WITH",
+                value: newValue.values[0].value
+              }
+            }
+
+            this.createOrUpdateFilter(this.studyFilter)
+          }
+        },
+
+        filterOptions: {
+          deep: true,
+          handler: function(evt) {
+            for (const j of evt) {
+              if (j.value != "") {
+                const filter = {
+                  id:       j.id,
+                  model:    j.target,
+                  property: j.property,
+                  operator: j.operation,
+                  value:    j.value
+                }
+                this.createOrUpdateFilter(filter)
+              }
+            }
           }
         }
       },
@@ -113,11 +179,36 @@
         ...mapActions('graphBrowseModule', [
             'fetchModels',
             'clearRecords',
-            'setFilters'
+            'setFilters',
+            'createOrUpdateFilter',
+            'removeFilter'
         ]),
 
-        clickme: function() {
-          this.clearRecords("patient")
+        /**
+         * Add filter
+         */
+        addFilter: function() {
+          const newFilter = {
+            id: v1(),
+            type: 'model',
+            target: this.filteredModels[0].name,
+            targetLabel: this.filteredModels[0].name,
+            property: '',
+            propertyLabel: '',
+            propertyType: '',
+            operation: '',
+            operationLabel: '',
+            operators: [],
+            value: '',
+            isInvalid: false,
+            lockTarget: false
+          }
+          this.filterOptions.push(newFilter)
+
+        },
+        deleteFilter: function(idx) {
+          this.removeFilter(this.filterOptions[idx].id)
+          this.filterOptions.splice(idx, 1)
         },
 
         /**
