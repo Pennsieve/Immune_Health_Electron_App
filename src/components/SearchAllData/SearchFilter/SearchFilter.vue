@@ -81,7 +81,7 @@
             v-if="filter.operation"
             ref="filterInput"
             v-model="filter.value"
-            class="filter-criteria"
+            class="filter-criteria-value"
             :property-type="filter.propertyType"
             :value-suggestions="valueSuggestions"
             :loading="isLoadingValueSuggestions"
@@ -717,6 +717,17 @@ export default {
     flex: none
   }
 }
+.filter-criteria-value {
+  width:100%;
+  &:last-child {
+    flex: 1;
+    margin-right: 0;
+  }
+  &.no-flex {
+    flex: none
+  }
+}
+
 .msg-invalid {
   color: $error-color
 }
