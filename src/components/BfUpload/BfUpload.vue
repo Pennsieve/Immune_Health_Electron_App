@@ -405,7 +405,6 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         this.sendRefreshMessage()
         this.clearUploadedFiles()
         this.$emit('close-upload-dialog')
-        this/$emit('')
       },
 
       onOverlayClick: function() {
@@ -745,7 +744,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
           let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
-          var fileListLen = length(fileList)
+          var fileListLen = fileList.length
           this.filesLengthMessage(fileListLen)
           // create a manifest passing in the list of files
           //this.uploadTargetFolder
@@ -911,7 +910,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
         console.log(message)
         if (message){
-        var txt = message.event_info
+        //var txt = message.event_info.details
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status != 'COMPLETE'){
           console.log('uploading files in progress')
           this.sendSubscribePing(message)
@@ -924,8 +923,12 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             }
           })
         }
+        else if (message.type == 'EVENT'){
+          console.log('THE EVENT IS >>>> ',message)
+        }
         //need to verify that substring is captured
-        else if (message.type == 'EVENT' && txt.includes("Closing stream for client ID:")){
+        /*
+        else if (message.type == 'EVENT' && message.event_info.details.includes('Closing stream for client ID:')){
         console.log('finished upload')
         EventBus.$emit('toast', {
           detail: {
@@ -938,6 +941,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       this.ps.unsubscribe(this.subscribeId)
       console.log(`unsubscribing from: ${this.subscribeId}`)
       }
+      */
     }
     },
     // eslint-disable-next-line no-unused-vars
