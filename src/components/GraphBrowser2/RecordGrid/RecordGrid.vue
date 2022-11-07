@@ -122,7 +122,6 @@
               for (let r in this.selectedRecords) {
                 if (!(recordIdArr.includes(this.selectedRecords[r].id))) {
                   while (this.selectedRecords[mRecords[iInsert].id] != undefined) {
-                    console.log('already exists')
                     iInsert -= 1
                   }
 
