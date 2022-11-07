@@ -171,9 +171,7 @@
          */
         addFilter: function(input) {
 
-          if (input) {
-            this.filterOptions.push(input)
-          } else {
+          if (input instanceof MouseEvent) {
             const newFilter = {
               id: v1(),
               type: 'model',
@@ -190,7 +188,10 @@
               lockTarget: false
             }
             this.filterOptions.push(newFilter)
+          } else if(input) {
+            this.filterOptions.push(input)
           }
+
 
         },
         deleteFilter: function(idx) {
