@@ -4,7 +4,7 @@
       name="fade"
     >
       <div
-        v-if="Object.keys(model).length"
+        v-if="Object.keys(item).length"
         class="record-tooltip-wrap"
       >
 <!--        <h2>-->
@@ -22,9 +22,9 @@
 <!--            />-->
 <!--          </router-link>-->
 <!--        </h2>-->
-        <h2>{{ model.displayName }}</h2>
+        <h2>{{ item.record.props.displayName }}</h2>
         <ul class="unstyled">
-          <li v-for="[key, value] of Object.entries(model.properties)" :key="key">
+          <li v-for="[key, value] of Object.entries(item.record.props)" :key="key">
             <span><b>{{ key }}:</b> {{ value }}</span>
           </li>
 <!--          <li>-->
@@ -64,7 +64,7 @@
     ],
 
     props: {
-      model: {
+      item: {
         type: Object,
         default: function() {
           return {}
@@ -98,7 +98,7 @@
        * @return {Object | String}
        */
       modelSearchLink: function() {
-        const modelId = propOr('', 'id', this.model)
+        const modelId = propOr('', 'id', this.item.record)
 
         return {
           name: 'concept-search',

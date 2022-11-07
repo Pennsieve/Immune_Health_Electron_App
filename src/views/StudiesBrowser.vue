@@ -1,9 +1,10 @@
 <template>
   <div class="container">
-    <span class="sidebar-container">
-      <bf-navigation-secondary :studies="allStudies" />
-    </span>
-    <span class="selected-content-container">
+    <div class="sidebar-container">
+      <detail-panel />
+    </div>
+
+    <div class="selected-content-container">
       <ih-subheader previousRoute="/">
         <template v-if="selectedStudy" slot="text">
           <div>
@@ -127,14 +128,14 @@
       </div>
 
 
-    </span>
+    </div>
   </div>
 </template>
 
 <script>
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
-import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
+// import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
 // import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
 import GraphBrowser2 from '@/components/GraphBrowser2/GraphBrowser2.vue'
 
@@ -147,14 +148,15 @@ import { mapActions, mapGetters, mapState } from 'vuex'
 import { pathOr, clone, mergeRight } from 'ramda'
 import { v1 } from 'uuid'
 import { fetchVisitsFilesRelatedToStudy, fetchSamplesFilesRelatedToStudy } from '@/utils/fetchRecords'
+import DetailPanel from "@/components/GraphBrowser2/DetailPanel/DetailPanel";
 
 export default {
   name: 'StudiesBrowser',
   components: {
+    DetailPanel,
     IhSubheader,
     // GraphBrowser,
     BfButton,
-    BfNavigationSecondary,
     FilesTable,
     PaginationPageMenu,
     GraphBrowser2
@@ -340,8 +342,6 @@ export default {
 @import '../assets/css/_variables.scss';
 .sidebar-container {
   width: auto;
-  min-width: 10rem;
-  max-width: 20rem;
 }
 .selected-content-container {
   flex-grow: 1;

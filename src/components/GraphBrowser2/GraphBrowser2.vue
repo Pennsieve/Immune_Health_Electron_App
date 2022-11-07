@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div >
 
       <search-all-data-filters
           ref="filters"
@@ -29,13 +29,12 @@
             :key="model.name"
             :model="model"
             :record-config="recordConfig"
-            :study-name="selectedStudy.values[0].value"
+            @select="selectRecord"
         >
         </RecordGrid>
       </div>
 
     </div>
-
 
 </template>
   
@@ -62,7 +61,6 @@
           modelsListVisible: true,
           resetModelsList: false,
           filterOptions: [],
-          studyFilter: null,
           recordConfig:{
             nrElemPerCol: 10,
             recordSize: 15,
@@ -74,9 +72,6 @@
       },
   
       computed: {
-        ...mapState([
-            'selectedStudy',
-        ]),
         ...mapState('graphBrowseModule',[
             'showModels',
             'models',
@@ -110,24 +105,6 @@
             this.fetchModels()
           }
         },
-        selectedStudy: {
-          handler: function(newValue) {
-            console.log("UPDATE SELECTED STUDY")
-            if (this.studyFilter) {
-              this.studyFilter.value = newValue.values[0].value
-            } else {
-              this.studyFilter = {
-                id: v1(),
-                model: "study",
-                property: "sstudyid",
-                operator: "STARTS WITH",
-                value: newValue.values[0].value
-              }
-            }
-
-            this.createOrUpdateFilter(this.studyFilter)
-          }
-        },
 
         filterOptions: {
           deep: true,
@@ -157,6 +134,8 @@
       mounted: function() {
         document.addEventListener('fullscreenchange', this.onFullscreenchange.bind(this))
 
+        console.log("mounted")
+
         this.unwatch = this.$store.watch(
             (state,getters) => getters['graphBrowseModule/getRecords'], () => {
               console.log("WHeLP")
@@ -181,8 +160,12 @@
             'clearRecords',
             'setFilters',
             'createOrUpdateFilter',
-            'removeFilter'
+            'removeFilter',
         ]),
+
+        selectRecord: function(evt) {
+          console.log("event: ",evt)
+        },
 
         /**
          * Add filter
@@ -242,6 +225,7 @@
 
     .model-grid-array {
       display: flex;
+      flex-wrap: wrap;
     }
     .graph-browser {
       height: 100%;

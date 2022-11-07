@@ -1,36 +1,46 @@
 <template>
       <div
           class="data-model-graph"
-          element-loading-background="#fff">
+          element-loading-background="#fff"
+          >
 
-        <div class="header">
-          {{model.name}}
+        <div class="header" @click="selectModel">
+          <div>
+            {{model.name}}
+          </div>
+
         </div>
         <div ref="canvas_wrapper" class="chart-wrapper">
-          <canvas ref="mainCanvas" class="mainCanvas"/>
+          <div class="gridInfo"></div>
+          <canvas ref="mainCanvas" :class="{ 'mainCanvas': true, 'select': !shouldHideTooltip }"/>
           <canvas ref="hiddenCanvas" class="hiddenCanvas"/>
         </div>
-<!--        <record-tooltip-->
-<!--            :model="hoveredModel"-->
-<!--            @mouseenter.native="shouldHideTooltip = false"-->
-<!--            @mouseleave.native="hideModelTooltip"-->
-<!--        />-->
-      <div ref="custom"></div>
+
+        <record-tooltip ref="recordToolTip"
+            :item="hoveredRecord"
+            @mouseenter.native="shouldHideTooltip = false"
+            @mouseleave.native="hideModelTooltip"
+        />
+
+        <div ref="custom"></div>
       </div>
 </template>
 
 <script>  
     import debounce from 'lodash/debounce'
     import {mapActions, mapGetters, mapState} from 'vuex'
+    import { select } from 'd3-selection';
     import * as d3 from 'd3'
+    import RecordTooltip from "@/components/DataModelGraph/RecordTooltip/RecordTooltip";
 
     export default {
       name: 'RecordGrid',
 
+      components: {
+        RecordTooltip,
+      },
+
       props: {
-        studyName: {
-          type: String
-        },
         model: {
           type: Object,
           default: () => {
@@ -63,32 +73,39 @@
           drawTimer:null,
           xOffset: 0,
           yOffset: 0,
-          modelHeaderHeight: 0
+          modelHeaderHeight: 0,
+          hoveredRecord: {},
+          shouldHideTooltip: true
         }
       },
 
       watch: {
-        studyName: function () {
-          this.fetchRecords(this.model.name)
-        },
         filters: {
           deep: true,
           handler: function() {
             console.log("new filters")
             this.fetchRecords(this.model.name)
+            this.fetchSelectedRecords(this.model.name)
           }
         },
+        selectedRecord: {
+          deep: true,
+          handler: function() {
+            console.log("new selected Record")
+            this.fetchSelectedRecords(this.model.name)
+          }
+        }
+
       },
   
       computed: {
         ...mapGetters('graphBrowseModule',[
-            'getRecordsByModel'
-        ]),
-        ...mapState([
-          'selectedStudy',
+            'getRecordsByModel',
+            'getSelectedRecordsByModel'
         ]),
         ...mapState('graphBrowseModule',[
-            'filters'
+            'filters',
+            'selectedRecord'
         ]),
 
 
@@ -128,9 +145,11 @@
         // Subscribe to changes to the records of the model.
         this.unsubscribe = this.$store.subscribe((mutation) => {
 
-          if  (this.model && mutation.payload.model === this.model.name) {
-            console.log("TRIGGERED ", this.model.name)
+          let needsUpdate = mutation.type=='graphBrowseModule/SET_RECORDS_FOR_MODEL' ||
+              mutation.type =='graphBrowseModule/SET_SELECTED_RECORDS_FOR_MODEL'
+          if  (this.model && needsUpdate && mutation.payload.model === this.model.name) {
             this.records = this.getRecordsByModel(this.model.name)
+            this.selectedRecords = this.getSelectedRecordsByModel(this.model.name)
             this.recordbind()
 
             let mainCanvas = d3.select(this.$refs.mainCanvas)
@@ -146,6 +165,10 @@
           }
         })
 
+        this.setupMouseOver()
+        this.setupMouseClick()
+
+
       },
   
       beforeDestroy: function() {
@@ -156,7 +179,10 @@
   
       methods: {
         ...mapActions('graphBrowseModule', [
-          'fetchRecords',
+            'fetchRecords',
+            'fetchSelectedRecords',
+            'setSelectedModel',
+            'setSelectedRecord',
         ]),
 
         /**
@@ -171,6 +197,126 @@
           },
           100
         ),
+
+        selectModel: function() {
+          this.setSelectedModel(this.model.name)
+        },
+
+        setupMouseOver: function() {
+          const vm = this
+          const hiddenCanvas = d3.select(this.$refs.hiddenCanvas)
+          d3.select(this.$refs.mainCanvas).on('mousemove', function (d) {
+
+            vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
+            // Get mouse positions from the main canvas.
+            const cCoord = this.getBoundingClientRect();
+            const mouseY = d.clientY - cCoord.top;
+            const mouseX = d.clientX - cCoord.left;
+
+            var hiddenCtx = hiddenCanvas.node().getContext('2d');
+            var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
+            var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+            var nodeData = vm.colorToNode[colKey];
+            if (nodeData) {
+              // eslint-disable-next-line
+              vm.onHoverElement(nodeData, d.clientX, d.clientY)
+            } else {
+              vm.hideModelTooltip()
+            }
+
+          });
+        },
+
+        setupMouseClick: function() {
+          const vm = this
+          const hiddenCanvas = d3.select(this.$refs.hiddenCanvas)
+          d3.select(this.$refs.mainCanvas).on('click', function(d) {
+
+            vm.draw(hiddenCanvas, true); // Draw the hidden canvas.
+            // Get mouse positions from the main canvas.
+            const cCoord = this.getBoundingClientRect();
+            const mouseY = d.clientY - cCoord.top;
+            const mouseX = d.clientX - cCoord.left;
+
+            var hiddenCtx = hiddenCanvas.node().getContext('2d');
+            var col = hiddenCtx.getImageData(mouseX, mouseY, 1, 1).data;
+            var colKey = 'rgb(' + col[0] + ',' + col[1] + ',' + col[2] + ')';
+            // eslint-disable-next-line
+            var nodeData = vm.colorToNode[colKey];
+
+            if (nodeData) {
+              vm.onClickRecord(nodeData)
+            }
+          })
+        },
+
+        onClickRecord: function(nodeData ){
+          this.setSelectedRecord(nodeData.record)
+        },
+
+        // eslint-disable-next-line
+        onHoverElement: function(nodeData, x, y) {
+          // eslint-disable-next-line no-unreachable
+          if (nodeData) {
+            // eslint-disable-next-line
+            // if (!nodeData.details) {
+            //   // eslint-disable-next-line
+            //   // console.log('onHoverElement() nodeData.details: no details yet')
+            //   const modelId = nodeData.model
+            //   if (this.recordPool[modelId].unMapped.length === 0 && !this.recordPool[modelId].isPending) {
+            //     this.fetchRecords(modelId)
+            //   } else {
+            //     const unMapped = this.recordPool[modelId].unMapped
+            //     const randomIndex =Math.floor(Math.random() * unMapped.length);
+            //     // eslint-disable-next-line
+            //     nodeData.details = this.recordPool[modelId].records[ unMapped[randomIndex]]
+            //     unMapped.splice(randomIndex, 1)
+            //   }
+            // }
+            // eslint-disable-next-line
+
+            this.selectedNode = nodeData
+
+            const tooltip = select(this.$refs.recordToolTip.$el)
+            // const tooltip = this.$refs.recordToolTip.$el
+
+            this.shouldHideTooltip = false
+            // eslint-disable-next-line
+            // this.hoveredModel = nodeData.details
+            // if (nodeData.details) {
+            //
+            //   this.hoveredModel = {
+            //     displayName: nodeData.parent.name,
+            //     properties: nodeData.details ? this.recordForDisplay(nodeData.details) : []
+            //   }
+            // }
+
+            this.hoveredRecord = nodeData
+
+            tooltip.style('transform', `translate(${x}px, ${y + 20}px)`)
+          }
+          else {
+            // there is no nodeData or this nodeData does not have a parent (i.e., it is a model)
+            this.hideModelTooltip()
+          }
+        },
+
+        /**
+         * Hide tooltip if it should be hidden
+         * `shouldHideTooltip` is set to `true` on `mouseleave` of the circle node or tooltip
+         * `shouldHideTooltip` is set to `false` on `mouseenter` of the circle node or tooltip
+         */
+        hideModelTooltip: function() {
+          this.shouldHideTooltip = true
+          clearTimeout(this.hideModelTooltipTimeout)
+
+          this.hideModelTooltipTimeout = setTimeout(() => {
+            if (this.shouldHideTooltip) {
+              this.hoveredRecord = {}
+              this.shouldHideTooltip = false
+            }
+          }, 100)
+        },
 
         genColor: function() {
           let ret = [];
@@ -195,23 +341,27 @@
           let recs = []
           if (numElem > 0) {
             recs = d3.range(startIndex, startIndex + numElem ).map(function(el) {
+
+              let inSelected = false
+              if (vm.selectedRecords) {
+                inSelected = vm.records[el].id in vm.selectedRecords
+              }
+
               return {
                 id: el,
                 recordIndex: el-startIndex,
-                recordId: vm.records[el],
+                record: vm.records[el],
+                inSelected: inSelected
               }
             })
           }
 
-
-          console.log(recs)
           return recs
         },
 
         recordbind: function() {
 
           let elem =  this.getCanvasElements()
-          console.log("ELEMENTS: ", elem)
           var join = this.custom.selectAll('custom.record')
               .data(elem);
 
@@ -246,7 +396,13 @@
               .attr('height', function() {
                 return vm.recordConfig.recordSize
               })
-              .attr('fillStyle', '#5039F7')
+              .attr('fillStyle', function(d) {
+                if (d.inSelected) {
+                  return 'red'
+                } else {
+                  return '#5039F7'
+                }
+              })
               .attr('fillStyleHidden', function(d) {
                 d.hiddenCol = vm.genColor();
                 vm.colorToNode[d.hiddenCol] = d;
@@ -317,16 +473,35 @@
 
   @import '../../../assets/css/_variables.scss';
 
+  .gridInfo {
+    min-width: 42px;
+    background: $purple_tint;
+    //border-right: 1px solid $purple_1;
+  }
+
+  .header {
+    cursor: pointer;
+    background: $purple_tint;
+    border-bottom: 2px solid $purple_1;
+    height: 32px;
+  }
+
   .data-model-graph {
     height: 100%;
     position: relative;
-    width: 100%;
+    margin: 8px;
+
   }
 
   .chart-wrapper {
     background: #fff;
     position: relative;
     width: 100%;
+    display: flex;
+  }
+
+  .mainCanvas.select {
+    cursor: pointer;
   }
 
   .hiddenCanvas {
