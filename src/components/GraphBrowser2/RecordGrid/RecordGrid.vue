@@ -2,6 +2,7 @@
       <div
           class="data-model-graph"
           element-loading-background="#fff"
+          @mouseleave="hideModelTooltip"
           >
 
         <div class="header" @click="selectModel">
@@ -19,7 +20,6 @@
         <record-tooltip ref="recordToolTip"
             :item="hoveredRecord"
             @mouseenter.native="shouldHideTooltip = false"
-            @mouseleave.native="hideModelTooltip"
         />
 
         <div ref="custom"></div>
@@ -32,6 +32,7 @@
     import { select } from 'd3-selection';
     import * as d3 from 'd3'
     import RecordTooltip from "@/components/DataModelGraph/RecordTooltip/RecordTooltip";
+    import {v1} from "uuid";
 
     export default {
       name: 'RecordGrid',
@@ -67,15 +68,18 @@
           nextCol: 1,  // used to generate unique colors for hidden canvas
           colorToNode: {},  //used to map colors to nodes
           canvasSize: {
-            width: 200,
-            height: 200
+            width: 248,
+            height: 248,
           },
           drawTimer:null,
           xOffset: 0,
           yOffset: 0,
           modelHeaderHeight: 0,
           hoveredRecord: {},
-          shouldHideTooltip: true
+          shouldHideTooltip: true,
+          records: [],
+          selectedRecords: []
+
         }
       },
 
@@ -83,7 +87,6 @@
         filters: {
           deep: true,
           handler: function() {
-            console.log("new filters")
             this.fetchRecords(this.model.name)
             this.fetchSelectedRecords(this.model.name)
           }
@@ -91,7 +94,6 @@
         selectedRecord: {
           deep: true,
           handler: function() {
-            console.log("new selected Record")
             this.fetchSelectedRecords(this.model.name)
           }
         }
@@ -107,6 +109,36 @@
             'filters',
             'selectedRecord'
         ]),
+
+        mergedRecords: function() {
+          if (this.selectedRecords ) {
+
+            let recordIdArr = this.records.map(value => value.id)
+
+            let iInsert = this.records.length - 1
+            let mRecords = this.records.slice()
+
+            if (mRecords.length > 0) {
+              for (let r in this.selectedRecords) {
+                if (!(recordIdArr.includes(this.selectedRecords[r].id))) {
+                  while (this.selectedRecords[mRecords[iInsert].id] != undefined) {
+                    console.log('already exists')
+                    iInsert -= 1
+                  }
+
+                  mRecords[iInsert] = this.selectedRecords[r]
+                  iInsert -= 1
+                }
+              }
+            }
+
+            return mRecords
+
+          } else {
+            return this.records
+          }
+
+        },
 
 
         cellSize: function() {
@@ -150,6 +182,11 @@
           if  (this.model && needsUpdate && mutation.payload.model === this.model.name) {
             this.records = this.getRecordsByModel(this.model.name)
             this.selectedRecords = this.getSelectedRecordsByModel(this.model.name)
+
+
+
+
+
             this.recordbind()
 
             let mainCanvas = d3.select(this.$refs.mainCanvas)
@@ -245,13 +282,68 @@
             var nodeData = vm.colorToNode[colKey];
 
             if (nodeData) {
+
+              if (vm.selectedRecord && vm.selectedRecord.id === nodeData.record.id) {
+
+                let propLabel = "ID"
+                let operationLabel = "STARTS WITH"
+                let valueLabel = nodeData.record.id
+
+                // TODO: Take this out of this component or have some sort of generalized approach.
+                switch (vm.model.name) {
+                  case "study":
+                      propLabel = "study ID"
+                      operationLabel = "equals"
+                      valueLabel = nodeData.record.props.sstudyid
+                      break;
+                  case "visits":
+                      propLabel = "visit event"
+                      operationLabel = "equals"
+                      valueLabel = nodeData.record.props.visit_event
+                      break;
+                  case "patient":
+                    propLabel = "name"
+                    operationLabel = "equals"
+                    valueLabel = nodeData.record.props.name
+                    break;
+                  case "samples":
+                    propLabel = "sample ID"
+                    operationLabel = "equals"
+                    valueLabel = nodeData.record.props.study_sample_id
+                    break;
+                }
+
+                const newFilter = {
+                  id: v1(),
+                  type: 'model',
+                  target: vm.model.name,
+                  targetLabel: vm.model.name,
+                  property: "`@id`",
+                  propertyLabel: propLabel,
+                  propertyType: {format: null, type: "string"},
+                  operation: 'STARTS WITH',
+                  operationLabel: operationLabel,
+                  operators: [{label: "equals", value:"="},{label: "does not equal", value:"<>"},{label: "starts with", value:"STARTS WITH"}],
+                  value: nodeData.record.id,
+                  valueLabel: valueLabel,
+                  isTrusted: true,
+                  lockTarget: true
+                }
+                vm.$emit('addFilter', newFilter)
+              }
+
+
               vm.onClickRecord(nodeData)
+
+
+
             }
           })
         },
 
         onClickRecord: function(nodeData ){
           this.setSelectedRecord(nodeData.record)
+          this.setSelectedModel(this.model.name)
         },
 
         // eslint-disable-next-line
@@ -335,7 +427,7 @@
         getCanvasElements: function() {
 
           let startIndex = 0
-          let numElem = this.records.length < 2500 ? this.records.length : 2500
+          let numElem = this.mergedRecords.length < 2500 ? this.mergedRecords.length : 2500
 
           let vm = this
           let recs = []
@@ -344,14 +436,20 @@
 
               let inSelected = false
               if (vm.selectedRecords) {
-                inSelected = vm.records[el].id in vm.selectedRecords
+                inSelected = vm.mergedRecords[el].id in vm.selectedRecords
+              }
+
+              let isSelected = false
+              if (vm.selectedRecord) {
+                isSelected = vm.mergedRecords[el].id == vm.selectedRecord.id
               }
 
               return {
                 id: el,
                 recordIndex: el-startIndex,
-                record: vm.records[el],
-                inSelected: inSelected
+                record: vm.mergedRecords[el],
+                inSelected: inSelected,
+                isSelected: isSelected
               }
             })
           }
@@ -398,10 +496,14 @@
               })
               .attr('fillStyle', function(d) {
                 if (d.inSelected) {
-                  return 'red'
+                  return '#F67325'
                 } else {
-                  return '#5039F7'
+                  return '#08B3AF'
                 }
+              })
+              .attr('isSelected', function(d) {
+                return d.isSelected
+
               })
               .attr('fillStyleHidden', function(d) {
                 d.hiddenCol = vm.genColor();
@@ -416,41 +518,53 @@
           // // MODEL-AREAS)
           var ctx = canvas.node().getContext('2d');
           ctx.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height); // Clear the canvas.
-          // var elements = this.custom.selectAll('custom.model');// Grab all elements you bound data to in the databind() function.
-          //
-          // let vm = this
-          // elements.each(function() { // For each virtual/custom element...
-          //   var node = d3.select(this);   // This is each individual element in the loop.
-          //
-          //   // Render Model label sections
-          //   ctx.fillStyle = hidden ? node.attr('fillStyleHidden') : node.attr('fillStyle');
-          //   ctx.fillRect(node.attr('x'), node.attr('y') - vm.modelHeaderHeight , node.attr('width'), vm.modelHeaderHeight);
-          //
-          //   if (!hidden) {
-          //     // render background rectangles
+
               ctx.fillStyle = '#EEEBFE';
               ctx.fillRect(0,0,this.canvasSize.width,this.canvasSize.height)
-              // ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));
 
-          //     // render Text
-          //     ctx.font = '12px "Helvetica Neue"';
-          //     ctx.fillStyle= '#34259F'
-          //     let xCoord = parseInt(node.attr('x')) + 2
-          //     let yCoord = parseInt(node.attr('y')) - 5
-          //     let displayName = node.attr('modelName')
-          //     if (displayName.length > 10) {
-          //       displayName = displayName.substring(0, 10) + "..."
-          //     }
-          //     ctx.fillText(displayName, xCoord, yCoord);
-          //   }
-          // })
 
           // RECORDS
           let els = this.custom.selectAll('custom.record');// Grab all elements you bound data to in the databind() function.
           els.each(function() { // For each virtual/custom element...
             let node = d3.select(this);   // This is each individual element in the loop.
             ctx.fillStyle = hidden ? node.attr('fillStyleHidden') : node.attr('fillStyle');
-            ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));  // Here you retrieve the position of the node and apply it to the fillRect context function which will fill and paint the square.
+            // if (node.attr('isSelected') == "true") {
+            //   ctx.fillStyle = "#34259F"
+            //   ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));  // Here you retrieve the position of the node and apply it to the fillRect context function which will fill and paint the square.
+
+              let x = Number(node.attr('x'))
+              let y = Number(node.attr('y'))
+              let radius = 3
+              let w = Number(node.attr('width'))
+              let h = Number(node.attr('height'))
+
+              let r = x + w;
+              let b = y + h;
+
+
+              ctx.strokeStyle="#34259F";
+              // ctx.fillStyle="#34259F";
+              ctx.lineWidth="3";
+              ctx.beginPath()
+              ctx.moveTo(x+radius, y);
+              ctx.lineTo(r-radius, y);
+              ctx.quadraticCurveTo(r, y, r, y+radius);
+              ctx.lineTo(r, y+h-radius);
+              ctx.quadraticCurveTo(r, b, r-radius, b);
+              ctx.lineTo(x+radius, b);
+              ctx.quadraticCurveTo(x, b, x, b-radius);
+              ctx.lineTo(x, y+radius);
+              ctx.quadraticCurveTo(x, y, x+radius, y);
+              ctx.fill()
+
+              if (node.attr('isSelected') == "true") {
+                 ctx.stroke();
+              }
+
+            // } else {
+            //   ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));  // Here you retrieve the position of the node and apply it to the fillRect context function which will fill and paint the square.
+            //
+            // }
           })
 
 
@@ -484,6 +598,12 @@
     background: $purple_tint;
     border-bottom: 2px solid $purple_1;
     height: 32px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 8px;
+    color: $gray_6;
+    font-size: larger;
   }
 
   .data-model-graph {

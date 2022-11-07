@@ -80,7 +80,7 @@
           <search-filter-input
             v-if="filter.operation"
             ref="filterInput"
-            v-model="filter.value"
+            v-model="getFilterLabel"
             class="filter-criteria-value"
             :property-type="filter.propertyType"
             :value-suggestions="valueSuggestions"
@@ -271,6 +271,14 @@ export default {
     ]),
 
     ...mapGetters(['scientificUnits', 'userToken']),
+
+    getFilterLabel: function() {
+      if (this.filter.valueLabel) {
+        return this.filter.valueLabel
+      } else {
+        return this.filter.value
+      }
+    },
 
     /**
      * Compute if the filter is invalid

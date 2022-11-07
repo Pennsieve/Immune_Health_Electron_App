@@ -4,19 +4,7 @@
 </template>
 
 <script>
-import {
-  fetchFilteredPatientsMetadataRelatedToStudy,
-  fetchFilteredVisitsMetadataRelatedToStudy,
-  fetchFilteredSamplesMetadataRelatedToStudy,
-  //fetchFilteredExperimentsMetadataRelatedToStudy
-} from '@/utils/fetchRecords'
-import axios from 'axios'
-import * as d3 from 'd3'
-import { select } from 'd3-selection';
-import { v1 } from 'uuid'
-import { pathOr, propOr } from 'ramda'
-import debounce from 'lodash/debounce'
-import { mapState, mapActions, mapGetters } from 'vuex'
+
 import Request from '@/mixins/request'
 import RecordTooltip from "@/components/DataModelGraph/RecordTooltip/RecordTooltip";
 let zoom

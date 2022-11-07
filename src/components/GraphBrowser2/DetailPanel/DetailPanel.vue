@@ -5,23 +5,22 @@
         {{ selectedModel }}
       </div>
     </div>
-    <div v-for="record in this.records"
-         :key="record.id"
-         class="study-container heading1">
+    <div class="list-container">
+      <div v-for="record in this.records"
+           :key="record.id"
+           @click="selectRecord(record) "
+           :class="{ 'study-container': true, 'heading1': true, 'selected-study': isSelected(record.id) }">
 
-      {{getTitle(record)}}
+        {{getTitle(record)}}
+      </div>
     </div>
 
-<!--    <template v-if="studies.length > 0">-->
-<!--&lt;!&ndash;      <div v-for="study in studies" class="study-container heading1" :class="getStudyName(study) === getStudyName(selectedStudy) ? 'selected-study' : 'not-selected-study'" :key="study.sstudyid" v-on:click="studySelected">&ndash;&gt;-->
-<!--&lt;!&ndash;        {{ getStudyName(study) }}&ndash;&gt;-->
-<!--&lt;!&ndash;      </div>&ndash;&gt;-->
-<!--    </template>-->
+
   </div>
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'DetailPanel',
@@ -65,6 +64,10 @@ export default {
   },
 
   methods: {
+    ...mapActions('graphBrowseModule', [
+        'setSelectedRecord'
+    ]),
+
     getTitle: function(record) {
 
       switch (record.model) {
@@ -79,16 +82,30 @@ export default {
         default:
           return record.id
       }
-    }
+    },
+    isSelected: function(id) {
+      if (this.selectedRecord){
+        return this.selectedRecord.id == id
+      } else {
+        return false
+      }
+
+    },
+    selectRecord: function(record) {
+        this.setSelectedRecord(record)
+    },
   },
   computed: {
     ...mapGetters("graphBrowseModule",[
         'recordsForSelectedModel'
     ]),
     ...mapState("graphBrowseModule",[
-        'selectedModel'
-    ])
-  }
+        'selectedModel',
+        'selectedRecord'
+    ]),
+
+  },
+
 }
 </script>
 
@@ -97,6 +114,12 @@ export default {
 .main-container {
   border-right: 1px solid $light-gray;
   width: 320px;
+
+}
+
+.list-container {
+  max-height: 1500px;
+  overflow: scroll;
 }
 
 .study-container {

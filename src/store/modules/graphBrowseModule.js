@@ -1,6 +1,6 @@
 
 const initialState = () => ({
-    showModels: ['experiment','patient', 'visits', 'samples', 'study'],
+    showModels: ['patient', 'visits', 'samples', 'study'],
     models: [],
     filters: [],
     records: {},

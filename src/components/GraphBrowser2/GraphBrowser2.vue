@@ -30,6 +30,7 @@
             :model="model"
             :record-config="recordConfig"
             @select="selectRecord"
+            @addFilter="addFilter"
         >
         </RecordGrid>
       </div>
@@ -63,9 +64,9 @@
           filterOptions: [],
           recordConfig:{
             nrElemPerCol: 10,
-            recordSize: 15,
+            recordSize: 20,
             cellOffset: 4,
-            groupSpacing: 8,
+            groupSpacing: 12,
             numberOfRows: 4,
           },
         }
@@ -134,8 +135,6 @@
       mounted: function() {
         document.addEventListener('fullscreenchange', this.onFullscreenchange.bind(this))
 
-        console.log("mounted")
-
         this.unwatch = this.$store.watch(
             (state,getters) => getters['graphBrowseModule/getRecords'], () => {
               console.log("WHeLP")
@@ -170,23 +169,28 @@
         /**
          * Add filter
          */
-        addFilter: function() {
-          const newFilter = {
-            id: v1(),
-            type: 'model',
-            target: this.filteredModels[0].name,
-            targetLabel: this.filteredModels[0].name,
-            property: '',
-            propertyLabel: '',
-            propertyType: '',
-            operation: '',
-            operationLabel: '',
-            operators: [],
-            value: '',
-            isInvalid: false,
-            lockTarget: false
+        addFilter: function(input) {
+
+          if (input) {
+            this.filterOptions.push(input)
+          } else {
+            const newFilter = {
+              id: v1(),
+              type: 'model',
+              target: this.filteredModels[0].name,
+              targetLabel: this.filteredModels[0].name,
+              property: '',
+              propertyLabel: '',
+              propertyType: '',
+              operation: '',
+              operationLabel: '',
+              operators: [],
+              value: '',
+              isInvalid: false,
+              lockTarget: false
+            }
+            this.filterOptions.push(newFilter)
           }
-          this.filterOptions.push(newFilter)
 
         },
         deleteFilter: function(idx) {

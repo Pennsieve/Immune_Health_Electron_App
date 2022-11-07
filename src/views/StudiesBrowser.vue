@@ -147,7 +147,6 @@ import FormatDate from '@/mixins/format-date'
 import { mapActions, mapGetters, mapState } from 'vuex'
 import { pathOr, clone, mergeRight } from 'ramda'
 import { v1 } from 'uuid'
-import { fetchVisitsFilesRelatedToStudy, fetchSamplesFilesRelatedToStudy } from '@/utils/fetchRecords'
 import DetailPanel from "@/components/GraphBrowser2/DetailPanel/DetailPanel";
 
 export default {
@@ -182,7 +181,7 @@ export default {
   watch: {
     filesFilters: {
       handler: async function() {
-        await this.fetchFiles()
+        // await this.fetchFiles()
       },
       immediate: true
     },
@@ -273,40 +272,6 @@ export default {
      */
     updateClickedRecordsFilters(clickedFilters) {
       this.clickedRecordsFilters = clickedFilters
-    },
-    async fetchFiles() {
-      this.isLoadingFiles = true
-      let response = []
-      if (this.selectedButton === 'visits') {
-        response = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.filesFilters, this.userToken, this.filesTableLimit, this.filesTableOffset)
-          .catch(response => {
-            this.handleXhrError(response)
-          })
-          .finally(() => {
-            this.isLoadingFiles = false
-          })
-      } else {
-        response = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.filesFilters, this.userToken, this.filesTableLimit, this.filesTableOffset)
-          .catch(response => {
-            this.handleXhrError(response)
-          })
-          .finally(() => {
-            this.isLoadingFiles = false
-          })
-      }
-      if (response === undefined) {
-        return
-      }
-      this.tableResultsTotalCount = response.totalCount
-      this.fileResults = response.packages.map(file => {
-        if (!file.storage) {
-          file.storage = 0
-        }
-        file.icon =
-          file.icon || this.getFilePropertyVal(file.properties, 'icon')
-        file.subtype = this.getSubType(file)
-        return file
-      })
     },
     getSubType: function(file) {
       const subtype = this.getFilePropertyVal(file.properties, 'subtype')

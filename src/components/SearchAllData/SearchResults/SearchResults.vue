@@ -80,11 +80,7 @@ import Request from '@/mixins/request/index'
 import FormatDate from '@/mixins/format-date'
 import BfButton from '@/components/shared/BfButton.vue'
 import { mergeRight, clone } from 'ramda'
-import {
-  fetchFilteredVisitsMetadataRelatedToStudy,
-  fetchFilteredSamplesMetadataRelatedToStudy,
-  fetchFilteredExperimentsMetadataRelatedToStudy
-} from '@/utils/fetchRecords'
+
 export default {
   name: 'SearchResults',
   components: {
