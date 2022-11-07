@@ -127,6 +127,11 @@
               :file="file"
           />
 
+          <progress-modal
+            :open.sync="progressDialogOpen"
+            @close-progress-dialog = "closeProgressDialog"
+          />
+
           <!--
           <bf-delete-dialog
             ref="deleteDialog"
@@ -232,6 +237,7 @@ export default {
       isAddingFiles: false,
       hasFiles: true,
       uploadDialogOpen: false,
+      progressDialogOpen: false,
       isCreating: false,
       fileId: '',
       stagingLookup: {},
@@ -240,6 +246,11 @@ export default {
       currId: '',
       loadingPackageIds: true
     }
+  },
+  created(){
+    this.$on('open-progress-dialog', (data) => {
+      this.progressDialogOpen = data;
+    })
   },
   mounted: function () {
     console.log(`mounted() selectedStudyName: ${this.selectedStudyName}`)
@@ -380,6 +391,10 @@ export default {
 
     closeUploadDialog: function () {
       this.uploadDialogOpen = false;
+    },
+
+    closeProgressDialog: function() {
+      this.progressDialogOpen = false;
     },
 
     processFile: function () {

@@ -349,6 +349,12 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       sendRefreshMessage: function(){
         this.$emit('refreshMessageFromChild')
       },
+      filesLengthMessage: function(filesL) {
+        this.$emit('fileMessageSent',filesL)
+      },
+      sendSubscribePing: function(message) {
+        this.$emit('subscribePing',message)
+      },
       /**
        * Compute if array has items
        */
@@ -399,6 +405,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         this.sendRefreshMessage()
         this.clearUploadedFiles()
         this.$emit('close-upload-dialog')
+        this/$emit('')
       },
 
       onOverlayClick: function() {
@@ -738,7 +745,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
           let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
-
+          var fileListLen = length(fileList)
+          this.filesLengthMessage(fileListLen)
           // create a manifest passing in the list of files
           //this.uploadTargetFolder
           ps.createManifest(fileList, uploadTargetFolder)
@@ -770,6 +778,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
         //this.isAddingFiles = false
         }
+        this.$emit('open-progress-dialog','true')
         // close the upload dialog
         this.onClose()
       },
@@ -898,11 +907,16 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       //function detects when subscribe stream returns a 'complete' message and notifies the user
 
       actionOnUploadSuccess: function(type, message){
+
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
         console.log(message)
         if (message){
         var txt = message.event_info
-        if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
+        if (message.type == 'UPLOAD_STATUS' && message.upload_status.status != 'COMPLETE'){
+          console.log('uploading files in progress')
+          this.sendSubscribePing(message)
+        }
+        else if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
           EventBus.$emit('toast', {
             detail: {
               msg: 'Your files are being uploaded',
@@ -919,9 +933,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             type: 'success'
           }
         })
+      this.ps = new PennsieveClient()
       //TODO: stop listening after success
-      //this.ps.unsubscribe(this.subscribeId)
-      //console.log(`unsubscribing from: ${this.subscribeId}`)
+      this.ps.unsubscribe(this.subscribeId)
+      console.log(`unsubscribing from: ${this.subscribeId}`)
       }
     }
     },
