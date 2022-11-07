@@ -110,18 +110,23 @@
         filterOptions: {
           deep: true,
           handler: function(evt) {
-            for (const j of evt) {
-              if (j.value != "") {
-                const filter = {
-                  id:       j.id,
-                  model:    j.target,
-                  property: j.property,
-                  operator: j.operation,
-                  value:    j.value
+            if (evt.length == 0) {
+              this.setFilters([])
+            }else {
+              for (const j of evt) {
+                if (j.value != "") {
+                  const filter = {
+                    id:       j.id,
+                    model:    j.target,
+                    property: j.property,
+                    operator: j.operation,
+                    value:    j.value
+                  }
+                  this.createOrUpdateFilter(filter)
                 }
-                this.createOrUpdateFilter(filter)
               }
             }
+
           }
         }
       },
