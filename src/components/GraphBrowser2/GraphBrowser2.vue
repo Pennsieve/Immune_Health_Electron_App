@@ -64,7 +64,7 @@
           filterOptions: [],
           recordConfig:{
             nrElemPerCol: 10,
-            recordSize: 20,
+            recordSize: 16,
             cellOffset: 4,
             groupSpacing: 12,
             numberOfRows: 4,

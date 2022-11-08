@@ -68,8 +68,8 @@
           nextCol: 1,  // used to generate unique colors for hidden canvas
           colorToNode: {},  //used to map colors to nodes
           canvasSize: {
-            width: 248,
-            height: 248,
+            width: 208,
+            height: 208,
           },
           drawTimer:null,
           xOffset: 0,
