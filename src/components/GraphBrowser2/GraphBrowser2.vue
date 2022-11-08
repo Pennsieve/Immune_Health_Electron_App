@@ -116,6 +116,8 @@
               for (const j of evt) {
                 if (j.valueLabel != "") {
 
+                  // If a value exist for filter (when searching for different value then shown)
+                  // then replace label by value in the vuex filters.
                   let value = j.valueLabel
                   if (j.value) {
                     value = j.value
