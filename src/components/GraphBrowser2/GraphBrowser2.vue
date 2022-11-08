@@ -114,13 +114,19 @@
               this.setFilters([])
             }else {
               for (const j of evt) {
-                if (j.value != "") {
+                if (j.valueLabel != "") {
+
+                  let value = j.valueLabel
+                  if (j.value) {
+                    value = j.value
+                  }
+
                   const filter = {
                     id:       j.id,
                     model:    j.target,
                     property: j.property,
                     operator: j.operation,
-                    value:    j.value
+                    value:    value
                   }
                   this.createOrUpdateFilter(filter)
                 }

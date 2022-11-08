@@ -518,8 +518,8 @@
           var ctx = canvas.node().getContext('2d');
           ctx.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height); // Clear the canvas.
 
-              ctx.fillStyle = '#EEEBFE';
-              ctx.fillRect(0,0,this.canvasSize.width,this.canvasSize.height)
+              // ctx.fillStyle = '#EEEBFE';
+              // ctx.fillRect(0,0,this.canvasSize.width,this.canvasSize.height)
 
 
           // RECORDS
@@ -588,14 +588,12 @@
 
   .gridInfo {
     min-width: 42px;
-    background: $purple_tint;
+    //background: $purple_tint;
     //border-right: 1px solid $purple_1;
   }
 
   .header {
     cursor: pointer;
-    background: $purple_tint;
-    border-bottom: 2px solid $purple_1;
     height: 32px;
     display: flex;
     justify-content: flex-start;
@@ -609,11 +607,13 @@
     height: 100%;
     position: relative;
     margin: 8px;
+    border: 1px solid $gray_3;
+    border-radius: 8px;
 
   }
 
   .chart-wrapper {
-    background: #fff;
+    //background: #fff;
     position: relative;
     width: 100%;
     display: flex;
