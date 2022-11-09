@@ -78,7 +78,8 @@
           hoveredRecord: {},
           shouldHideTooltip: true,
           records: [],
-          selectedRecords: []
+          selectedRecords: [],
+          selectedRecordIndex: null
 
         }
       },
@@ -121,6 +122,11 @@
             if (mRecords.length > 0) {
               for (let r in this.selectedRecords) {
                 if (!(recordIdArr.includes(this.selectedRecords[r].id))) {
+                  if (this.selectedRecords[r].id == this.selectedRecord.id) {
+                    mRecords[this.selectedRecordIndex] = this.selectedRecords[r]
+                    continue
+                  }
+
                   while (this.selectedRecords[mRecords[iInsert].id] != undefined) {
                     iInsert -= 1
                   }
@@ -281,6 +287,8 @@
             var nodeData = vm.colorToNode[colKey];
 
             if (nodeData) {
+
+              vm.selectedRecordIndex = nodeData.recordIndex
 
               if (vm.selectedRecord && vm.selectedRecord.id === nodeData.record.id) {
 
