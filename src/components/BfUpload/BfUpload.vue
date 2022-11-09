@@ -347,13 +347,13 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       ...mapActions(['updateOnboardingEvents']),
 
       sendRefreshMessage: function(){
-        this.$emit('refreshMessageFromChild')
+        EventBus.$emit('refreshMessageFromChild')
       },
       filesLengthMessage: function(filesL) {
-        this.$emit('fileMessageSent',filesL)
+        EventBus.$emit('fileMessageSent',filesL)
       },
       sendSubscribePing: function(message) {
-        this.$emit('subscribePing',message)
+        EventBus.$emit('subscribePing',message)
       },
       /**
        * Compute if array has items
@@ -777,7 +777,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
         //this.isAddingFiles = false
         }
-        this.$emit('open-progress-dialog','true')
+        EventBus.$emit('open-progress-dialog','true')
         // close the upload dialog
         this.onClose()
       },
@@ -910,9 +910,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
         console.log(message)
         if (message){
+          console.log('message')
         //var txt = message.event_info.details
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status != 'COMPLETE'){
-          console.log('uploading files in progress')
+          //console.log('uploading files in progress')
           this.sendSubscribePing(message)
         }
         else if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
@@ -923,9 +924,11 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             }
           })
         }
+        /*
         else if (message.type == 'EVENT'){
           console.log('THE EVENT IS >>>> ',message)
         }
+        */
         //need to verify that substring is captured
         /*
         else if (message.type == 'EVENT' && message.event_info.details.includes('Closing stream for client ID:')){

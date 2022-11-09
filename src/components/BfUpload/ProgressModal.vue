@@ -1,26 +1,24 @@
 <template>
-<div
-  class="bf-progress"
->
-  <bf-dialog
-    :title="dialogTitle"
-    :open="open"
-    @close="onClose"
-    @overlay-click="onOverlayClick"
+  <div
+    class="bf-progress"
   >
-  <div id="Progress_Status">
-    <div id="myprogressBar"></div>
-</div>
-  </bf-dialog>
+    <bf-dialog
+        :title="dialogTitle"
+        :open="open"
+        @close="onClose"
+        @overlay-click="onOverlayClick"
+    >
+      <div id="Progress_Status">
+        <div id="myprogressBar">0%</div>
+      </div>
+    </bf-dialog>
   </div>
 </template>
-
 <script>
 import BfDialog from '@/components/shared/bf-dialog/bf-dialog.vue'
 //import BfButton from '@/components/shared/BfButton.vue'
-//import EventBus from '../utils/event-bus.js'
+import EventBus from '../../utils/event-bus.js'
 //import PennsieveClient from '@/utils/pennsieve/client.js'
-
 export default {
   name: 'ProgressModal',
 
@@ -40,11 +38,11 @@ export default {
       uploadCount: 0
     }
   },
-  created(){
-    this.$on('fileMessageSent', (data) => {
+  mounted(){
+    EventBus.$on('fileMessageSent', (data) => {
       this.fileListLen = data;
     })
-    this.$on('subscribePing', (data) =>{
+    EventBus.$on('subscribePing', (data) =>{
       console.log('progress message recieved is ',data)
       //this.uploadCount++;
       this.update()
@@ -61,7 +59,8 @@ export default {
     //call update every time the filesUploaded is computed
   update: function() {
   var increment = 100 / this.fileListLen
-  var element = document.getElementById("myprogressBar");
+  console.log(document)
+  var element = document.getElementById('myprogressBar');
   var width = 0;
   var identity = setInterval(scene, 10);
   function scene() {
@@ -98,9 +97,9 @@ onClose: function(){
 #myprogressBar {
   width: 1%;
   height: 35px;
-  background-color: #4CAF50;
+  background-color: #6447f5;
   text-align: center;
   line-height: 32px;
-  color: black;
+  color: white;
 }
 </style>
