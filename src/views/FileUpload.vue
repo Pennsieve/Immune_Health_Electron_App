@@ -119,6 +119,7 @@
               :currUploadDest = "selectedStudyName"
               @close-upload-dialog = "closeUploadDialog"
               @refreshMessageFromChild ="refreshMessageRecieved"
+              @refreshMessageFromChildSecondary="refreshMessageRecieved2"
           />
 
           <bf-drop-info
@@ -244,15 +245,19 @@ export default {
       linkedLookup: {},
       currUploadDest: '',
       currId: '',
-      loadingPackageIds: true
+      loadingPackageIds: true,
+      lastFileArr: []
     }
   },
   created(){
-    this.$on('open-progress-dialog', (data) => {
+    // eslint-disable-next-line no-undef
+    Eventbus.$on('open-progress-dialog', (data) => {
+      console.log('OPEN PROGRESS DIALOG MESSAGE RECIEVED')
       this.progressDialogOpen = data;
     })
   },
   mounted: function () {
+
     console.log(`mounted() selectedStudyName: ${this.selectedStudyName}`)
     //if no files yet
     this.setSearchPage('FileUpload')
@@ -289,7 +294,11 @@ export default {
       //this.fetchPackageIds()
       this.setupFileTable()
     },
-
+    refreshMessageRecieved2(){
+      while (this.files.length == this.lastFileArr.length){
+        this.setupFileTable()
+      }
+    },
     setupFileTable: function() {
       this.clearFiles()
       console.log('setupFileTable()')

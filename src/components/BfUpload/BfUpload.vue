@@ -249,13 +249,16 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         selectedFiles: null,
         datasetIdInUse: '',
         //uploadTargetFolder: 'staging',
-        withinUploadMenu: 'true'
+        withinUploadMenu: 'true',
+        uploadArr: []
+
       }
     },
 
     computed: {
       ...mapGetters(['config', 'userToken', 'uploadDestination', 'datasetNodeId','subscribeId']),
       ...mapState(['onboardingEvents', 'activeOrganization', 'dataset']),
+      ...mapActions(['updateSubscribeId']),
 
       /**
        * Compute dialog title based on isAddingFiles
@@ -348,6 +351,9 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
       sendRefreshMessage: function(){
         EventBus.$emit('refreshMessageFromChild')
+      },
+      sendRefreshMessage2: function(){
+        EventBus.$emit('refreshMessageFromChildSecondary')
       },
       filesLengthMessage: function(filesL) {
         EventBus.$emit('fileMessageSent',filesL)
@@ -778,6 +784,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         //this.isAddingFiles = false
         }
         EventBus.$emit('open-progress-dialog','true')
+        console.log('OPENING THE PROGRESS DIALOG')
         // close the upload dialog
         this.onClose()
       },
@@ -903,48 +910,46 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       // eslint-disable-next-line no-unused-vars
       uploadOnClickLabel: function(file) {
       },
+      //function called on unsubscribe
+      actionOnEndSubscribe: function(type,message){
+        if (message){
+        console.log('Successfully unsubscribed')
+        }
+      },
       //function detects when subscribe stream returns a 'complete' message and notifies the user
 
       actionOnUploadSuccess: function(type, message){
 
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
-        console.log(message)
+        //console.log(message)
         if (message){
-          console.log('message')
+          //console.log('message')
         //var txt = message.event_info.details
-        if (message.type == 'UPLOAD_STATUS' && message.upload_status.status != 'COMPLETE'){
-          //console.log('uploading files in progress')
-          this.sendSubscribePing(message)
+        if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'IN_PROGRESS'){
+          //if (this.uploadArr.includes(message.upload_status.file_id) == false)
+          //this.uploadArr.push(message.upload_status.file_id)
+          if (message.upload_status.current == message.upload_status.total){
+            this.sendSubscribePing(message)
+          }
         }
         else if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
           EventBus.$emit('toast', {
             detail: {
-              msg: 'Your files are being uploaded',
+              msg: 'Your files have been uploaded. Syncing database with application.',
               type: 'success'
             }
           })
-        }
-        /*
-        else if (message.type == 'EVENT'){
-          console.log('THE EVENT IS >>>> ',message)
-        }
-        */
-        //need to verify that substring is captured
-        /*
-        else if (message.type == 'EVENT' && message.event_info.details.includes('Closing stream for client ID:')){
-        console.log('finished upload')
-        EventBus.$emit('toast', {
-          detail: {
-            msg: 'Your files have successfully uploaded',
-            type: 'success'
+          if (this.subscribeId == -1){
+            var rand = Math.floor(Math.random() * 100)
+            this.updateSubscribeId(rand)
           }
-        })
-      this.ps = new PennsieveClient()
-      //TODO: stop listening after success
-      this.ps.unsubscribe(this.subscribeId)
-      console.log(`unsubscribing from: ${this.subscribeId}`)
-      }
-      */
+          this.ps = new PennsieveClient()
+          //TODO: stop listening after success
+          this.ps.unsubscribe(this.subscribeId,this.actionOnEndSubscribe)
+          //console.log(`unsubscribing from: ${this.subscribeId}`)
+          //sending queue to keep updating file table until the uploaded file is registered by the app.
+          this.sendRefreshMessage2()
+        }
     }
     },
     // eslint-disable-next-line no-unused-vars
@@ -969,6 +974,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
      //initiating subscription
      // eslint-disable-next-line
      console.log(`BfUpload.mounted() subscribeId: ${this.subscribeId}`)
+     if (this.subscribeId == -1){
+       var rand = Math.floor(Math.random() * 100)
+       this.updateSubscribeId(rand)
+     }
      this.ps.subscribe(this.subscribeId, this.actionOnUploadSuccess)
       .then(response => {
         console.log('BfUpload.mounted() SUCCESS: subscribed to Agent, response:')

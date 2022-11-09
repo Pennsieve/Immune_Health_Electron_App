@@ -8,9 +8,12 @@
         @close="onClose"
         @overlay-click="onOverlayClick"
     >
-      <div id="Progress_Status">
-        <div id="myprogressBar">0%</div>
-      </div>
+      <el-progress
+        :percentage="this.currPercentage"
+        :format="format"
+        :color="PennsieveCol"
+        >
+        </el-progress>
     </bf-dialog>
   </div>
 </template>
@@ -35,10 +38,13 @@ export default {
     return {
       isStillUploading: true,
       fileListLen: 0,
-      uploadCount: 0
+      uploadCount: 0,
+      currPercentage: 0,
+      PennsieveCol: '#6967f0'
     }
   },
   mounted(){
+
     EventBus.$on('fileMessageSent', (data) => {
       this.fileListLen = data;
     })
@@ -54,27 +60,32 @@ export default {
     }
   },
   methods: {
+    onOverlayClick: function() {
+      EventBus.$emit('close-progress-dialog')
+    },
+
+    format(percentage) {
+      return percentage === 100 ? 'Complete' : `{percentage}%`;
+    },
     //with the total number of files from fileList and the UPLOAD STATUS responses from subscribe, will
     //update progress dynamically
     //call update every time the filesUploaded is computed
   update: function() {
   var increment = 100 / this.fileListLen
-  console.log(document)
-  var element = document.getElementById('myprogressBar');
-  var width = 0;
-  var identity = setInterval(scene, 10);
-  function scene() {
-    if (width >= 100) {
-      clearInterval(identity);
-    } else {
-      width = width + increment;
-      element.style.width = width + '%';
-      element.innerHTML = width * 1 + '%';
-    }
+  this.currPercentage = this.currPercentage + increment
+  if (this.currPercentage == 100) {
+    this.waitThenExit()
   }
 },
+delay: function(time) {
+  return new Promise(resolve => setTimeout(resolve,time));
+},
+waitThenExit: async function() {
+  await this.delay(2000);
+  this.onClose();
+},
 onClose: function(){
-  this.$emit('close-progress-dialog')
+  EventBus.$emit('close-progress-dialog')
 }
   }
 }
@@ -89,17 +100,5 @@ onClose: function(){
     margin: -295px 0 0 -350px;
     width: 500px;
   }
-  #Progress_Status {
-  width: 50%;
-  background-color: #ddd;
-}
 
-#myprogressBar {
-  width: 1%;
-  height: 35px;
-  background-color: #6447f5;
-  text-align: center;
-  line-height: 32px;
-  color: white;
-}
 </style>
