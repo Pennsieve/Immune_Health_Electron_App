@@ -292,18 +292,18 @@ export default {
       //this.fetchPackageIds()
       this.setupFileTable()
     },
-    refreshMessageRecieved2(){
-      console.log("UPDATING FILES TABLE UNTIL UPLOADS APPEAR")
-      while (this.files.length == this.lastFileArr.length){
-        //this.setupFileTable()
-        // clear the current files in case fetchFiles errors out due to there being no files present (otherwise the files from the previously selected study will still be showing)
-        this.clearFiles()
-        //console.log("clearing files")
+    async refreshMessageRecieved2() {
+      console.log("FETCHING FILES UNTIL UPLOADED FILE(S) APPEAR IN PENNSIEVE")
+      const initialFilesArrayLength = this.files.length
+      let newFilesArrayLength = this.files.length
+      this.clearFiles()
+      while (newFilesArrayLength == initialFilesArrayLength) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
         let packageId = this.stagingLookup[this.selectedStudyName]
         this.currId = packageId
-        this.fetchFiles(packageId)
-        //console.log("fetching files")
-        this.lastFileArr = this.files;
+        await this.fetchFiles(packageId).then(() => {
+          newFilesArrayLength = this.files.length
+        })
       }
     },
     setupFileTable: function() {
@@ -752,10 +752,8 @@ export default {
 
     createRelationships: function () {
       console.log('createRelastionships()')
-      this.isLoading = true
       this.createFileRelationshipRequests()
         .then(() => this.createRelationshipsSuccess())
-        .finally(() => this.isLoading = false)
 
     },
     linkToTarget: function () {
@@ -800,14 +798,13 @@ export default {
       var api_url = `https://api.pennsieve.io/packages/${packageId}?api_key=${this.userToken}&includeAncestors=true`;
 
       console.log('fetchFiles() api_url: ', api_url)
-      this.sendXhr(api_url)
+      return this.sendXhr(api_url)
           .then(response => {
             console.log('fetchFiles() response:')
             console.log(response)
             this.file = response
             this.fileId = response.content.id
             this.files = response.children.map(file => {
-
               return file
             })
             this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)

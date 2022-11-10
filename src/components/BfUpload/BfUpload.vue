@@ -236,6 +236,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         showInfo: false,
         droppedFiles: [],
         fileListMap: {},
+        uploadFileLst: [],
         fileList: [],
         packageList: [],
         uploadList: [],
@@ -361,6 +362,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         EventBus.$emit('fileMessageSent',filesL)
       },
       sendSubscribePing: function(message) {
+        console.log("SEND SUBSCRIBE PING CALLED!!!!!!!!!!!!")
         EventBus.$emit('subscribePing',message)
       },
       /**
@@ -930,8 +932,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'IN_PROGRESS'){
           //if (this.uploadArr.includes(message.upload_status.file_id) == false)
           //this.uploadArr.push(message.upload_status.file_id)
-          if (message.upload_status.current == message.upload_status.total){
-            console.log('uploading file')
+          if (message.upload_status.current == message.upload_status.total && !this.uploadFileLst.includes(message.upload_status.file_id)){
+            this.uploadFileLst.push(message.upload_status.file_id)
             this.sendSubscribePing(message)
           }
         }
