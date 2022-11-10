@@ -303,8 +303,8 @@ export default {
         this.currId = packageId
         this.fetchFiles(packageId)
         //console.log("fetching files")
+        this.lastFileArr = this.files;
       }
-      this.lastFileArr = this.files;
     },
     setupFileTable: function() {
       this.clearFiles()

@@ -66,7 +66,7 @@ export default {
   },
   computed: {
     dialogTitle: function() {
-      return this.isStillUploading ? 'Upload progress' : 'Upload complete'
+      return this.isStillUploading ? 'Upload in progress' : 'Upload complete'
     }
   },
   methods: {
@@ -108,7 +108,7 @@ waitThenExit: async function() {
 },
 onClose: function(){
   console.log('CLOSE PROGRESS MODAL CALLED')
-  //this.$emit('refreshMessageFromChildSecondary')
+  this.$emit('refreshMessageFromChildSecondary')
   this.$emit('close-progress-dialog')
 }
   }
