@@ -119,7 +119,7 @@
               :currUploadDest = "selectedStudyName"
               @close-upload-dialog = "closeUploadDialog"
               @refreshMessageFromChild ="refreshMessageRecieved"
-              @refreshMessageFromChildSecondary="refreshMessageRecieved2"
+              @openProgressDialog="openProgress"
           />
 
           <bf-drop-info
@@ -130,6 +130,7 @@
 
           <progress-modal
             :open.sync="progressDialogOpen"
+            @refreshMessageFromChildSecondary="refreshMessageRecieved2"
             @close-progress-dialog = "closeProgressDialog"
           />
 
@@ -249,13 +250,6 @@ export default {
       lastFileArr: []
     }
   },
-  created(){
-    // eslint-disable-next-line no-undef
-    Eventbus.$on('open-progress-dialog', (data) => {
-      console.log('OPEN PROGRESS DIALOG MESSAGE RECIEVED')
-      this.progressDialogOpen = data;
-    })
-  },
   mounted: function () {
 
     console.log(`mounted() selectedStudyName: ${this.selectedStudyName}`)
@@ -290,14 +284,27 @@ export default {
   methods: {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
+  openProgress: function(){
+      this.progressDialogOpen = true;
+    },
+
     refreshMessageRecieved: function(){
       //this.fetchPackageIds()
       this.setupFileTable()
     },
     refreshMessageRecieved2(){
+      console.log("UPDATING FILES TABLE UNTIL UPLOADS APPEAR")
       while (this.files.length == this.lastFileArr.length){
-        this.setupFileTable()
+        //this.setupFileTable()
+        // clear the current files in case fetchFiles errors out due to there being no files present (otherwise the files from the previously selected study will still be showing)
+        this.clearFiles()
+        //console.log("clearing files")
+        let packageId = this.stagingLookup[this.selectedStudyName]
+        this.currId = packageId
+        this.fetchFiles(packageId)
+        //console.log("fetching files")
       }
+      this.lastFileArr = this.files;
     },
     setupFileTable: function() {
       this.clearFiles()

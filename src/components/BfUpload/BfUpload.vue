@@ -352,9 +352,11 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       sendRefreshMessage: function(){
         EventBus.$emit('refreshMessageFromChild')
       },
+      /*
       sendRefreshMessage2: function(){
         EventBus.$emit('refreshMessageFromChildSecondary')
       },
+      */
       filesLengthMessage: function(filesL) {
         EventBus.$emit('fileMessageSent',filesL)
       },
@@ -783,7 +785,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
         //this.isAddingFiles = false
         }
-        EventBus.$emit('open-progress-dialog','true')
+        this.$emit('openProgressDialog','true')
         console.log('OPENING THE PROGRESS DIALOG')
         // close the upload dialog
         this.onClose()
@@ -923,12 +925,13 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
         //console.log(message)
         if (message){
-          //console.log('message')
+          console.log('message')
         //var txt = message.event_info.details
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'IN_PROGRESS'){
           //if (this.uploadArr.includes(message.upload_status.file_id) == false)
           //this.uploadArr.push(message.upload_status.file_id)
           if (message.upload_status.current == message.upload_status.total){
+            console.log('uploading file')
             this.sendSubscribePing(message)
           }
         }
@@ -941,14 +944,15 @@ import FilesTable from "@/components/FilesTable/FilesTable";
           })
           if (this.subscribeId == -1){
             var rand = Math.floor(Math.random() * 100)
-            this.updateSubscribeId(rand)
+            //this.updateSubscribeId(rand)
+            this.$store.dispatch('updateSubscribeId', rand)
           }
           this.ps = new PennsieveClient()
           //TODO: stop listening after success
-          this.ps.unsubscribe(this.subscribeId,this.actionOnEndSubscribe)
+          //this.ps.unsubscribe(this.subscribeId,this.actionOnEndSubscribe)
           //console.log(`unsubscribing from: ${this.subscribeId}`)
           //sending queue to keep updating file table until the uploaded file is registered by the app.
-          this.sendRefreshMessage2()
+          //this.sendRefreshMessage2()
         }
     }
     },
@@ -974,9 +978,11 @@ import FilesTable from "@/components/FilesTable/FilesTable";
      //initiating subscription
      // eslint-disable-next-line
      console.log(`BfUpload.mounted() subscribeId: ${this.subscribeId}`)
-     if (this.subscribeId == -1){
+     if (this.subscribeId == 1){
        var rand = Math.floor(Math.random() * 100)
-       this.updateSubscribeId(rand)
+       //this.updateSubscribeId(rand)
+       this.$store.dispatch('updateSubscribeId', rand)
+       console.log("subscribe ID is ",this.subscribeId)
      }
      this.ps.subscribe(this.subscribeId, this.actionOnUploadSuccess)
       .then(response => {
