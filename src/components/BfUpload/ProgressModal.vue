@@ -82,23 +82,26 @@ export default {
     //call update every time the filesUploaded is computed
   update: function() {
   if (this.currPercentage < 100){
-  console.log("file list length is ",this.fileListLen)
-  if (this.currIncrement != 0){
-  console.log("so progress will update in increments of ",this.currIncrement)
-  var temp = this.currPercentage + this.currIncrement
-  this.currPercentage = Math.ceil(temp);
-  console.log("curr percentage ",this.currPercentage)
+    console.log("file list length is ",this.fileListLen)
+    if (this.currIncrement != 0){
+    console.log("so progress will update in increments of ",this.currIncrement)
+    var temp = this.currPercentage + this.currIncrement
+    this.currPercentage = Math.ceil(temp);
+    console.log("curr percentage ",this.currPercentage)
+
+  }
 }
-  else if (this.currPercentage >= 100) {
+  if (this.currPercentage >= 100) {
     this.isStillUploading = false;
     this.$emit('refreshMessageFromChildSecondary')
     console.log("REFRESH FILES PAGE CALLED")
     //setTimeout(this.onClose(),3000);
-    this.onClose();
-    //this.waitThenExit()
+    //this.onClose();
+    this.waitThenExit()
+    this.currPercentage = 0;
     }
-  }
 },
+
 delay: function(time) {
   return new Promise(resolve => setTimeout(resolve,time));
 },

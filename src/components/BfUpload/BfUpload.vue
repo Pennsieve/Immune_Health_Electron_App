@@ -250,7 +250,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         datasetIdInUse: '',
         //uploadTargetFolder: 'staging',
         withinUploadMenu: 'true',
-        uploadArr: []
+        uploadArr: [],
+        uploadFileLst: []
 
       }
     },
@@ -930,12 +931,14 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'IN_PROGRESS'){
           //if (this.uploadArr.includes(message.upload_status.file_id) == false)
           //this.uploadArr.push(message.upload_status.file_id)
-          if (message.upload_status.current == message.upload_status.total){
+          if (message.upload_status.current == message.upload_status.total && !this.uploadFileLst.includes(message.upload_status.file_id)){
+            this.uploadFileLst.push(message.upload_status.file_id)
             console.log('uploading file')
             this.sendSubscribePing(message)
           }
         }
         else if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
+          //need to set a flag to send one toast message or put message in loading screen
           EventBus.$emit('toast', {
             detail: {
               msg: 'Your files have been uploaded. Syncing database with application.',
@@ -947,8 +950,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             //this.updateSubscribeId(rand)
             this.$store.dispatch('updateSubscribeId', rand)
           }
-          this.ps = new PennsieveClient()
-          //TODO: stop listening after success
+          //this.ps = new PennsieveClient()
+          //stop listening after success
           //this.ps.unsubscribe(this.subscribeId,this.actionOnEndSubscribe)
           //console.log(`unsubscribing from: ${this.subscribeId}`)
           //sending queue to keep updating file table until the uploaded file is registered by the app.
