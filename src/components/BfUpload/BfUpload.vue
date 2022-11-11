@@ -236,6 +236,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         showInfo: false,
         droppedFiles: [],
         fileListMap: {},
+        uploadFileLst: [],
         fileList: [],
         packageList: [],
         uploadList: [],
@@ -362,6 +363,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         EventBus.$emit('fileMessageSent',filesL)
       },
       sendSubscribePing: function(message) {
+        console.log("SEND SUBSCRIBE PING CALLED!!!!!!!!!!!!")
         EventBus.$emit('subscribePing',message)
       },
       /**
