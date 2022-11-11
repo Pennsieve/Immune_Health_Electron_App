@@ -251,8 +251,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         datasetIdInUse: '',
         //uploadTargetFolder: 'staging',
         withinUploadMenu: 'true',
-        uploadArr: [],
-        uploadFileLst: []
+        uploadArr: []
 
       }
     },
