@@ -139,7 +139,7 @@
       deleteFiles: function() {
         const fileIds = this.selectedFiles.map(item => item.content.id)
 
-        this.sendXhr(`https://api.pennsieve.io/data/delete?api_key=${this.userToken}`, {
+        this.sendXhr(`${this.config.apiUrl}/data/delete?api_key=${this.userToken}`, {
           method: 'POST',
           body: { things: fileIds }
         })
