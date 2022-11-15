@@ -207,13 +207,31 @@ export const getters = {
     getSelectedRecordsByModel: (state) => (name) => {
         return state.selectedRecords[name]
     },
+    detailsForModel: (state) => (name) => {
+        for (let m in state.models) {
+            if (state.models[m].name === name) {
+                return state.models[m]
+            }
+        }
+        return null
+    },
     getRecords (state) {
       return state.records
     },
     recordsForSelectedModel: (state) => {
         return state.records[state.selectedModel]
+    },
+    getSelectedRecord: (state) => {
+        return state.selectedRecord
+    },
+    selectedModelDetails: (state) => {
+        for (let m in state.models) {
+            if (state.models[m].name === state.selectedModel) {
+                return state.models[m]
+            }
+        }
+        return null
     }
-
 }
 
 const graphBrowseModule = {
