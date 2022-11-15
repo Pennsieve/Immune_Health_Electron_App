@@ -1,6 +1,12 @@
 
 const initialState = () => ({
     showModels: ['patient', 'visits', 'samples', 'study'],
+    orderBy:{
+        patient: 'name',
+        visits: "event_date_and_time",
+        samples: "",
+        study: ""
+    },
     models: [],
     filters: [],
     records: {},
@@ -102,6 +108,7 @@ export const actions = {
 
             let queryBody = {
                 model: modelName,
+                order_by: state.orderBy[modelName],
                 filters: filters
             }
 
@@ -148,6 +155,7 @@ export const actions = {
 
             let queryBody = {
                 model: modelName,
+                order_by: state.orderBy[modelName],
                 filters: filters
             }
 
