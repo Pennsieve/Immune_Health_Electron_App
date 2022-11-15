@@ -2,9 +2,9 @@
 const initialState = () => ({
     showModels: ['patient', 'visits', 'samples', 'study'],
     orderBy:{
-        patient: 'name',
-        visits: "event_date_and_time",
-        samples: "",
+        patient: "",
+        visits: "",
+        samples: "storage_status",
         study: ""
     },
     models: [],
