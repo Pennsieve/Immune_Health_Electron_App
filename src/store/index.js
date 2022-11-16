@@ -143,13 +143,14 @@ const store = new Vuex.Store({
     uploading: false,
     uploadRemaining: 0,
     //Returns random number between 0 and 100. Used to assign subscribe ID for a given user session
-    subscribeId: Math.floor(Math.random() * 100)
+    subscribeId: 1
+    //Math.floor(Math.random() * 100)
   },
   getters: {
-    subscribeId: state => state.subscribeId,
     uploadRemaining: state => state.uploadRemaining,
     uploadCount: state => state.uploadCount,
     uploading: state => state.uploading,
+    subscribeId: state => state.subscribeId,
     getRelationshipTypeByName: state => (name) => {
       return compose(
         defaultTo({}),
@@ -187,6 +188,9 @@ const store = new Vuex.Store({
     },
     selectedStudy (state) {
       return state.selectedStudy
+    },
+    subscribeId (state) {
+      return state.subscribeId
     },
     selectedStudyName (state) {
       const studyValues = propOr([], 'values', state.selectedStudy)
@@ -262,6 +266,9 @@ const store = new Vuex.Store({
     },
     UPDATE_UPLOAD_STATUS (state, uploading) {
       state.uploading = uploading
+    },
+    UPDATE_SUBSCRIBE_ID(state, subscribeId){
+      state.subscribeId = subscribeId
     },
     SET_ALL_STUDIES(state, data) {
       state.allStudies = data
@@ -517,9 +524,13 @@ const store = new Vuex.Store({
     setSearchPage({ commit }, data) {
       commit('SET_SEARCH_PAGE', data)
     },
+    updateSubscribeId({ commit }, data){
+      commit('UPDATE_SUBSCRIBE_ID', data)
+    },
     setLinkingTargets({ commit }, data) {
       commit('SET_LINKING_TARGETS', data)
     },
+
     async setScientificUnits ({state, commit }) {
       const apiKey = this.state.profile.token
       const scientificUnitsUrl = `${state.config.apiUrl}/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/properties/units?api_key=${apiKey}`

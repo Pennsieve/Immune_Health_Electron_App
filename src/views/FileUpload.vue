@@ -119,12 +119,19 @@
               :currUploadDest = "selectedStudyName"
               @close-upload-dialog = "closeUploadDialog"
               @refreshMessageFromChild ="refreshMessageRecieved"
+              @openProgressDialog="openProgress"
           />
 
           <bf-drop-info
               v-if="showDropInfo"
               :show-drop-info.sync="showDropInfo"
               :file="file"
+          />
+
+          <progress-modal
+            :open.sync="progressDialogOpen"
+            @refreshMessageFromChildSecondary="refreshMessageRecieved2"
+            @close-progress-dialog = "closeProgressDialog"
           />
 
           <!--
@@ -150,6 +157,7 @@ import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecond
 import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
 import BfUpload from '../components/BfUpload/BfUpload.vue'
+import ProgressModal from '../components/BfUpload/ProgressModal.vue'
 import Sorter from '../mixins/sorter/index.js'
 import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
@@ -169,7 +177,8 @@ export default {
     BfButton,
     BfUpload,
     FilesTable,
-    BreadcrumbNavigation
+    BreadcrumbNavigation,
+    ProgressModal
     //BfDeleteDialog
   },
   mixins: [
@@ -209,7 +218,7 @@ export default {
           this.setupFileTable()
         }
       }
-    },    
+    },
   },
   data() {
     return {
@@ -230,16 +239,19 @@ export default {
       isAddingFiles: false,
       hasFiles: true,
       uploadDialogOpen: false,
+      progressDialogOpen: false,
       isCreating: false,
       fileId: '',
       stagingLookup: {},
       linkedLookup: {},
       currUploadDest: '',
       currId: '',
-      loadingPackageIds: true
+      loadingPackageIds: true,
+      lastFileArr: []
     }
   },
   mounted: function () {
+
     console.log(`mounted() selectedStudyName: ${this.selectedStudyName}`)
     //if no files yet
     this.setSearchPage('FileUpload')
@@ -272,11 +284,28 @@ export default {
   methods: {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
+  openProgress: function(){
+      this.progressDialogOpen = true;
+    },
+
     refreshMessageRecieved: function(){
       //this.fetchPackageIds()
       this.setupFileTable()
     },
-
+    async refreshMessageRecieved2() {
+      console.log("FETCHING FILES UNTIL UPLOADED FILE(S) APPEAR IN PENNSIEVE")
+      const initialFilesArrayLength = this.files.length
+      let newFilesArrayLength = this.files.length
+      this.clearFiles()
+      while (newFilesArrayLength == initialFilesArrayLength) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        let packageId = this.stagingLookup[this.selectedStudyName]
+        this.currId = packageId
+        await this.fetchFiles(packageId).then(() => {
+          newFilesArrayLength = this.files.length
+        })
+      }
+    },
     setupFileTable: function() {
       this.clearFiles()
       console.log('setupFileTable()')
@@ -378,6 +407,10 @@ export default {
 
     closeUploadDialog: function () {
       this.uploadDialogOpen = false;
+    },
+
+    closeProgressDialog: function() {
+      this.progressDialogOpen = false;
     },
 
     processFile: function () {
@@ -719,10 +752,8 @@ export default {
 
     createRelationships: function () {
       console.log('createRelastionships()')
-      this.isLoading = true
       this.createFileRelationshipRequests()
         .then(() => this.createRelationshipsSuccess())
-        .finally(() => this.isLoading = false)
 
     },
     linkToTarget: function () {
@@ -767,14 +798,13 @@ export default {
       var api_url = `${this.config.apiUrl}/packages/${packageId}?api_key=${this.userToken}&includeAncestors=true`;
 
       console.log('fetchFiles() api_url: ', api_url)
-      this.sendXhr(api_url)
+      return this.sendXhr(api_url)
           .then(response => {
             console.log('fetchFiles() response:')
             console.log(response)
             this.file = response
             this.fileId = response.content.id
             this.files = response.children.map(file => {
-
               return file
             })
             this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)

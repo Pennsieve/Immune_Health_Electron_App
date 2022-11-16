@@ -63,6 +63,17 @@ class PennsieveAgent {
             event.sender.send("pennsieveSubscribeResponse", {status: 'success', result: {}})
         })
 
+        ipcMain.on("pennsieveUnsubscribeRequest", (event, args) => {
+            this.ps.unsubscribe(args.subscribeId, (err, response) => {
+                if (err) {
+                    event.sender.send("pennsieveUnsubscribeResponse", {status: 'failure', result: err})
+                }
+                else {
+                    event.sender.send("pennsieveUnsubscribeResponse", {status: 'success', result: response})
+                }
+            })
+        })
+
     }
 
     answer(err, response) {
