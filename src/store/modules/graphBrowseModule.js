@@ -135,6 +135,11 @@ export const actions = {
     fetchSelectedRecords: async({commit, rootState, state}, modelName) => {
         try {
 
+            if (!state.selectedRecord) {
+                return
+            }
+
+
             const url = `${rootState.config.api2Url}/metadata/query?dataset_id=${rootState.config.datasetId}`
 
             let filters = state.filters.map(value => {
@@ -204,8 +209,7 @@ export const actions = {
     },
     setSelectedRecord: ({commit}, record) => {
         commit('SET_SELECTED_RECORD', record)
-    }
-
+    },
 }
 
 export const getters = {
