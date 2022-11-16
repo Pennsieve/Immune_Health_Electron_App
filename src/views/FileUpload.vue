@@ -189,7 +189,7 @@ export default {
   computed: {
     //delete instance of selectedStudayName
     ...mapGetters(['allStudies', 'selectedStudyName', 'userToken', 'uploadDestination', 'datasetId', 'getRelationshipTypeByName']),
-    ...mapState(['linkingTargets']),
+    ...mapState(['linkingTargets','config']),
     isLinkingTargetSet() {
       return !isEmpty(this.linkingTargets)
     },

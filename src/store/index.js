@@ -189,6 +189,9 @@ const store = new Vuex.Store({
     selectedStudy (state) {
       return state.selectedStudy
     },
+    config (state) {
+      return state.config
+    },
     subscribeId (state) {
       return state.subscribeId
     },

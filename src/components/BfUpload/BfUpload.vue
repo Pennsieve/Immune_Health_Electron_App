@@ -257,8 +257,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
     },
 
     computed: {
-      ...mapGetters(['config', 'userToken', 'uploadDestination', 'subscribeId']),
-      ...mapState(['onboardingEvents', 'activeOrganization', 'dataset']),
+      ...mapGetters(['userToken', 'uploadDestination', 'subscribeId']),
+      ...mapState(['onboardingEvents', 'activeOrganization', 'dataset','config']),
       ...mapActions(['updateSubscribeId']),
 
       /**
@@ -951,12 +951,11 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             //this.updateSubscribeId(rand)
             this.$store.dispatch('updateSubscribeId', rand)
           }
-          //this.ps = new PennsieveClient()
+          this.ps = new PennsieveClient()
           //stop listening after success
-          //this.ps.unsubscribe(this.subscribeId,this.actionOnEndSubscribe)
-          //console.log(`unsubscribing from: ${this.subscribeId}`)
-          //sending queue to keep updating file table until the uploaded file is registered by the app.
-          //this.sendRefreshMessage2()
+          this.ps.unsubscribe(this.subscribeId,this.actionOnEndSubscribe)
+          console.log(`unsubscribing from: ${this.subscribeId}`)
+
         }
     }
     },
