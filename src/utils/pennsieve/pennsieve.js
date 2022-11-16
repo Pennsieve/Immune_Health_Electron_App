@@ -171,7 +171,7 @@ class Pennsieve {
 
     unsubscribe(id, callback) {
         var payload = { id : id };
-        this.client.unsubscribe(payload);
+        this.client.unsubscribe(payload, callback);
     }
 
 
