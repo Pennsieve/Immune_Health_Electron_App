@@ -293,7 +293,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/css/_variables.scss';
+@import '../../assets/css/_variables.scss';
 h2 {
   font-size: 18px;
   font-weight: 400;

@@ -1,9 +1,10 @@
 <template>
   <div class="container">
-    <span class="sidebar-container">
-      <bf-navigation-secondary :studies="allStudies" />
-    </span>
-    <span class="selected-content-container">
+    <div class="sidebar-container">
+      <detail-panel />
+    </div>
+
+    <div class="selected-content-container">
       <ih-subheader previousRoute="/">
         <template v-if="selectedStudy" slot="text">
           <div>
@@ -34,36 +35,36 @@
       </ih-subheader>
 
       <div class="browser-content">
-              <div v-if="Object.keys(selectedStudy).length != 0" >
+<!--              <div v-if="Object.keys(selectedStudy).length != 0" >-->
 
-        <div class="mb-16">
-          <bf-button  @click="clearAllSelections()">
-            Clear selections
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 0">
-          <bf-button v-on:click="filterSearch('patient')">
-            Filter Search Patients
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 1">
-          <bf-button v-on:click="filterSearch('visits')">
-            Filter Search Visits
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 2">
-          <bf-button v-on:click="filterSearch('samples')">
-            Filter Search Samples
-          </bf-button>
-        </div>
-        <div v-if="SearchStep == 3">
-          <h2>Clear filters and selections to start another search</h2>
-        </div>
-      </div>
+<!--        <div class="mb-16">-->
+<!--          <bf-button  @click="clearAllSelections()">-->
+<!--            Clear selections-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 0">-->
+<!--          <bf-button v-on:click="filterSearch('patient')">-->
+<!--            Filter Search Patients-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 1">-->
+<!--          <bf-button v-on:click="filterSearch('visits')">-->
+<!--            Filter Search Visits-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 2">-->
+<!--          <bf-button v-on:click="filterSearch('samples')">-->
+<!--            Filter Search Samples-->
+<!--          </bf-button>-->
+<!--        </div>-->
+<!--        <div v-if="SearchStep == 3">-->
+<!--          <h2>Clear filters and selections to start another search</h2>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <br>
+<!--      <br>-->
       <div>
-        <graph-browser
+        <graph-browser2
             @record-clicked="updateClickedRecordsFilters"
         />
       </div>
@@ -127,15 +128,17 @@
       </div>
 
 
-    </span>
+    </div>
   </div>
 </template>
 
 <script>
 import IhSubheader from '@/components/shared/IhSubheader.vue'
 import BfButton from '@/components/shared/BfButton.vue'
-import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
-import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
+// import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
+// import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
+import GraphBrowser2 from '@/components/GraphBrowser2/GraphBrowser2.vue'
+
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
 import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
 import GetFileProperty from '@/mixins/get-file-property'
@@ -144,17 +147,18 @@ import FormatDate from '@/mixins/format-date'
 import { mapActions, mapGetters, mapState } from 'vuex'
 import { pathOr, clone, mergeRight } from 'ramda'
 import { v1 } from 'uuid'
-import { fetchVisitsFilesRelatedToStudy, fetchSamplesFilesRelatedToStudy } from '@/utils/fetchRecords'
+import DetailPanel from "@/components/GraphBrowser2/DetailPanel/DetailPanel";
 
 export default {
   name: 'StudiesBrowser',
   components: {
+    DetailPanel,
     IhSubheader,
-    GraphBrowser,
+    // GraphBrowser,
     BfButton,
-    BfNavigationSecondary,
     FilesTable,
-    PaginationPageMenu
+    PaginationPageMenu,
+    GraphBrowser2
   },
   mixins: [GetFileProperty, Request, FormatDate],
   mounted() {
@@ -177,7 +181,7 @@ export default {
   watch: {
     filesFilters: {
       handler: async function() {
-        await this.fetchFiles()
+        // await this.fetchFiles()
       },
       immediate: true
     },
@@ -269,40 +273,6 @@ export default {
     updateClickedRecordsFilters(clickedFilters) {
       this.clickedRecordsFilters = clickedFilters
     },
-    async fetchFiles() {
-      this.isLoadingFiles = true
-      let response = []
-      if (this.selectedButton === 'visits') {
-        response = await fetchVisitsFilesRelatedToStudy(this.selectedStudy, this.filesFilters, this.userToken, this.filesTableLimit, this.filesTableOffset)
-          .catch(response => {
-            this.handleXhrError(response)
-          })
-          .finally(() => {
-            this.isLoadingFiles = false
-          })
-      } else {
-        response = await fetchSamplesFilesRelatedToStudy(this.selectedStudy, this.filesFilters, this.userToken, this.filesTableLimit, this.filesTableOffset)
-          .catch(response => {
-            this.handleXhrError(response)
-          })
-          .finally(() => {
-            this.isLoadingFiles = false
-          })
-      }
-      if (response === undefined) {
-        return
-      }
-      this.tableResultsTotalCount = response.totalCount
-      this.fileResults = response.packages.map(file => {
-        if (!file.storage) {
-          file.storage = 0
-        }
-        file.icon =
-          file.icon || this.getFilePropertyVal(file.properties, 'icon')
-        file.subtype = this.getSubType(file)
-        return file
-      })
-    },
     getSubType: function(file) {
       const subtype = this.getFilePropertyVal(file.properties, 'subtype')
       let defaultType = ''
@@ -337,8 +307,6 @@ export default {
 @import '../assets/css/_variables.scss';
 .sidebar-container {
   width: auto;
-  min-width: 10rem;
-  max-width: 20rem;
 }
 .selected-content-container {
   flex-grow: 1;
