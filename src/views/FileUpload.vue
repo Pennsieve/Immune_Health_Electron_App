@@ -321,7 +321,7 @@ export default {
     fetchPackageIds: function () {
       console.log('fetchPackageIds()')
       this.loadingPackageIds = true
-      var url = `https://api.pennsieve.io/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
+      var url = `${this.config.apiUrl}/datasets/N%3Adataset%3Ae2de8e35-7780-40ec-86ef-058adf164bbc?api_key=${this.userToken}`
       axios.get(url).then(async ( { data }) => {
         var temp_dict = data.children
         await Promise.all(temp_dict.map(async (child) => {
@@ -330,7 +330,7 @@ export default {
           this.currUploadDest = master_name
           var node_id = pathOr('', ['content', 'nodeId'], child)
           //need to make a call to url and make entry
-          var le_url = `https://api.pennsieve.io/packages/${node_id}?api_key=${this.userToken}`
+          var le_url = `${this.config.apiUrl}/packages/${node_id}?api_key=${this.userToken}`
           await axios.get(le_url).then(( { data } ) => {
             var temp2 = data.children
             temp2.forEach(child2 => {
@@ -457,7 +457,7 @@ export default {
     },
     createDefaultRelationship: function () {
       const datasetId = 'N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc'
-      const url = `https://api.pennsieve.io/models/v1/datasets/${datasetId}/relationships`
+      const url = `${this.config.apiUrl}/models/v1/datasets/${datasetId}/relationships`
       return this.sendXhr(url, {
         method: 'POST',
         header: {
@@ -492,7 +492,7 @@ export default {
       console.log('- selectedFiles: ')
       console.log(this.selectedFiles)
       this.isCreating = true
-      const url = `https://api.pennsieve.io/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/proxy/package/instances`
+      const url = `${this.config.apiUrl}/models/datasets/N:dataset:e2de8e35-7780-40ec-86ef-058adf164bbc/proxy/package/instances`
       var iter = this.selectedFiles;
       var selecteditemids = []
       for (const f of iter) {
@@ -621,7 +621,7 @@ export default {
     deleteIt: function () {
       const fileIds = this.selectedFiles.map(item => item.content.id)
 
-      this.sendXhr(`https://api.pennsieve.io/data/delete?api_key=${this.userToken}`, {
+      this.sendXhr(`${this.config.apiUrl}/data/delete?api_key=${this.userToken}`, {
         method: 'POST',
         body: {things: fileIds}
       })
@@ -707,7 +707,7 @@ export default {
       console.log('- items: ')
       console.log(items)
       let apiKey = this.userToken
-      let url = `https://api.pennsieve.io/data/move?api_key=${apiKey}`
+      let url = `${this.config.apiUrl}/data/move?api_key=${apiKey}`
       console.log('* url: ')
       console.log(url)
       if (destination) {
@@ -795,7 +795,7 @@ export default {
     fetchFiles: function (packageId) {
       console.log(`fetchFiles() packageId: ${packageId}`)
       //var packageId = this.stagingLookup[this.selectedStudyName]
-      var api_url = `https://api.pennsieve.io/packages/${packageId}?api_key=${this.userToken}&includeAncestors=true`;
+      var api_url = `${this.config.apiUrl}/packages/${packageId}?api_key=${this.userToken}&includeAncestors=true`;
 
       console.log('fetchFiles() api_url: ', api_url)
       return this.sendXhr(api_url)

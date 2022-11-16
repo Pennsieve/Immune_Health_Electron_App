@@ -23,12 +23,7 @@
 </template>
 
 <script>
-import {
-  fetchFilteredPatientsMetadataRelatedToStudy,
-  fetchFilteredVisitsMetadataRelatedToStudy,
-  fetchFilteredSamplesMetadataRelatedToStudy,
-  fetchFilteredExperimentsMetadataRelatedToStudy
-} from '@/utils/fetchRecords'
+
 
 import axios from 'axios'
 import * as d3 from 'd3'
@@ -169,11 +164,11 @@ export default {
     },
     */
     graphUrl: function() {
-        return `https://api.pennsieve.io/models/v1/datasets/${this.datasetId}/concepts/schema/graph`
+        return `${this.config.apiUrl}/models/v1/datasets/${this.datasetId}/concepts/schema/graph`
 
     },
     recordsUrl: function() {
-        return `https://api.pennsieve.io/models/v1/datasets/${this.datasetId}/concepts/`
+        return `${this.config.apiUrl}/models/v1/datasets/${this.datasetId}/concepts/`
     },
 
     //wont need
@@ -884,7 +879,7 @@ export default {
         }
         const options = {
           method: 'GET',
-          url: `https://api.pennsieve.io/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
+          url: `${this.config.apiUrl}/models/v1/datasets/${vm.datasetId}/concepts/study/instances/${vm.selectedStudy.id}/relations/${modelName}`,
           params: {
             limit: '100',
             // eslint-disable-next-line

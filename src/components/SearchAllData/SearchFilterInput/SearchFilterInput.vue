@@ -487,7 +487,7 @@ export default {
 input,
 ::v-deep .el-date-editor .el-input__inner {
   background: none;
-  border: 1px solid $app-primary-color;
+  border: 1px solid $purple_tint;
   border-radius: 0;
   box-sizing: border-box;
   color: $gray_6;
@@ -499,7 +499,8 @@ input,
   width: 110px
 }
 input {
-  max-width: 110px;
+  width: 100%;
+  //max-width: 110px;
 }
 ::v-deep .el-date-editor {
   position: static;

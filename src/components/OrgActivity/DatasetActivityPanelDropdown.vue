@@ -106,7 +106,7 @@ import Request from '@/mixins/request'
        */
       eventsUrl: function() {
         console.log()
-        return `https://api.pennsieve.io/datasets/${this.datasetId}/changelog/events?api_key=${this.userToken}`
+        return `${this.config.apiUrl}/datasets/${this.datasetId}/changelog/events?api_key=${this.userToken}`
       }
     },
 
