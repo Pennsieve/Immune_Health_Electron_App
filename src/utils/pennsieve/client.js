@@ -84,6 +84,20 @@ class PennsieveClient {
             window.api.pennsieveSubscribeRequest(subscribeId)
         })
     }
+
+    unsubscribe(subscribeId) {
+        return new Promise((resolve, reject) => {
+            window.api.pennsieveUnsubscribeResponse(function(event, response) {
+                if (response.status === 'success') {
+                    resolve(response.result)
+                }
+                else {
+                    reject(response.error)
+                }
+            })
+            window.api.pennsieveUnsubscribeRequest(subscribeId)
+        })
+    }
 }
 
 export default PennsieveClient

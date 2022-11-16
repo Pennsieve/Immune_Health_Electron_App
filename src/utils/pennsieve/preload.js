@@ -34,4 +34,10 @@ contextBridge.exposeInMainWorld("api", {
     pennsieveAgentMessage: function(func) {
         ipcRenderer.on("pennsieveAgentMessage", (event, ...args) => func(event, ...args))
     },
+    pennsieveUnsubscribeRequest: function(subscribeId) {
+        ipcRenderer.send("pennsieveUnsubscribeRequest", {subscribeId: subscribeId});
+    },
+    pennsieveUnsubscribeResponse: function(func) {
+        ipcRenderer.on("pennsieveUnsubscribeResponse", (event, ...args) => func(event, ...args))
+    },
 });
