@@ -37,5 +37,17 @@ export default {
       if (date) {
         return moment.utc(date).format('MMMM D, YYYY hh:mm a')
       }
+    },
+
+    /* convert date from ISO format to datetime object. If local is true then
+    the ISO string is in UTC time and we want to convert it to local time*/
+    convertToDatetime: function(isoDate, local){
+       if (local === true){
+         var date1 = new Date(isoDate.slice(0,-1))
+       }
+       else {
+         var date1 = new Date(isoDate)
+       }
+      return date1
     }
 }}
