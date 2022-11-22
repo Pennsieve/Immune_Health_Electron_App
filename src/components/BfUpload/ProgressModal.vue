@@ -94,14 +94,13 @@ export default {
           console.log("so progress will update in increments of ",this.currIncrement)
           var tempVerified = ps.listManifestFiles(6)
           for (var x in tempVerified){
-            //THIS WILL NEED TO BE CHANGED
-              if (x['status'] == verified){
-                verifiedFiles.push(x)
+              if (x['status'] == 'verified' && !(verifiedFiles.includes(x['id']))){
+                verifiedFiles.push(x['id'])
+                var temp = this.currPercentage + this.currIncrement
+                this.currPercentage = Math.ceil(temp);
+                console.log("curr percentage ",this.currPercentage)
               }
             }
-          var temp = this.currPercentage + this.currIncrement
-          this.currPercentage = Math.ceil(temp);
-          console.log("curr percentage ",this.currPercentage)
         }
   }
     if (this.currPercentage >= 100) {
