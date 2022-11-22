@@ -292,6 +292,7 @@ export default {
       //this.fetchPackageIds()
       this.setupFileTable()
     },
+    /*
     async refreshMessageRecieved2() {
       console.log("FETCHING FILES UNTIL UPLOADED FILE(S) APPEAR IN PENNSIEVE")
       const initialFilesArrayLength = this.files.length
@@ -305,6 +306,14 @@ export default {
           newFilesArrayLength = this.files.length
         })
       }
+    },
+      */
+    //Refreshes table once all of the uploaded files have been ingested in Pennsieve. Should only need to call once.
+    async refreshMessageRecieved2() {
+      this.clearFiles()
+      let packageId = this.stagingLookup[this.selectedStudyName]
+      this.currId = packageId
+      this.fetchFiles(packageId)
     },
     setupFileTable: function() {
       this.clearFiles()

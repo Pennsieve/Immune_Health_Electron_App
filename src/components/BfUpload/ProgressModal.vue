@@ -26,7 +26,7 @@
 import BfDialog from '@/components/shared/bf-dialog/bf-dialog.vue'
 //import BfButton from '@/components/shared/BfButton.vue'
 import EventBus from '../../utils/event-bus.js'
-//import PennsieveClient from '@/utils/pennsieve/client.js'
+import PennsieveClient from '@/utils/pennsieve/client.js'
 export default {
   name: 'ProgressModal',
 
@@ -46,7 +46,8 @@ export default {
       uploadCount: 0,
       currPercentage: 0,
       PennsieveCol: '#6967f0',
-      currIncrement: 0
+      currIncrement: 0,
+      subscribeInitiated: false
     }
   },
   mounted(){
@@ -61,7 +62,10 @@ export default {
     EventBus.$on('subscribePing', (data) =>{
       console.log('progress message recieved is ',data)
       //this.uploadCount++;
+      if (this.subscribeInitiated = false){
       this.update()
+      this.subscribeInitiated = true
+      }
     })
   },
   computed: {
@@ -81,25 +85,35 @@ export default {
     //update progress dynamically
     //call update every time the filesUploaded is computed
   update: function() {
-  if (this.currPercentage < 100){
-    console.log("file list length is ",this.fileListLen)
-    if (this.currIncrement != 0){
-    console.log("so progress will update in increments of ",this.currIncrement)
-    var temp = this.currPercentage + this.currIncrement
-    this.currPercentage = Math.ceil(temp);
-    console.log("curr percentage ",this.currPercentage)
-
+  var ps = new PennsieveClient()
+  var verifiedFiles = []
+  while (verifiedFiles.length != this.fileListLen){
+    if (this.currPercentage < 100){
+        console.log("file list length is ",this.fileListLen)
+        if (this.currIncrement != 0){
+          console.log("so progress will update in increments of ",this.currIncrement)
+          var tempVerified = ps.listManifestFiles(6)
+          for (var x in tempVerified){
+            //THIS WILL NEED TO BE CHANGED
+              if (x['status'] == verified){
+                verifiedFiles.push(x)
+              }
+            }
+          var temp = this.currPercentage + this.currIncrement
+          this.currPercentage = Math.ceil(temp);
+          console.log("curr percentage ",this.currPercentage)
+        }
   }
+    if (this.currPercentage >= 100) {
+      this.isStillUploading = false;
+      //this.$emit('refreshMessageFromChildSecondary')
+      console.log("REFRESH FILES PAGE CALLED")
+      //setTimeout(this.onClose(),3000);
+      //this.onClose();
+      this.waitThenExit()
+      this.currPercentage = 0;
+      }
 }
-  if (this.currPercentage >= 100) {
-    this.isStillUploading = false;
-    this.$emit('refreshMessageFromChildSecondary')
-    console.log("REFRESH FILES PAGE CALLED")
-    //setTimeout(this.onClose(),3000);
-    //this.onClose();
-    this.waitThenExit()
-    this.currPercentage = 0;
-    }
 },
 
 delay: function(time) {
