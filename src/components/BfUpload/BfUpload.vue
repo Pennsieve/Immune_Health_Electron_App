@@ -914,7 +914,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         //var txt = message.event_info.details
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status != 'COMPLETE'){
           //console.log('uploading files in progress')
-          this.sendSubscribePing(message)
+          //this.sendSubscribePing(message)
         }
         else if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
           EventBus.$emit('toast', {
