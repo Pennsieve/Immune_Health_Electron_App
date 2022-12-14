@@ -123,16 +123,16 @@ import axios from 'axios'
 import {
   compose,
   defaultTo,
-  find,
+  // find,
   filter,
   last,
   mergeRight,
-  pathEq,
+  // pathEq,
   pathOr,
   propEq,
   propOr,
   reject,
-  uniq
+  // uniq
 } from 'ramda'
 import {
   mapState,
@@ -172,7 +172,7 @@ const transformProperties = (properties) => {
  * to a human readable string
  */
 const operatorMap = {
-  '=': 'equals',
+  'EQUALS': 'equals',
   '<>': 'does not equal',
   '<': 'less than',
   '>': 'greater than',
@@ -271,6 +271,8 @@ export default {
     ]),
 
     ...mapGetters(['scientificUnits', 'userToken']),
+
+    ...mapState('graphBrowseModule',['filters']),
 
     /**
      * Compute if the filter is invalid
@@ -622,6 +624,42 @@ export default {
       this.getValueSuggestions(evt)
     },
 
+    async autocomplete (prefix) {
+      const url = `${this.config.api2Url}/metadata/query/autocomplete?dataset_id=${this.config.datasetId}`
+
+      let requestFilters = this.filters.map(value => {
+        return {
+          "model": value.model,
+          "property": value.property,
+          "operator": value.operator,
+          "value": value.value
+        }
+      })
+
+      let queryBody = {
+        model: this.filter.target,
+        filters: requestFilters,
+        text: prefix,
+        property: this.filter.property
+      }
+
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.userToken}`
+        },
+        body: JSON.stringify(queryBody)
+      })
+
+      if (resp.ok) {
+        const response = await resp.json()
+        this.valueSuggestions = response.values
+      }
+
+      this.isLoadingValueSuggestions = false
+    },
+
     getValueSuggestions: debounce(function(evt) {
       const prefix = defaultTo('', evt)
 
@@ -640,35 +678,17 @@ export default {
 
       // Reset current value suggestions
       this.valueSuggestions = []
-      let url = `${this.config.apiUrl}/models/v2/organizations/${this.config.organizationId}/autocomplete/${this.filter.target}/${this.filter.property}/values?prefix=${prefix}`
-      const unit = this.propertyHasUnit(this.filter.propertyType)
+      // ------
 
-      if ( unit !== '' && unit !== null) {
-        url += `&unit=${unit}`
-      }
+      this.autocomplete((prefix))
 
-      url += `&datasetId=${this.config.datasetIntId}`
-
-      const header = {
-        headers: { Authorization: `Bearer ${this.userToken}`}
-      }
-      axios.get(url, header).then(({ data }) => {
-        this.valueSuggestions = compose(
-          uniq,
-          propOr([], 'values'),
-          find(pathEq(['property', 'dataType', 'type'], this.propertyDataType))
-        )(data)
-      }).finally(() => {
-        // Set properties loading state
-        this.isLoadingValueSuggestions = false
-      })
     })
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/css/_variables.scss';
+@import '../../../assets/css/_variables.scss';
 
 .search-filter-content {
   display: flex;

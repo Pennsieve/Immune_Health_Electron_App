@@ -1,6 +1,12 @@
 
 const initialState = () => ({
     showModels: ['patient', 'visits', 'samples', 'study'],
+    orderBy:{
+        patient: "",
+        visits: "",
+        samples: "storage_status",
+        study: ""
+    },
     models: [],
     filters: [],
     records: {},
@@ -102,6 +108,7 @@ export const actions = {
 
             let queryBody = {
                 model: modelName,
+                order_by: state.orderBy[modelName],
                 filters: filters
             }
 
@@ -128,6 +135,11 @@ export const actions = {
     fetchSelectedRecords: async({commit, rootState, state}, modelName) => {
         try {
 
+            if (!state.selectedRecord) {
+                return
+            }
+
+
             const url = `${rootState.config.api2Url}/metadata/query?dataset_id=${rootState.config.datasetId}`
 
             let filters = state.filters.map(value => {
@@ -148,6 +160,7 @@ export const actions = {
 
             let queryBody = {
                 model: modelName,
+                order_by: state.orderBy[modelName],
                 filters: filters
             }
 
@@ -196,8 +209,7 @@ export const actions = {
     },
     setSelectedRecord: ({commit}, record) => {
         commit('SET_SELECTED_RECORD', record)
-    }
-
+    },
 }
 
 export const getters = {
@@ -207,13 +219,31 @@ export const getters = {
     getSelectedRecordsByModel: (state) => (name) => {
         return state.selectedRecords[name]
     },
+    detailsForModel: (state) => (name) => {
+        for (let m in state.models) {
+            if (state.models[m].name === name) {
+                return state.models[m]
+            }
+        }
+        return null
+    },
     getRecords (state) {
       return state.records
     },
     recordsForSelectedModel: (state) => {
         return state.records[state.selectedModel]
+    },
+    getSelectedRecord: (state) => {
+        return state.selectedRecord
+    },
+    selectedModelDetails: (state) => {
+        for (let m in state.models) {
+            if (state.models[m].name === state.selectedModel) {
+                return state.models[m]
+            }
+        }
+        return null
     }
-
 }
 
 const graphBrowseModule = {

@@ -927,6 +927,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
         //console.log(message)
         if (message){
+
           console.log('message')
         //var txt = message.event_info.details
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'IN_PROGRESS'){
@@ -936,6 +937,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
             this.uploadFileLst.push(message.upload_status.file_id)
             console.log('uploading file')
             this.sendSubscribePing(message)
+
           }
         }
         else if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){

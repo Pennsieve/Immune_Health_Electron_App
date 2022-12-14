@@ -445,11 +445,11 @@ export default {
         operators: [
           {
             label: 'equals',
-            value: '='
+            value: 'EQUALS'
           },
           {
             label: 'does not equal',
-            value: '<>'
+            value: 'NOT EQUALS'
           },
           {
             label: 'starts with',

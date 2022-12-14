@@ -197,6 +197,7 @@
               operationLabel: '',
               operators: [],
               value: '',
+              valueLabel: '',
               isInvalid: false,
               lockTarget: false
             }

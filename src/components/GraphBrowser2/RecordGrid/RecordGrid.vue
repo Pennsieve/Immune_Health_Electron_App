@@ -3,6 +3,7 @@
           class="data-model-graph"
           element-loading-background="#fff"
           @mouseleave="hideModelTooltip"
+          @click="deselect()"
           >
 
         <div class="header" @click="selectModel">
@@ -225,6 +226,7 @@
             'fetchSelectedRecords',
             'setSelectedModel',
             'setSelectedRecord',
+            'clearSelectedRecords'
         ]),
 
         /**
@@ -239,6 +241,9 @@
           },
           100
         ),
+        deselect: function() {
+          this.clearSelectedRecords()
+        },
 
         selectModel: function() {
           this.setSelectedModel(this.model.name)
@@ -330,7 +335,7 @@
                   propertyType: {format: null, type: "string"},
                   operation: 'STARTS WITH',
                   operationLabel: operationLabel,
-                  operators: [{label: "equals", value:"="},{label: "does not equal", value:"<>"},{label: "starts with", value:"STARTS WITH"}],
+                  operators: [{label: "equals", value:"EQUALS"},{label: "does not equal", value:"NOT EQUALS"},{label: "starts with", value:"STARTS WITH"}],
                   value: nodeData.record.id,
                   valueLabel: valueLabel,
                   isTrusted: true,
@@ -344,6 +349,8 @@
 
 
 
+            } else {
+              vm.this.clearSelectedRecords()
             }
           })
         },
@@ -522,13 +529,11 @@
 
         draw: function(canvas, hidden) {
 
+          this.nextCol = 1
+
           // // MODEL-AREAS)
           var ctx = canvas.node().getContext('2d');
           ctx.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height); // Clear the canvas.
-
-              // ctx.fillStyle = '#EEEBFE';
-              // ctx.fillRect(0,0,this.canvasSize.width,this.canvasSize.height)
-
 
           // RECORDS
           let els = this.custom.selectAll('custom.record');// Grab all elements you bound data to in the databind() function.
@@ -545,12 +550,12 @@
               let w = Number(node.attr('width'))
               let h = Number(node.attr('height'))
 
+            if (!hidden){
               let r = x + w;
               let b = y + h;
 
 
               ctx.strokeStyle="#34259F";
-              // ctx.fillStyle="#34259F";
               ctx.lineWidth="3";
               ctx.beginPath()
               ctx.moveTo(x+radius, y);
@@ -565,8 +570,14 @@
               ctx.fill()
 
               if (node.attr('isSelected') == "true") {
-                 ctx.stroke();
+                ctx.stroke();
               }
+            } else {
+              ctx.fillRect(x, y, w, h);  // Here you retrieve the position of the node and apply it to the fillRect context function which will fill and paint the square.
+
+            }
+
+
 
             // } else {
             //   ctx.fillRect(node.attr('x'), node.attr('y'), node.attr('width'), node.attr('height'));  // Here you retrieve the position of the node and apply it to the fillRect context function which will fill and paint the square.

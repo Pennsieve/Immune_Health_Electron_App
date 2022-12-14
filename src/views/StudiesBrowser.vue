@@ -5,142 +5,118 @@
     </div>
 
     <div class="selected-content-container">
-      <ih-subheader previousRoute="/">
-        <template v-if="selectedStudy" slot="text">
-          <div>
-            <div class="property-text">
-              Study
-            </div>
-            <div>
-              {{selectedStudyName}}
-            </div>
-          </div>
-          <div class="participant-container">
+<!--      <ih-subheader previousRoute="/">-->
+<!--        <template v-if="selectedStudy" slot="text">-->
+<!--          <div>-->
+<!--            <div class="property-text">-->
+<!--              Study-->
+<!--            </div>-->
+<!--            <div>-->
+<!--              {{selectedStudyName}}-->
+<!--            </div>-->
+<!--          </div>-->
+<!--          <div class="participant-container">-->
 
-          </div>
-          <div class="visits-container">
+<!--          </div>-->
+<!--          <div class="visits-container">-->
 
-          </div>
-          <div class="samples-container">
+<!--          </div>-->
+<!--          <div class="samples-container">-->
 
-          </div>
-        </template>
-        <template slot="buttons">
-          <bf-button>
-            <router-link to="/file-upload" exact>
-              Upload Files
-            </router-link>
-          </bf-button>
-        </template>
-      </ih-subheader>
+<!--          </div>-->
+<!--        </template>-->
+<!--        <template slot="buttons">-->
+<!--          <bf-button>-->
+<!--            <router-link to="/file-upload" exact>-->
+<!--              Upload Files-->
+<!--            </router-link>-->
+<!--          </bf-button>-->
+<!--        </template>-->
+<!--      </ih-subheader>-->
 
       <div class="browser-content">
-<!--              <div v-if="Object.keys(selectedStudy).length != 0" >-->
 
-<!--        <div class="mb-16">-->
-<!--          <bf-button  @click="clearAllSelections()">-->
-<!--            Clear selections-->
-<!--          </bf-button>-->
+        <div>
+          <graph-browser2
+              @record-clicked="updateClickedRecordsFilters"
+          />
+        </div>
+
+        <selected-info>
+
+        </selected-info>
+
+
+<!--      <div class="results-toggle">-->
+<!--        <p class="mr-16">View files for </p>-->
+<!--        <el-radio-group-->
+<!--            v-model="selectedButton"-->
+<!--            size="medium"-->
+<!--        >-->
+<!--          <el-radio-button-->
+<!--              class="records-radio-button"-->
+<!--              label="Samples"-->
+<!--          />-->
+<!--          <el-radio-button-->
+<!--              class="files-radio-button"-->
+<!--              label="Visits"-->
+<!--          />-->
+<!--        </el-radio-group>-->
+<!--      </div>-->
+<!--      <div v-loading="isLoadingFiles">-->
+<!--        <div-->
+<!--            v-if="showNoFileResultsState"-->
+<!--            class="no-results-container"-->
+<!--        >-->
+<!--          <h3>No results found</h3>-->
 <!--        </div>-->
-<!--        <div v-if="SearchStep == 0">-->
-<!--          <bf-button v-on:click="filterSearch('patient')">-->
-<!--            Filter Search Patients-->
-<!--          </bf-button>-->
-<!--        </div>-->
-<!--        <div v-if="SearchStep == 1">-->
-<!--          <bf-button v-on:click="filterSearch('visits')">-->
-<!--            Filter Search Visits-->
-<!--          </bf-button>-->
-<!--        </div>-->
-<!--        <div v-if="SearchStep == 2">-->
-<!--          <bf-button v-on:click="filterSearch('samples')">-->
-<!--            Filter Search Samples-->
-<!--          </bf-button>-->
-<!--        </div>-->
-<!--        <div v-if="SearchStep == 3">-->
-<!--          <h2>Clear filters and selections to start another search</h2>-->
+<!--        <div-->
+<!--            v-if="showFileResultsState"-->
+<!--            class="results-container"-->
+<!--        >-->
+<!--          <div class="results-table">-->
+<!--            <div class="file-pagination">-->
+<!--              <div>-->
+<!--                <pagination-page-menu-->
+<!--                    class="mr-24"-->
+<!--                    pagination-item-label="Results"-->
+<!--                    :page-size="filesTableLimit"-->
+<!--                    @update-page-size="updateFilesTableLimit"-->
+<!--                />-->
+<!--              </div>-->
+<!--              <el-pagination-->
+<!--                  :page-size="filesTableLimit"-->
+<!--                  :pager-count="5"-->
+<!--                  :current-page="curFileSearchPage"-->
+<!--                  layout="prev, pager, next"-->
+<!--                  :total="tableResultsTotalCount"-->
+<!--                  @current-change="onFilesTablePageChange"-->
+<!--              />-->
+<!--            </div>-->
+<!--            <files-table-->
+<!--                :data="fileResults"-->
+<!--                :multiple-selected="multipleSelected"-->
+<!--                :is-search-results="true"-->
+<!--                :non-sortable-columns="['content.name', 'subtype', 'storage', 'content.createdAt', 'datasetName']"-->
+<!--                @selection-change="setSelectedFiles"-->
+<!--            />-->
+<!--          </div>-->
 <!--        </div>-->
 <!--      </div>-->
-
-<!--      <br>-->
-      <div>
-        <graph-browser2
-            @record-clicked="updateClickedRecordsFilters"
-        />
       </div>
-      <div class="results-toggle">
-        <p class="mr-16">View files for </p>
-        <el-radio-group
-            v-model="selectedButton"
-            size="medium"
-        >
-          <el-radio-button
-              class="records-radio-button"
-              label="Samples"
-          />
-          <el-radio-button
-              class="files-radio-button"
-              label="Visits"
-          />
-        </el-radio-group>
-      </div>
-      <div v-loading="isLoadingFiles">
-        <div
-            v-if="showNoFileResultsState"
-            class="no-results-container"
-        >
-          <h3>No results found</h3>
-        </div>
-        <div
-            v-if="showFileResultsState"
-            class="results-container"
-        >
-          <div class="results-table">
-            <div class="file-pagination">
-              <div>
-                <pagination-page-menu
-                    class="mr-24"
-                    pagination-item-label="Results"
-                    :page-size="filesTableLimit"
-                    @update-page-size="updateFilesTableLimit"
-                />
-              </div>
-              <el-pagination
-                  :page-size="filesTableLimit"
-                  :pager-count="5"
-                  :current-page="curFileSearchPage"
-                  layout="prev, pager, next"
-                  :total="tableResultsTotalCount"
-                  @current-change="onFilesTablePageChange"
-              />
-            </div>
-            <files-table
-                :data="fileResults"
-                :multiple-selected="multipleSelected"
-                :is-search-results="true"
-                :non-sortable-columns="['content.name', 'subtype', 'storage', 'content.createdAt', 'datasetName']"
-                @selection-change="setSelectedFiles"
-            />
-          </div>
-        </div>
-      </div>
-
-      </div>
-
-
     </div>
   </div>
 </template>
 
 <script>
-import IhSubheader from '@/components/shared/IhSubheader.vue'
-import BfButton from '@/components/shared/BfButton.vue'
+// import IhSubheader from '@/components/shared/IhSubheader.vue'
+// import BfButton from '@/components/shared/BfButton.vue'
 // import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecondary.vue'
 // import GraphBrowser from '@/components/GraphBrowser/GraphBrowser.vue'
 import GraphBrowser2 from '@/components/GraphBrowser2/GraphBrowser2.vue'
 
-import FilesTable from '@/components/FilesTable/FilesTable.vue'
-import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
+// import FilesTable from '@/components/FilesTable/FilesTable.vue'
+// import PaginationPageMenu from '@/components/shared/PaginationPageMenu/PaginationPageMenu.vue'
 import GetFileProperty from '@/mixins/get-file-property'
 import Request from '@/mixins/request/index'
 import FormatDate from '@/mixins/format-date'
@@ -148,16 +124,18 @@ import { mapActions, mapGetters, mapState } from 'vuex'
 import { pathOr, clone, mergeRight } from 'ramda'
 import { v1 } from 'uuid'
 import DetailPanel from "@/components/GraphBrowser2/DetailPanel/DetailPanel";
+import SelectedInfo from "@/components/SearchDetails/SelectedInfo";
 
 export default {
   name: 'StudiesBrowser',
   components: {
+    SelectedInfo,
     DetailPanel,
-    IhSubheader,
+    // IhSubheader,
     // GraphBrowser,
-    BfButton,
-    FilesTable,
-    PaginationPageMenu,
+    // BfButton,
+    // FilesTable,
+    // PaginationPageMenu,
     GraphBrowser2
   },
   mixins: [GetFileProperty, Request, FormatDate],
@@ -189,6 +167,7 @@ export default {
   computed: {
     ...mapState(['searchModalSearch']),
     ...mapGetters(['userToken', 'allStudies', 'selectedStudy', 'selectedStudyName']),
+    ...mapGetters('graphBrowseModule', ['getRecordsByModel']),
    /**
      * Indicates that no search results were found
      * @returns {Boolean}
