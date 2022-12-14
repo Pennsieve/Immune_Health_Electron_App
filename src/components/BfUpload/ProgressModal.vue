@@ -93,7 +93,7 @@ export default {
 }
   if (this.currPercentage >= 100) {
     this.isStillUploading = false;
-    this.$emit('refreshMessageFromChildSecondary')
+    //this.$emit('refreshMessageFromChildSecondary')
     console.log("REFRESH FILES PAGE CALLED")
     //setTimeout(this.onClose(),3000);
     //this.onClose();

@@ -293,18 +293,21 @@ export default {
       this.setupFileTable()
     },
     async refreshMessageRecieved2() {
-      console.log("FETCHING FILES UNTIL UPLOADED FILE(S) APPEAR IN PENNSIEVE")
-      const initialFilesArrayLength = this.files.length
-      let newFilesArrayLength = this.files.length
+      console.log("FETCHING FILES")
+      //const initialFilesArrayLength = this.files.length
+      //let newFilesArrayLength = this.files.length
       this.clearFiles()
-      while (newFilesArrayLength == initialFilesArrayLength) {
+      this.wait()
+      //while (newFilesArrayLength == initialFilesArrayLength) {
         await new Promise(resolve => setTimeout(resolve, 3000));
         let packageId = this.stagingLookup[this.selectedStudyName]
         this.currId = packageId
-        await this.fetchFiles(packageId).then(() => {
-          newFilesArrayLength = this.files.length
-        })
-      }
+        this.wait2()
+        this.fetchFiles(packageId)
+        //await this.fetchFiles(packageId).then(() => {
+          //newFilesArrayLength = this.files.length
+        //})
+      //}
     },
     setupFileTable: function() {
       this.clearFiles()
@@ -642,6 +645,15 @@ export default {
       this.fileId = ''
       this.files = []
     },
+
+        //waits 10 seconds
+        wait: async function() {
+          await this.delay(10000);
+        },
+        //waits 5 seconds
+        wait2: async function() {
+          await this.delay(5000);
+        },
     /**
      * Reset selected files state
      */
