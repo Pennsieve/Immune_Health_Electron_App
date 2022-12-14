@@ -10,11 +10,13 @@
           @command="breadcrumbNavigate"
       >
         <span class="el-dropdown-link button-icon">
+          <template v-if="file.parent.content.name != this.selectedStudyName">
           <svg-icon
               name="icon-menu"
               height="20"
               width="20"
           />
+          </template>
         </span>
         <el-dropdown-menu
             slot="dropdown"
@@ -49,6 +51,7 @@
 
 <script>
 import { defaultTo } from 'ramda'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'BreadcrumbNavigation',
@@ -69,6 +72,7 @@ export default {
   },
 
   computed: {
+    ...mapGetters(["selectedStudyName"]),
     /**
      * Reverse ancestors to show in correct order
      * @returns {Array}

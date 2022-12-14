@@ -347,7 +347,13 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       ...mapActions(['updateOnboardingEvents']),
 
       sendRefreshMessage: function(){
-        this.$emit('refreshMessageFromChild')
+        EventBus.$emit('refreshMessageFromChild')
+      },
+      filesLengthMessage: function(filesL) {
+        EventBus.$emit('fileMessageSent',filesL)
+      },
+      sendSubscribePing: function(message) {
+        EventBus.$emit('subscribePing',message)
       },
       /**
        * Compute if array has items
@@ -738,7 +744,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         if (this.fileListMap.size > 0) {
           // generate list of files as an Array
           let fileList = Array.from(this.fileListMap.values()).map(file => file.filePath)
-
+          var fileListLen = fileList.length
+          this.filesLengthMessage(fileListLen)
           // create a manifest passing in the list of files
           //this.uploadTargetFolder
           ps.createManifest(fileList, uploadTargetFolder)
@@ -770,6 +777,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
         //this.isAddingFiles = false
         }
+        EventBus.$emit('open-progress-dialog','true')
         // close the upload dialog
         this.onClose()
       },
@@ -898,31 +906,45 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       //function detects when subscribe stream returns a 'complete' message and notifies the user
 
       actionOnUploadSuccess: function(type, message){
+
         console.log(`actionOnUploadSuccess() type: ${type} message:`)
         console.log(message)
         if (message){
-        var txt = message.event_info
-        if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
+          console.log('message')
+        //var txt = message.event_info.details
+        if (message.type == 'UPLOAD_STATUS' && message.upload_status.status != 'COMPLETE'){
+          //console.log('uploading files in progress')
+          //this.sendSubscribePing(message)
+        }
+        else if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'COMPLETE'){
           EventBus.$emit('toast', {
             detail: {
-              msg: 'Your files are being uplaoded',
+              msg: 'Your files are being uploaded',
               type: 'success'
             }
           })
         }
+        /*
+        else if (message.type == 'EVENT'){
+          console.log('THE EVENT IS >>>> ',message)
+        }
+        */
         //need to verify that substring is captured
-        else if (message.type == 'EVENT' && txt.includes("Closing stream for client ID:")){
-
+        /*
+        else if (message.type == 'EVENT' && message.event_info.details.includes('Closing stream for client ID:')){
+        console.log('finished upload')
         EventBus.$emit('toast', {
           detail: {
             msg: 'Your files have successfully uploaded',
             type: 'success'
           }
         })
+      this.ps = new PennsieveClient()
       //TODO: stop listening after success
-      //this.ps.unsubscribe(this.subscribeId)
-      //console.log(`unsubscribing from: ${this.subscribeId}`)
+      this.ps.unsubscribe(this.subscribeId)
+      console.log(`unsubscribing from: ${this.subscribeId}`)
       }
+      */
     }
     },
     // eslint-disable-next-line no-unused-vars

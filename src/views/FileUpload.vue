@@ -127,6 +127,11 @@
               :file="file"
           />
 
+          <progress-modal
+            :open.sync="progressDialogOpen"
+            @close-progress-dialog = "closeProgressDialog"
+          />
+
           <!--
           <bf-delete-dialog
             ref="deleteDialog"
@@ -150,6 +155,7 @@ import BfNavigationSecondary from '@/components/bf-navigation/BfNavigationSecond
 import EventBus from '../utils/event-bus.js'
 import FilesTable from '@/components/FilesTable/FilesTable.vue'
 import BfUpload from '../components/BfUpload/BfUpload.vue'
+import ProgressModal from '../components/BfUpload/ProgressModal.vue'
 import Sorter from '../mixins/sorter/index.js'
 import Request from '../mixins/request/index.js'
 //import BfDeleteDialog from '../components/bf-delete-dialog/BfDeleteDialog.vue'
@@ -169,7 +175,8 @@ export default {
     BfButton,
     BfUpload,
     FilesTable,
-    BreadcrumbNavigation
+    BreadcrumbNavigation,
+    ProgressModal
     //BfDeleteDialog
   },
   mixins: [
@@ -230,6 +237,7 @@ export default {
       isAddingFiles: false,
       hasFiles: true,
       uploadDialogOpen: false,
+      progressDialogOpen: false,
       isCreating: false,
       fileId: '',
       stagingLookup: {},
@@ -238,6 +246,11 @@ export default {
       currId: '',
       loadingPackageIds: true
     }
+  },
+  created(){
+    this.$on('open-progress-dialog', (data) => {
+      this.progressDialogOpen = data;
+    })
   },
   mounted: function () {
     console.log(`mounted() selectedStudyName: ${this.selectedStudyName}`)
@@ -378,6 +391,10 @@ export default {
 
     closeUploadDialog: function () {
       this.uploadDialogOpen = false;
+    },
+
+    closeProgressDialog: function() {
+      this.progressDialogOpen = false;
     },
 
     processFile: function () {
