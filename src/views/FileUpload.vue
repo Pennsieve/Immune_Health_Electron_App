@@ -130,7 +130,9 @@
 
           <progress-modal
             :open.sync="progressDialogOpen"
+
             @refreshMessageFromChildSecondary="refreshMessageRecieved2"
+
             @close-progress-dialog = "closeProgressDialog"
           />
 
@@ -249,6 +251,11 @@ export default {
       loadingPackageIds: true,
       lastFileArr: []
     }
+  },
+  created(){
+    this.$on('open-progress-dialog', (data) => {
+      this.progressDialogOpen = data;
+    })
   },
   mounted: function () {
 

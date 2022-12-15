@@ -353,16 +353,20 @@ import FilesTable from "@/components/FilesTable/FilesTable";
       sendRefreshMessage: function(){
         EventBus.$emit('refreshMessageFromChild')
       },
+
       /*
       sendRefreshMessage2: function(){
         EventBus.$emit('refreshMessageFromChildSecondary')
       },
       */
+
       filesLengthMessage: function(filesL) {
         EventBus.$emit('fileMessageSent',filesL)
       },
       sendSubscribePing: function(message) {
+
         console.log("SEND SUBSCRIBE PING CALLED!!!!!!!!!!!!")
+
         EventBus.$emit('subscribePing',message)
       },
       /**
@@ -787,8 +791,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
 
         //this.isAddingFiles = false
         }
+
         this.$emit('openProgressDialog','true')
         console.log('OPENING THE PROGRESS DIALOG')
+
         // close the upload dialog
         this.onClose()
       },
@@ -928,6 +934,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         //console.log(message)
         if (message){
 
+
           console.log('message')
         //var txt = message.event_info.details
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'IN_PROGRESS'){
@@ -959,6 +966,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
           console.log(`unsubscribing from: ${this.subscribeId}`)
 
         }
+
     }
     },
     // eslint-disable-next-line no-unused-vars
