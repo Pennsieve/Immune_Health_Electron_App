@@ -119,6 +119,7 @@
               :currUploadDest = "selectedStudyName"
               @close-upload-dialog = "closeUploadDialog"
               @refreshMessageFromChild ="refreshMessageRecieved"
+              @openProgressDialog="openProgress"
           />
 
           <bf-drop-info
@@ -129,6 +130,9 @@
 
           <progress-modal
             :open.sync="progressDialogOpen"
+
+            @refreshMessageFromChildSecondary="refreshMessageRecieved2"
+
             @close-progress-dialog = "closeProgressDialog"
           />
 
@@ -187,7 +191,7 @@ export default {
   computed: {
     //delete instance of selectedStudayName
     ...mapGetters(['allStudies', 'selectedStudyName', 'userToken', 'uploadDestination', 'datasetId', 'getRelationshipTypeByName']),
-    ...mapState(['linkingTargets']),
+    ...mapState(['linkingTargets','config']),
     isLinkingTargetSet() {
       return !isEmpty(this.linkingTargets)
     },
@@ -244,7 +248,8 @@ export default {
       linkedLookup: {},
       currUploadDest: '',
       currId: '',
-      loadingPackageIds: true
+      loadingPackageIds: true,
+      lastFileArr: []
     }
   },
   created(){
@@ -253,6 +258,7 @@ export default {
     })
   },
   mounted: function () {
+
     console.log(`mounted() selectedStudyName: ${this.selectedStudyName}`)
     //if no files yet
     this.setSearchPage('FileUpload')
@@ -285,11 +291,31 @@ export default {
   methods: {
     ...mapActions(['setSearchPage', 'updateSearchModalVisible', 'addRelationshipType', 'setItsLinkinTime']),
 
+  openProgress: function(){
+      this.progressDialogOpen = true;
+    },
+
     refreshMessageRecieved: function(){
       //this.fetchPackageIds()
       this.setupFileTable()
     },
-
+    async refreshMessageRecieved2() {
+      console.log("FETCHING FILES")
+      //const initialFilesArrayLength = this.files.length
+      //let newFilesArrayLength = this.files.length
+      this.clearFiles()
+      this.wait()
+      //while (newFilesArrayLength == initialFilesArrayLength) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        let packageId = this.stagingLookup[this.selectedStudyName]
+        this.currId = packageId
+        this.wait2()
+        this.fetchFiles(packageId)
+        //await this.fetchFiles(packageId).then(() => {
+          //newFilesArrayLength = this.files.length
+        //})
+      //}
+    },
     setupFileTable: function() {
       this.clearFiles()
       console.log('setupFileTable()')
@@ -626,6 +652,15 @@ export default {
       this.fileId = ''
       this.files = []
     },
+
+        //waits 10 seconds
+        wait: async function() {
+          await this.delay(10000);
+        },
+        //waits 5 seconds
+        wait2: async function() {
+          await this.delay(5000);
+        },
     /**
      * Reset selected files state
      */
@@ -736,10 +771,8 @@ export default {
 
     createRelationships: function () {
       console.log('createRelastionships()')
-      this.isLoading = true
       this.createFileRelationshipRequests()
         .then(() => this.createRelationshipsSuccess())
-        .finally(() => this.isLoading = false)
 
     },
     linkToTarget: function () {
@@ -784,14 +817,13 @@ export default {
       var api_url = `${this.config.apiUrl}/packages/${packageId}?api_key=${this.userToken}&includeAncestors=true`;
 
       console.log('fetchFiles() api_url: ', api_url)
-      this.sendXhr(api_url)
+      return this.sendXhr(api_url)
           .then(response => {
             console.log('fetchFiles() response:')
             console.log(response)
             this.file = response
             this.fileId = response.content.id
             this.files = response.children.map(file => {
-
               return file
             })
             this.sortedFiles = this.returnSort('content.name', this.files, this.sortDirection)
