@@ -419,6 +419,8 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         this.sendRefreshMessage()
         this.clearUploadedFiles()
         this.$emit('close-upload-dialog')
+        //below will clear the uploads list
+        this.resetQueue()
       },
 
       onOverlayClick: function() {
@@ -828,6 +830,7 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         } else {
           this.isAddingFiles = false
         }
+
       },
 
       /**
@@ -935,9 +938,10 @@ import FilesTable from "@/components/FilesTable/FilesTable";
         if (message){
 
 
-          console.log('message')
+          console.log(message)
         //var txt = message.event_info.details
         if (message.type == 'UPLOAD_STATUS' && message.upload_status.status == 'IN_PROGRESS'){
+          console.log('CASE: upload in progress')
           //if (this.uploadArr.includes(message.upload_status.file_id) == false)
           //this.uploadArr.push(message.upload_status.file_id)
           if (message.upload_status.current == message.upload_status.total && !this.uploadFileLst.includes(message.upload_status.file_id)){
