@@ -91,7 +91,8 @@ export default {
     console.log("file list length is ",this.fileListLen)
     if (this.currIncrement != 0){
     console.log("so progress will update in increments of ",this.currIncrement)
-    var temp = this.currPercentage + this.currIncrement
+    let temp = this.currPercentage + this.currIncrement
+    if (temp > 100.0) { temp = 100.0 }
     this.currPercentage = Math.ceil(temp);
     console.log("curr percentage ",this.currPercentage)
 
@@ -104,16 +105,19 @@ export default {
     //setTimeout(this.onClose(),3000);
     //this.onClose();
     this.waitThenExit()
-    this.currPercentage = 0;
+    //this.currPercentage = 0;
     }
 },
 
 delay: function(time) {
   return new Promise(resolve => setTimeout(resolve,time));
 },
-waitThenExit: async function() {
-  await this.delay(3000);
-  this.onClose();
+waitThenExit: function() {
+  // eslint-disable-next-line
+  this.delay(3000).then(x => {
+    this.currPercentage = 0;
+    this.onClose();
+  });
 },
 onClose: function(){
   console.log('CLOSE PROGRESS MODAL CALLED')
